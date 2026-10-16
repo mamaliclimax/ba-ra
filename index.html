@@ -4,176 +4,130 @@
   <meta charset="UTF-8" />
   <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>رادیو</title>
+  <title>رادیو و تلویزیون</title>
   <script src="https://tapi.bale.ai/miniapp.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
   <style>
     :root {
-      --bg0: #07070f;
-      --bg1: #12122a;
-      --card-solid: #16162c;
-      --text: #f4f5ff;
-      --muted: #9aa3c0;
-      --line: rgba(255,255,255,.08);
-      --glow: rgba(139,124,255,.45);
+      --bg0:#07070f; --bg1:#12122a; --card:#16162c; --text:#f4f5ff;
+      --muted:#9aa3c0; --line:rgba(255,255,255,.08); --glow:rgba(139,124,255,.45);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
-      color: var(--text);
-      min-height: 100vh;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:"Segoe UI",Tahoma,system-ui,sans-serif;color:var(--text);min-height:100vh;
       background:
-        radial-gradient(1200px 600px at 100% -10%, rgba(139,124,255,.22), transparent 55%),
-        radial-gradient(900px 500px at -10% 100%, rgba(0,206,201,.12), transparent 50%),
-        linear-gradient(165deg, var(--bg0), var(--bg1) 55%, #0b0b18);
-      padding: 18px 16px 28px;
+        radial-gradient(1100px 560px at 100% -10%, rgba(139,124,255,.2), transparent 55%),
+        radial-gradient(900px 500px at -10% 110%, rgba(0,206,201,.1), transparent 50%),
+        linear-gradient(165deg,var(--bg0),var(--bg1) 55%,#0b0b18);
+      padding:16px;
     }
-    .wrap { max-width: 480px; margin: 0 auto; }
-    .screen { display: none; animation: fadeIn .28s ease; }
-    .screen.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-    .hero { text-align: center; margin-bottom: 18px; padding-top: 6px; }
-    .hero .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 12px; border-radius: 999px;
-      background: rgba(255,255,255,.06); border: 1px solid var(--line);
-      color: var(--muted); font-size: .78rem; margin-bottom: 10px;
+    .wrap{max-width:480px;margin:0 auto}
+    .screen{display:none;animation:fadeIn .25s ease}
+    .screen.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .hero{text-align:center;margin-bottom:16px}
+    .hero .badge{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted);font-size:.78rem;margin-bottom:8px}
+    .hero h1{font-size:1.55rem;background:linear-gradient(90deg,#fff,#c7c0ff 50%,#7ef0ea);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero p{color:var(--muted);margin-top:6px;font-size:.9rem}
+    .home-grid{display:grid;gap:12px}
+    .home-card{
+      border:1px solid var(--line);border-radius:22px;overflow:hidden;cursor:pointer;
+      background:var(--card);box-shadow:0 14px 36px rgba(0,0,0,.3);text-align:right;color:var(--text);
     }
-    .hero h1 {
-      font-size: 1.7rem; letter-spacing: -0.03em;
-      background: linear-gradient(90deg, #fff, #c7c0ff 50%, #7ef0ea);
-      -webkit-background-clip: text; background-clip: text; color: transparent;
-    }
-    .hero p { color: var(--muted); margin-top: 6px; font-size: .92rem; }
-    .stations { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .station {
-      position: relative; border: 1px solid var(--line); border-radius: 20px;
-      overflow: hidden; background: var(--card-solid); color: var(--text);
-      cursor: pointer; text-align: right; padding: 0;
-      box-shadow: 0 12px 30px rgba(0,0,0,.28);
-      transition: transform .15s ease;
-    }
-    .station:active { transform: scale(.975); }
-    .station .cover {
-      height: 96px; position: relative; display: flex;
-      align-items: center; justify-content: center; overflow: hidden;
-    }
-    .station .cover::after {
-      content: ""; position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(10,10,22,.8), transparent 60%);
-    }
-    .station .cover .emoji {
-      font-size: 2.5rem; position: relative; z-index: 1;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
-    }
-    .station .cover .pattern {
-      position: absolute; inset: 0; opacity: .35;
-      background-image:
-        radial-gradient(circle at 20% 30%, rgba(255,255,255,.5) 0 2px, transparent 3px),
-        radial-gradient(circle at 70% 60%, rgba(255,255,255,.35) 0 1.5px, transparent 2.5px);
-      background-size: 48px 48px, 36px 36px;
-    }
-    .station .body { padding: 10px 12px 12px; }
-    .station .name { font-weight: 700; font-size: .95rem; }
-    .station .count { color: var(--muted); font-size: .75rem; margin-top: 3px; }
-    .c-old { background: linear-gradient(135deg, #5c3b1e, #c49a6c 45%, #3a2615); }
-    .c-happy { background: linear-gradient(135deg, #ff6b6b, #feca57 50%, #ff9ff3); }
-    .c-calm { background: linear-gradient(135deg, #3b4a7a, #89a7d6 50%, #c9b6e4); }
-    .c-pop { background: linear-gradient(135deg, #e056fd, #686de0 50%, #ff6b81); }
-    .c-ai { background: linear-gradient(135deg, #0f2027, #00c9a7 45%, #2c5364); }
-    .c-traditional { background: linear-gradient(135deg, #4a1506, #c0392b 40%, #d4a017); }
-    .c-birthday { background: linear-gradient(135deg, #ff85a1, #ffd6a5 50%, #b8e0ff); }
-    .c-foreign { background: linear-gradient(135deg, #0b3d91, #3d7ea6 50%, #1abc9c); }
-    .c-dj { background: linear-gradient(135deg, #12051f, #8e2de2 45%, #00f5d4); }
-    .back {
-      border: 1px solid var(--line); background: rgba(255,255,255,.04);
-      color: var(--muted); border-radius: 999px; padding: 8px 14px;
-      font-size: .85rem; cursor: pointer; margin-bottom: 14px;
-    }
-    .player-card {
-      position: relative; border-radius: 28px; overflow: hidden;
-      border: 1px solid var(--line); background: rgba(20,20,40,.75);
-      box-shadow: 0 20px 50px rgba(0,0,0,.4); margin-bottom: 14px;
-    }
-    .player-cover {
-      height: 210px; position: relative; display: flex;
-      align-items: center; justify-content: center;
-    }
-    .player-cover .glow {
-      position: absolute; width: 160px; height: 160px; border-radius: 50%;
-      filter: blur(30px); opacity: .55; background: #fff;
-    }
-    .player-cover .disc {
-      width: 148px; height: 148px; border-radius: 50%; position: relative;
-      z-index: 1; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,.45), inset 0 0 0 10px rgba(255,255,255,.08);
-      background: repeating-radial-gradient(circle at center, rgba(0,0,0,.35) 0 2px, rgba(255,255,255,.05) 2px 4px);
-    }
-    .player-cover .disc.spin { animation: spin 8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .player-cover .disc .hole {
-      width: 34px; height: 34px; border-radius: 50%; background: #0b0b16;
-      border: 3px solid rgba(255,255,255,.2); display: flex;
-      align-items: center; justify-content: center; font-size: 1.1rem;
-    }
-    .player-body { padding: 16px 18px 20px; }
-    .now-title { font-size: 1.15rem; font-weight: 700; text-align: center; line-height: 1.35; min-height: 2.6em; }
-    .now-meta { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 4px; }
-    .progress {
-      height: 7px; background: rgba(255,255,255,.1); border-radius: 99px;
-      overflow: hidden; margin: 16px 0 6px; cursor: pointer;
-    }
-    .progress > i {
-      display: block; height: 100%; width: 0%; border-radius: 99px;
-      background: linear-gradient(90deg, #8b7cff, #00cec9);
-    }
-    .times { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); }
-    .controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 14px; }
-    .btn {
-      border: none; background: rgba(255,255,255,.08); color: var(--text);
-      width: 50px; height: 50px; border-radius: 50%; font-size: 1.25rem;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--line);
-    }
-    .btn.play {
-      width: 72px; height: 72px; font-size: 1.7rem;
-      background: linear-gradient(135deg, #8b7cff, #6c5ce7);
-      box-shadow: 0 10px 28px var(--glow); border: none;
-    }
-    .status { text-align: center; font-size: .8rem; color: var(--muted); margin-top: 12px; min-height: 1.2em; }
-    .status.error { color: #ff7b8a; }
-    .list {
-      border-radius: 20px; border: 1px solid var(--line);
-      background: rgba(20,20,40,.55); overflow: hidden;
-    }
-    .list h2 { font-size: .85rem; color: var(--muted); padding: 12px 14px 6px; font-weight: 600; }
-    .track {
-      display: flex; gap: 12px; align-items: center; padding: 12px 14px;
-      border-top: 1px solid var(--line); cursor: pointer;
-    }
-    .track.active { background: rgba(139,124,255,.14); }
-    .track .num {
-      width: 28px; height: 28px; border-radius: 9px; background: rgba(255,255,255,.07);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .78rem; color: var(--muted); flex-shrink: 0;
-    }
-    .track.active .num { background: linear-gradient(135deg, #8b7cff, #00cec9); color: #fff; }
-    .track .t { font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .empty { text-align: center; padding: 28px 14px; color: var(--muted); font-size: .9rem; }
+    .home-card .banner{height:110px;display:flex;align-items:center;justify-content:center;font-size:2.8rem;position:relative}
+    .home-card .banner::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,22,.75),transparent 55%)}
+    .home-card .body{padding:12px 14px 14px}
+    .home-card .name{font-weight:700;font-size:1.05rem}
+    .home-card .desc{color:var(--muted);font-size:.82rem;margin-top:4px}
+    .b-radio{background:linear-gradient(135deg,#5b4bdb,#00cec9)}
+    .b-tv{background:linear-gradient(135deg,#e056fd,#686de0 50%,#ff6b81)}
+    .back{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);border-radius:999px;padding:8px 14px;font-size:.85rem;cursor:pointer;margin-bottom:12px}
+    .stations{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .station{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--card);color:var(--text);cursor:pointer;padding:0;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    .station .cover{height:88px;display:flex;align-items:center;justify-content:center;position:relative}
+    .station .cover::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,22,.8),transparent 60%)}
+    .station .cover .emoji{font-size:2.2rem;position:relative;z-index:1}
+    .station .body{padding:10px 12px}
+    .station .name{font-weight:700;font-size:.92rem}
+    .station .count{color:var(--muted);font-size:.72rem;margin-top:3px}
+    .c-old{background:linear-gradient(135deg,#5c3b1e,#c49a6c 45%,#3a2615)}
+    .c-happy{background:linear-gradient(135deg,#ff6b6b,#feca57 50%,#ff9ff3)}
+    .c-calm{background:linear-gradient(135deg,#3b4a7a,#89a7d6 50%,#c9b6e4)}
+    .c-pop{background:linear-gradient(135deg,#e056fd,#686de0 50%,#ff6b81)}
+    .c-ai{background:linear-gradient(135deg,#0f2027,#00c9a7 45%,#2c5364)}
+    .c-traditional{background:linear-gradient(135deg,#4a1506,#c0392b 40%,#d4a017)}
+    .c-birthday{background:linear-gradient(135deg,#ff85a1,#ffd6a5 50%,#b8e0ff)}
+    .c-foreign{background:linear-gradient(135deg,#0b3d91,#3d7ea6 50%,#1abc9c)}
+    .c-dj{background:linear-gradient(135deg,#12051f,#8e2de2 45%,#00f5d4)}
+    .player-card{border-radius:24px;overflow:hidden;border:1px solid var(--line);background:rgba(20,20,40,.8);box-shadow:0 18px 44px rgba(0,0,0,.4);margin-bottom:12px}
+    .player-cover{height:190px;position:relative;display:flex;align-items:center;justify-content:center}
+    .player-cover .glow{position:absolute;width:150px;height:150px;border-radius:50%;filter:blur(28px);opacity:.5}
+    .disc{width:130px;height:130px;border-radius:50%;z-index:1;display:flex;align-items:center;justify-content:center;
+      box-shadow:0 10px 36px rgba(0,0,0,.45),inset 0 0 0 10px rgba(255,255,255,.08);
+      background:repeating-radial-gradient(circle at center,rgba(0,0,0,.35) 0 2px,rgba(255,255,255,.05) 2px 4px)}
+    .disc.spin{animation:spin 8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .disc .hole{width:32px;height:32px;border-radius:50%;background:#0b0b16;border:3px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1rem}
+    .player-body{padding:14px 16px 18px}
+    .now-title{font-size:1.08rem;font-weight:700;text-align:center;min-height:2.4em}
+    .now-meta{text-align:center;color:var(--muted);font-size:.82rem;margin-top:4px}
+    .progress{height:6px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin:14px 0 6px;cursor:pointer}
+    .progress>i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#8b7cff,#00cec9)}
+    .times{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted)}
+    .controls{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px}
+    .btn{border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--text);width:46px;height:46px;border-radius:50%;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .btn.play{width:66px;height:66px;font-size:1.55rem;background:linear-gradient(135deg,#8b7cff,#6c5ce7);border:none;box-shadow:0 10px 26px var(--glow)}
+    .status{text-align:center;font-size:.78rem;color:var(--muted);margin-top:10px;min-height:1.2em}
+    .status.error{color:#ff7b8a}
+    .list{border-radius:18px;border:1px solid var(--line);background:rgba(20,20,40,.55);overflow:hidden}
+    .list h2{font-size:.82rem;color:var(--muted);padding:12px 14px 6px}
+    .track,.channel{display:flex;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer}
+    .track.active,.channel.active{background:rgba(139,124,255,.14)}
+    .track .num,.channel .num{width:28px;height:28px;border-radius:9px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--muted)}
+    .track.active .num,.channel.active .num{background:linear-gradient(135deg,#8b7cff,#00cec9);color:#fff}
+    .t{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .empty{text-align:center;padding:24px 12px;color:var(--muted);font-size:.9rem}
+    /* TV */
+    .tv-stage{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#000;margin-bottom:12px;aspect-ratio:16/9;position:relative}
+    .tv-stage video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+    .tv-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-size:.95rem;pointer-events:none}
+    .tv-overlay.hide{display:none}
+    .tv-title{font-weight:700;font-size:1.05rem;margin-bottom:8px}
+    .tv-actions{display:flex;gap:8px;margin-bottom:12px}
+    .chip{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:8px 12px;font-size:.82rem;cursor:pointer}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div id="screenStations" class="screen active">
+    <!-- HOME -->
+    <div id="screenHome" class="screen active">
       <div class="hero">
-        <div class="badge">● LIVE RADIO</div>
-        <h1>رادیو هم‌‌دل</h1>
-        <p>ایستگاه مورد علاقه‌ات را انتخاب کن</p>
+        <div class="badge">● MEDIA CENTER</div>
+        <h1>رادیو و تلویزیون</h1>
+        <p>یکی را انتخاب کن</p>
       </div>
+      <div class="home-grid">
+        <button class="home-card" id="goRadio">
+          <div class="banner b-radio">📻</div>
+          <div class="body"><div class="name">رادیو</div><div class="desc">ایستگاه‌های موسیقی</div></div>
+        </button>
+        <button class="home-card" id="goTv">
+          <div class="banner b-tv">📺</div>
+          <div class="body"><div class="name">تلویزیون</div><div class="desc">پخش زنده و آنلاین</div></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- RADIO STATIONS -->
+    <div id="screenRadioStations" class="screen">
+      <button class="back" id="backHome1">← منوی اصلی</button>
+      <div class="hero"><h1>📻 رادیو</h1><p>ایستگاه را انتخاب کنید</p></div>
       <div class="stations" id="stations"></div>
     </div>
 
-    <div id="screenPlayer" class="screen">
-      <button class="back" id="btnBack">← ایستگاه‌ها</button>
+    <!-- RADIO PLAYER -->
+    <div id="screenRadioPlayer" class="screen">
+      <button class="back" id="backStations">← ایستگاه‌ها</button>
       <div class="player-card">
         <div class="player-cover" id="playerCover">
           <div class="glow" id="coverGlow"></div>
@@ -192,162 +146,221 @@
           <div class="status" id="status"></div>
         </div>
       </div>
-      <div class="list">
-        <h2>لیست این ایستگاه</h2>
-        <div id="tracks"></div>
+      <div class="list"><h2>لیست این ایستگاه</h2><div id="tracks"></div></div>
+    </div>
+
+    <!-- TV -->
+    <div id="screenTv" class="screen">
+      <button class="back" id="backHome2">← منوی اصلی</button>
+      <div class="hero"><h1>📺 تلویزیون</h1><p>کانال را انتخاب و تماشا کن</p></div>
+      <div class="tv-title" id="tvTitle">کانالی انتخاب نشده</div>
+      <div class="tv-stage">
+        <video id="tvVideo" playsinline controls></video>
+        <div class="tv-overlay" id="tvOverlay">یک کانال از لیست زیر انتخاب کنید</div>
       </div>
+      <div class="tv-actions">
+        <button class="chip" id="tvFullscreen">⛶ تمام‌صفحه</button>
+        <button class="chip" id="tvStop">⏹ توقف</button>
+      </div>
+      <div class="list"><h2>کانال‌ها</h2><div id="tvChannels"></div></div>
+      <div class="status" id="tvStatus"></div>
     </div>
   </div>
+
   <audio id="audio" preload="metadata" playsinline></audio>
   <script>
     const STATIONS = [{"id": "old", "title": "قدیمی", "emoji": "🕰️", "tracks": [{"id": "7212c2c117", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3"}, {"id": "3cdc260099", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3"}, {"id": "86f94c9561", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3"}, {"id": "71e0971a7e", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3"}, {"id": "14ce58d92a", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3"}, {"id": "c2bc63ee26", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3"}, {"id": "32dc9c6660", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3"}]}, {"id": "happy", "title": "شاد", "emoji": "🎉", "tracks": []}, {"id": "calm", "title": "ملایم", "emoji": "🌙", "tracks": []}, {"id": "pop", "title": "پاپ", "emoji": "🎤", "tracks": []}, {"id": "ai", "title": "ساخته هوش مصنوعی", "emoji": "🤖", "tracks": []}, {"id": "traditional", "title": "سنتی", "emoji": "🎼", "tracks": []}, {"id": "birthday", "title": "تولد", "emoji": "🎂", "tracks": []}, {"id": "foreign", "title": "خارجی", "emoji": "🌍", "tracks": []}, {"id": "dj", "title": "دیجی میکس", "emoji": "🎧", "tracks": []}];
+    const TV_CHANNELS = [{"id": "48799381f5", "title": "شبکه یک", "url": "https://live-aburayhan1105.telewebion.net/ek/tv1/live/1080p/index.m3u8"}, {"id": "0ba4081ec3", "title": "شبکه دو", "url": "https://live-aburayhan1113.telewebion.net/ek/tv2/live/1080p/index.m3u8"}, {"id": "a3f200a693", "title": "شبکه سه", "url": "https://live-aburayhan1102.telewebion.net/ek/tv3/live/108050p/index.m3u8"}, {"id": "bd63961c84", "title": "شبکه چهار", "url": "https://live-aburayhan1112.telewebion.net/ek/tv4/live/576p/index.m3u8"}, {"id": "d53d10371d", "title": "شبکه پنج (تهران)", "url": "https://live-aburayhan1109.telewebion.net/ek/tehran/live/1080p/index.m3u8"}, {"id": "81b0f0b21f", "title": "شبکه گلخانه", "url": "https://live-aburayhan1106.telewebion.net/na/golkhane/live/720p/index.m3u8"}, {"id": "c4a2e7492f", "title": "آی‌فیلم", "url": "https://live.presstv.co.uk/hls/ifilmfa_4_482/index.m3u8"}, {"id": "cfaa38f6ab", "title": "شبکه آموزش", "url": "https://live-aburayhan1104.telewebion.net/ek/amouzesh/live/576p/index.m3u8"}, {"id": "20ac4d231b", "title": "شبکه مستند", "url": "https://live-aburayhan1103.telewebion.net/ek/mostanad/live/1080p/index.m3u8"}, {"id": "0198a7cc5b", "title": "شبکه نمایش", "url": "https://live-aburayhan1111.telewebion.net/ek/namayesh/live/1080p/index.m3u8"}, {"id": "3973b1ad91", "title": "شبکه نسیم", "url": "https://live-aburayhan1108.telewebion.net/ek/nasim/live/1080p/index.m3u8"}, {"id": "33a45d7007", "title": "شبکه افق", "url": "https://live-aburayhan1105.telewebion.net/ek/ofogh/live/1080p/index.m3u8"}, {"id": "7ebefb7dca", "title": "شبکه امید", "url": "https://live-aburayhan1110.telewebion.net/ek/omid/live/1080p/index.m3u8"}, {"id": "62b9c1c37d", "title": "شبکه پویا و نهال", "url": "https://live-aburayhan1105.telewebion.net/ek/pooya/live/1080p/index.m3u8"}, {"id": "0942d87c8a", "title": "شبکه قرآن و معارف سیما", "url": "https://live-aburayhan1104.telewebion.net/ek/quran/live/1080p/index.m3u8"}, {"id": "9cb866e025", "title": "شبکه سلامت", "url": "https://live-aburayhan1104.telewebion.net/ek/salamat/live/576p/index.m3u8"}, {"id": "b0ff7f7d93", "title": "شبکه تماشا", "url": "https://live-aburayhan1103.telewebion.net/ek/hdtest/live/1080p/index.m3u8"}, {"id": "e2869e5397", "title": "شبکه یک پلاس", "url": "https://live-aburayhan1103.telewebion.net/na/tv1plus/live/1080p/index.m3u8"}, {"id": "a457e9a581", "title": "شبکه فراگیر (UHD)", "url": "https://live-aburayhan1101.telewebion.net/ek/faratar/live/2160p/index.m3u8"}, {"id": "334a1c3f51", "title": "شبکه ورزش", "url": "https://live-aburayhan1102.telewebion.net/ek/varzesh/live/108050p/index.m3u8"}, {"id": "bad78a9048", "title": "شبکه خبر", "url": "http://185.9.2.18/chid_926/index.m3u8"}, {"id": "fdd88c8bac", "title": "شبکه خبر ۲", "url": "https://live-aburayhan1108.telewebion.net/ek/irinn2/live/1080p/index.m3u8"}, {"id": "8859aaf077", "title": "شبکه رویا", "url": "https://live-aburayhan1106.telewebion.net/na/iribu/live/720p/index.m3u8"}, {"id": "b975c06240", "title": "شبکه آبادان", "url": "https://live-aburayhan1109.telewebion.net/ek/abadan/live/576p/index.m3u8"}, {"id": "655d28a7f2", "title": "شبکه افلاک", "url": "https://live-aburayhan1111.telewebion.net/ek/aflak/live/576p/index.m3u8"}, {"id": "9218e8c05d", "title": "شبکه آفتاب", "url": "https://live-aburayhan1106.telewebion.net/ek/aftab/live/576p/index.m3u8"}, {"id": "f3ba82a06c", "title": "شبکه البرز", "url": "https://live-aburayhan1103.telewebion.net/ek/alborz/live/1080p/index.m3u8"}, {"id": "140edf8923", "title": "شبکه اترک", "url": "https://live-aburayhan1108.telewebion.net/ek/atrak/live/576p/index.m3u8"}, {"id": "ffe0574160", "title": "شبکه باران", "url": "https://live-aburayhan1108.telewebion.net/ek/baran/live/1080p/index.m3u8"}, {"id": "719900521f", "title": "شبکه بوشهر", "url": "https://live-aburayhan1103.telewebion.net/ek/bushehr/live/576p/index.m3u8"}, {"id": "b026942a3f", "title": "شبکه دنا", "url": "https://live-aburayhan1106.telewebion.net/ek/dena/live/1080p/index.m3u8"}, {"id": "d3776a5e3e", "title": "شبکه اشراق", "url": "https://live-aburayhan1101.telewebion.net/ek/eshragh/live/1080p/index.m3u8"}, {"id": "5d046b53da", "title": "شبکه فارس", "url": "https://live-aburayhan1108.telewebion.net/ek/fars/live/576p/index.m3u8"}, {"id": "c64dbba790", "title": "شبکه همدان", "url": "https://live-aburayhan1111.telewebion.net/ek/sina/live/576p/index.m3u8"}, {"id": "dc5af741b8", "title": "شبکه هامون", "url": "https://live-aburayhan1109.telewebion.net/ek/hamoon/live/1080p/index.m3u8"}, {"id": "04395f570a", "title": "شبکه ایلام", "url": "https://live-aburayhan1111.telewebion.net/ek/ilam/live/576p/index.m3u8"}, {"id": "f13d17d1bf", "title": "شبکه اصفهان", "url": "https://live-aburayhan1108.telewebion.net/ek/esfahan/live/1080p/index.m3u8"}, {"id": "bb340a7f7f", "title": "شبکه جهان‌بین", "url": "https://live-aburayhan1101.telewebion.net/ek/jahanbin/live/576p/index.m3u8"}, {"id": "f570a4c418", "title": "شبکه کرمان", "url": "https://live-aburayhan1112.telewebion.net/ek/kerman/live/1080p/index.m3u8"}, {"id": "a76f1afbfb", "title": "شبکه خلیج فارس", "url": "https://live-aburayhan1112.telewebion.net/ek/khalijefars/live/576p/index.m3u8"}, {"id": "b9972c8c4b", "title": "شبکه خاوران", "url": "https://live-aburayhan1112.telewebion.net/ek/khavaran/live/1080p/index.m3u8"}, {"id": "f032bf79bc", "title": "شبکه خراسان رضوی", "url": "https://live-aburayhan1111.telewebion.net/ek/khorasanrazavi/live/1080p/index.m3u8"}, {"id": "d3cc40cce5", "title": "شبکه خوزستان", "url": "https://live-aburayhan1102.telewebion.net/ek/khoozestan/live/576p/index.m3u8"}, {"id": "ac711e431a", "title": "شبکه کیش", "url": "https://live-aburayhan1104.telewebion.net/ek/kish/live/576p/index.m3u8"}, {"id": "30038c5497", "title": "شبکه کردستان", "url": "https://live-aburayhan1110.telewebion.net/ek/kordestan/live/1080p/index.m3u8"}, {"id": "e87c8140da", "title": "شبکه مهاباد", "url": "https://live-aburayhan1106.telewebion.net/ek/mahabad/live/1080p/index.m3u8"}, {"id": "2e5aa9def6", "title": "شبکه مکران", "url": "https://live-aburayhan1107.telewebion.net/na/makran/live/1080p/index.m3u8"}, {"id": "4f6579a2f8", "title": "شبکه نور", "url": "https://live-aburayhan1113.telewebion.net/ek/noor/live/576p/index.m3u8"}, {"id": "2f3af965a4", "title": "شبکه قزوین", "url": "https://live-aburayhan1104.telewebion.net/ek/qazvin/live/576p/index.m3u8"}, {"id": "30d3f18df2", "title": "شبکه سبلان", "url": "https://live-aburayhan1104.telewebion.net/ek/sabalan/live/576p/index.m3u8"}, {"id": "34c5f69266", "title": "شبکه سبز", "url": "https://live-aburayhan1113.telewebion.net/ek/sabz/live/576p/index.m3u8"}, {"id": "8b8f5b8cdc", "title": "شبکه سهند", "url": "https://live-aburayhan1102.telewebion.net/ek/sahand/live/576p/index.m3u8"}, {"id": "137c26c8ec", "title": "شبکه سمنان", "url": "https://live-aburayhan1101.telewebion.net/ek/semnan/live/576p/index.m3u8"}, {"id": "1e68b6a799", "title": "شبکه تبرستان", "url": "https://live-aburayhan1106.telewebion.net/ek/tabarestan/live/576p/index.m3u8"}, {"id": "8293663571", "title": "شبکه آذربایجان غربی", "url": "https://live-aburayhan1105.telewebion.net/ek/azarbayjangharbi/live/576p/index.m3u8"}, {"id": "09b06f1500", "title": "شبکه تابان یزد", "url": "https://live-aburayhan1104.telewebion.net/ek/taban/live/576p/index.m3u8"}, {"id": "664879760e", "title": "شبکه زاگرس", "url": "https://live-aburayhan1113.telewebion.net/ek/zagros/live/576p/index.m3u8"}, {"id": "6580c272d6", "title": "العالم", "url": "https://live2.alalam.ir/live/Alalam/index.m3u8"}, {"id": "d30dfc6563", "title": "شبکه الکوثر", "url": "https://live-aburayhan1102.telewebion.net/ek/kawthar/live/576p/index.m3u8"}, {"id": "323be01bb5", "title": "هیسپان تی‌وی", "url": "https://live.presstv.co.uk/hls/hispantv.m3u8"}, {"id": "09860d3e36", "title": "آی‌فیلم ۲", "url": "https://live.presstv.co.uk/hls/ifilm2_4_482/index.m3u8"}, {"id": "3f84f8e094", "title": "آی‌فیلم عربی", "url": "https://live.presstv.co.uk/hls/ifilmar_4_482/index.m3u8"}, {"id": "3a3cc978f6", "title": "آی‌فیلم انگلیسی", "url": "https://live.presstv.co.uk/hls/ifilmen_4_482/index.m3u8"}, {"id": "a1033cb6fb", "title": "ایران پرس", "url": "https://ip2stream.iranpress.com/hls/ip2.m3u8"}, {"id": "f6992b9410", "title": "شبکه فلسطین", "url": "https://live-aburayhan1101.telewebion.net/na/palestine/live/720p/index.m3u8"}, {"id": "955f418fe2", "title": "پرس تی‌وی", "url": "https://live.presstv.co.uk/hls/presstv.m3u8"}, {"id": "12f16f2b81", "title": "پرس تی‌وی فرانسه", "url": "https://live4.presstv.ir/live/mp4:presstvfr/playlist.m3u8"}, {"id": "fe2374d571", "title": "سحر آذری [IR]", "url": "https://s1-cloud.irib.ir/securelive3/saharazarsd/saharazarsd.m3u8"}, {"id": "5a3e5e6dc8", "title": "سحر بالکان [IR]", "url": "https://s1-cloud.irib.ir/securelive3/saharbalksd/saharbalksd.m3u8"}, {"id": "992f30a94e", "title": "سحر کردی [IR]", "url": "https://s1-cloud.irib.ir/securelive3/saharkurdsd/saharkurdsd.m3u8"}, {"id": "9aacc6e82a", "title": "سحر اردو [IR]", "url": "https://s1-cloud.irib.ir/securelive3/saharurdusd/saharurdusd.m3u8"}, {"id": "0e297162ea", "title": "آرکو", "url": "https://arkhls.wns.live/hls/stream.m3u8"}, {"id": "12f6da8e86", "title": "داتیس", "url": "https://ronhls.wns.live/hls/stream.m3u8"}, {"id": "c4bc60fa0e", "title": "جم پیکسل", "url": "https://glserver1.tamashaland.com/live/aBCH96886YznRbGOiqTnnQ__/stream_0.m3u8"}, {"id": "11eb1a5889", "title": "هوم پلاس", "url": "https://homeplushls.wns.live/hls/stream.m3u8"}, {"id": "2721b02864", "title": "ایران ایندیپندنت", "url": "https://mediamtx.elitelatrade.com/live/stream/main_stream.m3u8"}, {"id": "530ab41b50", "title": "آی‌تی‌ان", "url": "https://itnhls.wns.live/hls/stream.m3u8"}, {"id": "5754196256", "title": "خاطره", "url": "https://radio.khatereh.online:5443/LiveApp/streams/jWF37YKCgZ0FSYTR863687974499636.m3u8"}, {"id": "3d0f27ca7c", "title": "ام‌تی‌سی", "url": "https://mtchls.wns.live/hls/stream.m3u8"}, {"id": "ee145465eb", "title": "نوید", "url": "https://4afghls.wns.live/hls/stream.m3u8"}, {"id": "3b7ee08220", "title": "نت", "url": "https://nethls.wns.live/hls/stream.m3u8"}, {"id": "a5022222f2", "title": "نوین", "url": "https://stream.novin.live/hls/playlist.m3u8"}, {"id": "ab48d68377", "title": "امید ایران", "url": "https://oitnhls.wns.live/hls/stream.m3u8"}, {"id": "c1bcfa8324", "title": "اکسیر", "url": "https://hls.oxir.live/hls/stream.m3u8"}, {"id": "57f3110bce", "title": "پرشیانا ریالیتی", "url": "https://twohls.persiana.live/hls/stream.m3u8"}, {"id": "32a85e8ae4", "title": "پرچونه", "url": "http://porchooneh.com/hls/live1/stream1.m3u8"}, {"id": "d0b27db7ab", "title": "راوی", "url": "https://hls.ravitv.com/hls/stream.m3u8"}, {"id": "8c56257024", "title": "رویال", "url": "https://arvhls.wns.live/hls/stream.m3u8"}, {"id": "86f2b0405f", "title": "تپش ایران", "url": "https://iptv.tapesh.tv/tapeshiran/playlist.m3u8"}, {"id": "11c945d69d", "title": "تپش", "url": "https://iptv.tapesh.tv/tapesh/playlist.m3u8"}, {"id": "aa56bc5741", "title": "تین", "url": "https://tulixcdn.akamaized.net/tintv6/tintv/tintv/playlist.m3u8"}, {"id": "c3ef9be157", "title": "یورتایم", "url": "https://live.yourtime.tv/hls/stream.m3u8"}, {"id": "62f382eff6", "title": "۲۴۷ باکس", "url": "https://hls.247box.live/hls/stream.m3u8"}, {"id": "55aa3eaf67", "title": "فور یو خانواده", "url": "https://familyhls.4utv.live/hls/stream.m3u8"}, {"id": "022bb61fb8", "title": "فور یو", "url": "https://hls.4utv.live/hls/stream.m3u8"}, {"id": "157e9a7bca", "title": "افرا فیلم", "url": "https://afrafhls.wns.live/hls/stream.m3u8"}, {"id": "0849b79851", "title": "آراکس", "url": "https://araxhls.wns.live/hls/stream.m3u8"}, {"id": "8b98ed1d2f", "title": "آوا فامیلی", "url": "https://familyhls.avatv.live/hls/stream.m3u8"}, {"id": "8a3f4ee444", "title": "آوا سریال", "url": "https://avaserieshls.wns.live/hls/stream.m3u8"}, {"id": "e282d34ea5", "title": "براوو فارسی", "url": "https://bravoohls.wns.live/hls/stream.m3u8"}, {"id": "8579b4603f", "title": "کافه فیلم", "url": "https://cafefhls.wns.live/hls/stream.m3u8"}, {"id": "2a98302311", "title": "کلاسیک", "url": "https://clshls.wns.live/hls/stream.m3u8"}, {"id": "9ef899523d", "title": "اف‌ایکس ۱", "url": "https://fxtvhls.wns.live/hls/stream.m3u8"}, {"id": "3703e1a709", "title": "گلد استار", "url": "https://moviethls.wns.live/hls/stream.m3u8"}, {"id": "c0fff91bd0", "title": "گرند سینما", "url": "https://gcinemahls.wns.live/hls/stream.m3u8"}, {"id": "50fbceb074", "title": "آی‌سی‌سی پلاس", "url": "https://icchls.wns.live/hls/stream.m3u8"}, {"id": "c17eaf9a9d", "title": "ایران کمدی", "url": "https://iran613hls.wns.live/hls/stream.m3u8"}, {"id": "eb1af8c56e", "title": "ماه", "url": "https://hls.maahtv.live/hls/stream.m3u8"}, {"id": "bf1b917f62", "title": "ام‌بی‌سی پرشیا", "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8"}, {"id": "ed3abd4b78", "title": "متا فیلم", "url": "https://metafilmhls.wns.live/hls/stream.m3u8"}, {"id": "35863d32d4", "title": "پرشیانا چین", "url": "https://chinahls.persiana.live/hls/stream.m3u8"}, {"id": "745bb71713", "title": "پرشیانا سینما", "url": "https://cinehls.persiana.live/hls/stream.m3u8"}, {"id": "9a48bc4d40", "title": "پرشیانا کمدی", "url": "https://comedyhls.persiana.live/hls/stream.m3u8"}, {"id": "a15f387762", "title": "پرشیانا خانواده", "url": "https://familyhls.persiana.live/hls/stream.m3u8"}, {"id": "645ce58d55", "title": "پرشیانا ایرانیان", "url": "https://irhls.persiana.live/hls/stream.m3u8"}, {"id": "dc9feb23a7", "title": "پرشیانا کره", "url": "https://korhls.persiana.live/hls/stream.m3u8"}, {"id": "b39a21736a", "title": "پرشیانا لاتین", "url": "https://latinohls.persiana.live/hls/stream.m3u8"}, {"id": "8c894b8ad2", "title": "پرشیانا پزشکی", "url": "https://phd2hls.persiana.live/hls/stream.m3u8"}, {"id": "fa0b8449e3", "title": "پرشیانا پلاس", "url": "https://euhls.persiana.live/hls/stream.m3u8"}, {"id": "deefbff210", "title": "پرشیانا سریال", "url": "https://onehls.persiana.live/hls/stream.m3u8"}, {"id": "fae1b83495", "title": "پرشیانا ترکیه", "url": "https://turkhls.persiana.live/hls/stream.m3u8"}, {"id": "7df5c98a9c", "title": "اس‌ال ۱", "url": "https://slonehls.wns.live/hls/stream.m3u8"}, {"id": "ba210048cc", "title": "اس‌ال ۲", "url": "https://sltwohls.wns.live/hls/stream.m3u8"}, {"id": "2d126d3d5d", "title": "آزادی", "url": "https://wmtvhls.wns.live/hls/stream.m3u8"}, {"id": "a846eadf42", "title": "بی‌بی‌سی فارسی", "url": "https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persian_tv/mobile_wifi_main_hd_abr_v2.m3u8"}, {"id": "a07daecb4d", "title": "شبکه یک (لس‌آنجلس)", "url": "https://livestream.5centscdn.com/channelonehd/0d0dd9d8b4933ea5f0a3a9495707c004.sdp/playlist.m3u8"}, {"id": "a9d0744923", "title": "چشم عقاب", "url": "https://choghls.wns.live/hls/stream.m3u8"}, {"id": "b0cc2dd3f6", "title": "دژ", "url": "https://rdejhls.wns.live/hls/stream.m3u8"}, {"id": "6cb4d9ce96", "title": "دیدگاه", "url": "https://media.streambrothers.com:1936/8276/8276/playlist.m3u8"}, {"id": "adb286d860", "title": "گردآفرید", "url": "https://gatvhls.wns.live/hls/stream.m3u8"}, {"id": "70fbbd75f0", "title": "ایران اینترنشنال", "url": "https://hlspackager.akamaized.net/live/DB/IRAN_INTERNATIONAL/HLS/IRAN_INTERNATIONAL.m3u8"}, {"id": "bf6c4685dd", "title": "انقلاب ملی ایران", "url": "https://hls.irannrtv.live/hls/stream.m3u8"}, {"id": "3e708dc3a4", "title": "ایران تی‌وی اسرائیل", "url": "https://streaminglive.co.il:3730/live/raniamranilive.m3u8"}, {"id": "6c6a9f3206", "title": "ایران آریایی", "url": "https://iranaryai.pahlavimonarchy.online/iranearyaeesd/index.m3u8"}, {"id": "964275613c", "title": "ایران فردا", "url": "https://iranefardalive.com/stream/live.m3u8"}, {"id": "d8d13efdd5", "title": "ایران‌وایر", "url": "https://irwhls.wns.live/hls/stream.m3u8"}, {"id": "885f6cf3ed", "title": "ایرنا", "url": "https://tv.irna.ir/live/stream/index.m3u8"}, {"id": "5b3b54f097", "title": "اسرائیل پارس", "url": "https://live.pars-israel.com/tmp_hls/iptv/index.m3u8"}, {"id": "c48a2bb99f", "title": "کانال جدید", "url": "https://kjhls.wns.live/hls/stream.m3u8"}, {"id": "a54f9281cb", "title": "ملی‌گرا", "url": "https://mellihls.wns.live/hls/stream.m3u8"}, {"id": "542c2a4100", "title": "میهن", "url": "https://iptv.mihantv.com/mihantv/playlist.m3u8"}, {"id": "0c7d445eab", "title": "نهاد آزادی", "url": "https://livestream.5centscdn.com/nahadeazadi/14a66ff6dca989d3a2eb0dc8cdb50892.sdp/chunks.m3u8"}, {"id": "a26ab62ed2", "title": "کنگره ملی ایرانیان", "url": "https://tv.iraniancongress.com/stream/tv.m3u8"}, {"id": "4054b4a0a9", "title": "پارس", "url": "https://livestream.5centscdn.com/parstvtvweb1/e8ac8f595b3003ea3d22178c05c67593.sdp/playlist.m3u8"}, {"id": "638c769743", "title": "پروژه لئون", "url": "https://pleonhls.wns.live/hls/stream.m3u8"}, {"id": "c2ed14cdc3", "title": "پالس مدیا", "url": "https://pulsehls.wns.live/hls/stream.m3u8"}, {"id": "84618eb84b", "title": "رادیو فردا", "url": "https://rferl-ingest.akamaized.net/hls/live/2121768/tvmc01/playlist.m3u8"}, {"id": "934d631312", "title": "ستاره", "url": "https://setarehhls.wns.live/hls/stream.m3u8"}, {"id": "c7e0007684", "title": "تلویزیون دمکراسی شورایی", "url": "https://hlspackager.akamaized.net/live/DB/ALTERNATIVE_SHORAI_TV/HLS/ALTERNATIVE_SHORAI_TV.m3u8"}, {"id": "da7f826493", "title": "سیمای آزادی", "url": "https://simaytv.akamaized.net/hls/live/a162cb6c-3be1-4e57-87dc-a75a50b3b8d9/simayhls/index.m3u8"}, {"id": "c55914397e", "title": "اس‌ان‌ان", "url": "https://live2.snn.ir/hls/snn2_hd720/index.m3u8"}, {"id": "a0923a6695", "title": "صدای آمریکا فارسی", "url": "https://voa-ingest.akamaized.net/hls/live/2033876/tvmc07/playlist.m3u8"}, {"id": "3c5966dc61", "title": "زد", "url": "https://zedhls.wns.live/hls/stream.m3u8"}, {"id": "4376ef75cf", "title": "فور کورد", "url": "https://4kuhls.persiana.live/hls/stream.m3u8"}, {"id": "11f3c3137c", "title": "فور موزیک", "url": "https://itthls.wns.live/hls/stream.m3u8"}, {"id": "f2e4ba5bbc", "title": "ای‌اف‌ان", "url": "https://bozztv.com/1gbw5/tintv2/tintv2/playlist.m3u8"}, {"id": "b69e5abc2d", "title": "آونگ", "url": "https://hls.avang.live/hls/stream.m3u8"}, {"id": "df0c7bd2d6", "title": "های ویژن", "url": "https://streamer1.connectto.com/HIGHVISION_WEB_1205/index.m3u8"}, {"id": "c5083f4330", "title": "نواهنگ", "url": "https://hls.navahang.live/hls/stream.m3u8"}, {"id": "ad0b68753a", "title": "پرشیانا سنتی", "url": "https://sonhls.persiana.live/hls/stream.m3u8"}, {"id": "e564104ac8", "title": "پرشیانا موسیقی", "url": "https://musichls.persiana.live/hls/stream.m3u8"}, {"id": "04b7def290", "title": "پرشیانا نوستالژی", "url": "https://noshls.persiana.live/hls/stream.m3u8"}, {"id": "07ff14b00e", "title": "پرشیانا رپ", "url": "https://raphls.persiana.live/hls/stream.m3u8"}, {"id": "96a954ca41", "title": "پرشیانا ست‌میکس", "url": "https://setmixhls.persiana.live/hls/stream.m3u8"}, {"id": "b1dec80865", "title": "پی‌ام‌سی", "url": "https://pmchls.wns.live/hls/stream.m3u8"}, {"id": "06d547c241", "title": "پی‌ام‌سی رویال", "url": "https://pmcrohls.wns.live/hls/stream.m3u8"}, {"id": "23850108e2", "title": "رادیو جوان", "url": "https://rjtvhls.wns.live/hls/stream.m3u8"}, {"id": "7d0dd2ad7a", "title": "سان موزیک", "url": "https://hls.sunmusic.live/hls/stream.m3u8"}, {"id": "e709dcb9b2", "title": "تی۲", "url": "https://t2hls.wns.live/hls/stream.m3u8"}, {"id": "afa0f18b65", "title": "اف‌ایکس ۲", "url": "https://toonixhls.wns.live/hls/stream.m3u8"}, {"id": "e7f97abe23", "title": "پرشیانا کودک", "url": "https://junhls.persiana.live/hls/stream.m3u8"}, {"id": "2a875abedc", "title": "پرشیانا رزمی", "url": "https://fighthls.persiana.live/hls/stream.m3u8"}, {"id": "233e53698a", "title": "تلوبیون ورزشی ۱", "url": "https://live-aburayhan1105.telewebion.net/ek/sport1/live/108050p/index.m3u8"}, {"id": "3c949a21e2", "title": "تلوبیون ورزشی ۲", "url": "https://live-aburayhan1112.telewebion.net/ek/sport2/live/108050p/index.m3u8"}, {"id": "5a5fff2032", "title": "تلوبیون ورزشی ۳", "url": "https://live-aburayhan1113.telewebion.net/ek/sport3/live/108050p/index.m3u8"}, {"id": "7edd6885c5", "title": "کافه ترید", "url": "https://cafetradehls.wns.live/hls/stream.m3u8"}, {"id": "9b13dee73b", "title": "ای‌پلنت", "url": "https://eplhls.wns.live/hls/stream.m3u8"}, {"id": "5adcf879ec", "title": "پیام جوان", "url": "https://uni01rtmp.tulix.tv/kensecure/pjtv.stream/playlist.m3u8"}, {"id": "0e4b847d9b", "title": "پرشیانا مستند", "url": "https://scihls.persiana.live/hls/stream.m3u8"}, {"id": "b252d02cee", "title": "پرشیانا پادکست", "url": "https://podhls.persiana.live/hls/stream.m3u8"}, {"id": "05164952f6", "title": "پرشیانا سفر", "url": "https://ptravelhls.persiana.live/hls/stream.m3u8"}, {"id": "df0debfc82", "title": "پرشیانا سیاحت", "url": "https://voyhls.persiana.live/hls/stream.m3u8"}, {"id": "6578ea851c", "title": "تی‌ام", "url": "https://hls.tmtv.live/hls/stream.m3u8"}, {"id": "80f6b3ff25", "title": "شبکه الولایه", "url": "https://nl.livekadeh.com/hls2/alwilayah_tv.m3u8"}, {"id": "adef1cedcb", "title": "شبکه المهدی", "url": "https://iptv.almahditv.com/almahditv/playlist.m3u8"}, {"id": "a22a7ca01c", "title": "اصیل", "url": "https://live.asil.tv/asiltv/index.m3u8"}, {"id": "fdaca5a3e7", "title": "شبکه الصراط", "url": "https://softverse.b-cdn.net/Assirat/assiratobs/playlist.m3u8"}, {"id": "9784a57879", "title": "شبکه حبیب", "url": "https://live-aburayhan1110.telewebion.net/na/habib/live/720p/index.m3u8"}, {"id": "b0a24c4386", "title": "شبکه هادی", "url": "https://bucharest.zeuscdn724.com/lb0/H1/index.m3u8"}, {"id": "a474ad7d01", "title": "امام حسین ۱", "url": "https://ak.imamhussein.live/imhtv1live/imhtv1.smil/imhtv1publish/imhtv1_source/chunks.m3u8"}, {"id": "7b41ac4f2f", "title": "امام حسین ۶", "url": "https://live.imamhossaintv.com/live/ih6.m3u8"}, {"id": "47981c0672", "title": "شبکه لبیک", "url": "https://live-aburayhan1107.telewebion.net/na/labbayk/live/720p/index.m3u8"}, {"id": "a90cae9a86", "title": "شبکه مرجعیت", "url": "https://livefa.marjaeyattv.com/mtv_fa/playlist.m3u8"}, {"id": "37d88d0a69", "title": "شبکه نور (امارات)", "url": "https://cdn.bestream.io:19360/elfaro4/elfaro4.m3u8"}, {"id": "74cbb12d49", "title": "پیام آرامش", "url": "https://hls.keshishhamid.live/hls/stream.m3u8"}, {"id": "2c309f42a3", "title": "شبکه پیوند", "url": "https://uni6rtmp.tulix.tv/ucur1/Payvand/playlist.m3u8"}, {"id": "21e5cab087", "title": "شبکه رسول‌الله", "url": "https://avr.host247.net/live/rasoulallahtv/playlist.m3u8"}, {"id": "d01efa9668", "title": "شبکه رضوی", "url": "https://live-aburayhan1111.telewebion.net/ek/razavi/live/720p/index.m3u8"}, {"id": "ef836e2bb0", "title": "تکیه مداحی", "url": "https://ncdn.telewebion.ir/tekyemadahi/live/playlist.m3u8"}, {"id": "bc957da15f", "title": "شبکه ولایت", "url": "https://live-aburayhan1109.telewebion.net/ek/velayat/live/720p/index.m3u8"}, {"id": "fed8fd152a", "title": "شبکه ولایت (آمریکا)", "url": "https://nl.livekadeh.com/hls2/velayattv.m3u8"}, {"id": "25d0e595cc", "title": "درخت زندگی", "url": "https://derakhtzhls.wns.live/hls/stream.m3u8"}, {"id": "138ebabccd", "title": "آی‌سی‌نت ۱", "url": "https://icnet1hls.wns.live/hls/stream.m3u8"}, {"id": "e9b244f9b8", "title": "آی‌سی‌نت ۲", "url": "https://icnet2hls.wns.live/hls/stream.m3u8"}, {"id": "fec89defe2", "title": "آی‌سی‌نت ۳", "url": "https://ic3hls.wns.live/hls/stream.m3u8"}, {"id": "2eea2f751f", "title": "شبکه کلمه", "url": "https://player.kalemeh.tv/live/ngrp:kalemeh_all/playlist.m3u8"}, {"id": "e985d96631", "title": "لاو ورلد پرشیا", "url": "https://cdn3.wowza.com/5/aVJETlF0UFdmYTFu/LWPP/ngrp:persia.stream_all/playlist.m3u8"}, {"id": "4ba6721b3d", "title": "شبکه محبت", "url": "https://5ad386ff92705.streamlock.net/live_transcodermh/ngrp:mohabat.stream_all/playlist.m3u8"}, {"id": "89447e9df6", "title": "امید جاودان", "url": "https://livestream.5centscdn.com/pwocchurchweb1/cebac1e921182acff008ab1222f0c916.sdp/playlist.m3u8"}, {"id": "ac611f3ce3", "title": "راه نجات", "url": "https://hls.rahenejat.live/hls/stream.m3u8"}, {"id": "ecc9e6ddd8", "title": "ست سون پارس", "url": "https://sat7phls.wns.live/hls/stream.m3u8"}, {"id": "a5679c245d", "title": "شبکه ۷", "url": "https://sh7hls.wns.live/hls/stream.m3u8"}, {"id": "b1dfada164", "title": "شبکه نجات", "url": "https://hls.nejat.live/hls/stream.m3u8"}, {"id": "8be29d2b50", "title": "عرفان حلقه", "url": "https://hls.erfanhalgheh.live/hls/stream.m3u8"}, {"id": "0da9557ca9", "title": "گنج حضور", "url": "https://media.parvizshahbazi.com/ganjehozour/Main_tv/playlist.m3u8"}, {"id": "044a548570", "title": "یهودیان ایرانی", "url": "http://iran620.com:1935/live/IranJewishTv/playlist.m3u8"}, {"id": "302202e221", "title": "انسان عاقل", "url": "https://avr.host247.net/live/WiseHumanTv/playlist.m3u8"}];
     const THEMES = {
-      old: { cls: "c-old", glow: "#c49a6c" },
-      happy: { cls: "c-happy", glow: "#feca57" },
-      calm: { cls: "c-calm", glow: "#89a7d6" },
-      pop: { cls: "c-pop", glow: "#e056fd" },
-      ai: { cls: "c-ai", glow: "#00c9a7" },
-      traditional: { cls: "c-traditional", glow: "#d4a017" },
-      birthday: { cls: "c-birthday", glow: "#ff85a1" },
-      foreign: { cls: "c-foreign", glow: "#3d7ea6" },
-      dj: { cls: "c-dj", glow: "#8e2de2" }
+      old:{cls:"c-old",glow:"#c49a6c"}, happy:{cls:"c-happy",glow:"#feca57"},
+      calm:{cls:"c-calm",glow:"#89a7d6"}, pop:{cls:"c-pop",glow:"#e056fd"},
+      ai:{cls:"c-ai",glow:"#00c9a7"}, traditional:{cls:"c-traditional",glow:"#d4a017"},
+      birthday:{cls:"c-birthday",glow:"#ff85a1"}, foreign:{cls:"c-foreign",glow:"#3d7ea6"},
+      dj:{cls:"c-dj",glow:"#8e2de2"}
     };
-    const audio = document.getElementById("audio");
-    try { audio.referrerPolicy = "no-referrer"; } catch (e) {}
-    let playlist = [], index = 0, running = false, busy = false, gen = 0, currentStation = null;
-    const titleEl = document.getElementById("title");
-    const metaEl = document.getElementById("meta");
-    const statusEl = document.getElementById("status");
-    const barEl = document.getElementById("bar");
-    const curEl = document.getElementById("cur");
-    const durEl = document.getElementById("dur");
-    const tracksEl = document.getElementById("tracks");
-    const btnPlay = document.getElementById("btnPlay");
-    const disc = document.getElementById("disc");
-    const discEmoji = document.getElementById("discEmoji");
-    const playerCover = document.getElementById("playerCover");
-    const coverGlow = document.getElementById("coverGlow");
-    function fa(s){ return String(s).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]); }
-    function fmt(sec){
-      if (!isFinite(sec) || sec < 0) return "۰:۰۰";
-      const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
-      return fa(m + ":" + String(s).padStart(2, "0"));
+
+    function fa(s){return String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d])}
+    function fmt(sec){if(!isFinite(sec)||sec<0)return"۰:۰۰";const m=Math.floor(sec/60),s=Math.floor(sec%60);return fa(m+":"+String(s).padStart(2,"0"))}
+    function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+    function show(id){
+      ["screenHome","screenRadioStations","screenRadioPlayer","screenTv"].forEach(x=>{
+        document.getElementById(x).classList.toggle("active", x===id);
+      });
     }
-    function status(msg, err){ statusEl.textContent = msg || ""; statusEl.className = "status" + (err ? " error" : ""); }
-    function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-    function showScreen(name){
-      document.getElementById("screenStations").classList.toggle("active", name === "stations");
-      document.getElementById("screenPlayer").classList.toggle("active", name === "player");
-    }
-    function themeOf(id){ return THEMES[id] || { cls: "c-pop", glow: "#8b7cff" }; }
+
+    // ---- RADIO ----
+    const audio=document.getElementById("audio");
+    try{audio.referrerPolicy="no-referrer"}catch(e){}
+    let playlist=[], index=0, running=false, busy=false, gen=0, currentStation=null;
+    const titleEl=document.getElementById("title"), metaEl=document.getElementById("meta");
+    const statusEl=document.getElementById("status"), barEl=document.getElementById("bar");
+    const curEl=document.getElementById("cur"), durEl=document.getElementById("dur");
+    const tracksEl=document.getElementById("tracks"), btnPlay=document.getElementById("btnPlay");
+    const disc=document.getElementById("disc"), discEmoji=document.getElementById("discEmoji");
+    const playerCover=document.getElementById("playerCover"), coverGlow=document.getElementById("coverGlow");
+    function status(msg,err){statusEl.textContent=msg||"";statusEl.className="status"+(err?" error":"")}
+    function themeOf(id){return THEMES[id]||{cls:"c-pop",glow:"#8b7cff"}}
+
     function renderStations(){
-      const box = document.getElementById("stations");
-      if (!STATIONS.length) { box.innerHTML = '<div class="empty">ایستگاهی نیست</div>'; return; }
-      box.innerHTML = STATIONS.map(st => {
-        const th = themeOf(st.id);
-        const n = (st.tracks || []).length;
+      const box=document.getElementById("stations");
+      if(!STATIONS.length){box.innerHTML='<div class="empty">ایستگاهی نیست</div>';return}
+      box.innerHTML=STATIONS.map(st=>{
+        const th=themeOf(st.id), n=(st.tracks||[]).length;
         return `<button class="station" data-id="${esc(st.id)}">
-          <div class="cover ${th.cls}"><div class="pattern"></div><span class="emoji">${st.emoji || "📻"}</span></div>
+          <div class="cover ${th.cls}"><span class="emoji">${st.emoji||"📻"}</span></div>
           <div class="body"><div class="name">${esc(st.title)}</div><div class="count">${fa(n)} آهنگ</div></div>
         </button>`;
       }).join("");
-      box.querySelectorAll(".station").forEach(btn => btn.addEventListener("click", () => openStation(btn.dataset.id)));
-    }
-    function applyStationTheme(st){
-      const th = themeOf(st.id);
-      playerCover.className = "player-cover " + th.cls;
-      coverGlow.style.background = th.glow;
-      discEmoji.textContent = st.emoji || "🎵";
+      box.querySelectorAll(".station").forEach(b=>b.addEventListener("click",()=>openStation(b.dataset.id)));
     }
     function openStation(id){
-      const st = STATIONS.find(x => x.id === id);
-      if (!st) return;
-      currentStation = st;
-      playlist = Array.isArray(st.tracks) ? st.tracks.slice() : [];
-      index = 0; running = false; busy = false;
-      applyStationTheme(st);
+      const st=STATIONS.find(x=>x.id===id); if(!st)return;
+      currentStation=st; playlist=Array.isArray(st.tracks)?st.tracks.slice():[];
+      index=0; running=false; busy=false;
+      const th=themeOf(st.id);
+      playerCover.className="player-cover "+th.cls;
+      coverGlow.style.background=th.glow;
+      discEmoji.textContent=st.emoji||"🎵";
       disc.classList.remove("spin");
-      try { audio.pause(); } catch (e) {}
-      audio.removeAttribute("src");
-      btnPlay.textContent = "▶";
-      status(playlist.length ? "برای شروع ▶ را بزنید" : "این ایستگاه آهنگی ندارد");
+      try{audio.pause()}catch(e){}
+      audio.removeAttribute("src"); btnPlay.textContent="▶";
+      status(playlist.length?"برای شروع ▶ را بزنید":"این ایستگاه آهنگی ندارد");
       renderTracks();
-      if (playlist.length) {
-        titleEl.textContent = playlist[0].title || "آهنگ ۱";
-        metaEl.textContent = (st.emoji || "") + " " + st.title + " · " + fa("1 از " + playlist.length);
-      } else {
-        titleEl.textContent = "خالی"; metaEl.textContent = st.title;
-      }
-      showScreen("player");
+      if(playlist.length){titleEl.textContent=playlist[0].title||"آهنگ ۱";metaEl.textContent=(st.emoji||"")+" "+st.title+" · "+fa("1 از "+playlist.length)}
+      else{titleEl.textContent="خالی";metaEl.textContent=st.title}
+      show("screenRadioPlayer");
     }
     function renderTracks(){
-      if (!playlist.length) { tracksEl.innerHTML = '<div class="empty">آهنگی در این ایستگاه نیست</div>'; return; }
-      tracksEl.innerHTML = playlist.map((t, i) => `
-        <div class="track ${i === index ? "active" : ""}" data-i="${i}">
-          <div class="num">${fa(i + 1)}</div>
-          <div class="t">${esc(t.title || ("آهنگ " + (i + 1)))}</div>
-        </div>`).join("");
-      tracksEl.querySelectorAll(".track").forEach(el => {
-        el.addEventListener("click", () => { running = true; goTo(parseInt(el.dataset.i, 10)); });
-      });
+      if(!playlist.length){tracksEl.innerHTML='<div class="empty">آهنگی نیست</div>';return}
+      tracksEl.innerHTML=playlist.map((t,i)=>`<div class="track ${i===index?"active":""}" data-i="${i}">
+        <div class="num">${fa(i+1)}</div><div class="t">${esc(t.title||("آهنگ "+(i+1)))}</div></div>`).join("");
+      tracksEl.querySelectorAll(".track").forEach(el=>el.addEventListener("click",()=>{running=true;goTo(parseInt(el.dataset.i,10))}));
     }
     function goTo(i){
-      if (!playlist.length) return;
-      busy = true; gen += 1; const my = gen;
-      index = ((i % playlist.length) + playlist.length) % playlist.length;
-      const track = playlist[index];
-      titleEl.textContent = track.title || ("آهنگ " + (index + 1));
-      metaEl.textContent = (currentStation ? (currentStation.emoji + " " + currentStation.title + " · ") : "") + fa((index + 1) + " از " + playlist.length);
+      if(!playlist.length)return;
+      busy=true; gen++; const my=gen;
+      index=((i%playlist.length)+playlist.length)%playlist.length;
+      const track=playlist[index];
+      titleEl.textContent=track.title||("آهنگ "+(index+1));
+      metaEl.textContent=(currentStation?(currentStation.emoji+" "+currentStation.title+" · "):"")+fa((index+1)+" از "+playlist.length);
       renderTracks(); status("در حال بارگذاری...");
-      try { audio.pause(); } catch (e) {}
-      audio.referrerPolicy = "no-referrer"; audio.src = track.url; audio.load();
-      const tryPlay = () => {
-        if (my !== gen || !running) { busy = false; return; }
-        const p = audio.play();
-        if (p && p.then) {
-          p.then(() => { if (my !== gen) return; btnPlay.textContent = "⏸"; disc.classList.add("spin"); status(""); busy = false; })
-           .catch(() => { if (my !== gen) return; status("پخش نشد؛ بعدی...", true); disc.classList.remove("spin"); setTimeout(() => { if (my === gen && running) next(); }, 800); });
-        } else { btnPlay.textContent = "⏸"; disc.classList.add("spin"); status(""); busy = false; }
+      try{audio.pause()}catch(e){}
+      audio.referrerPolicy="no-referrer"; audio.src=track.url; audio.load();
+      const tryPlay=()=>{
+        if(my!==gen||!running){busy=false;return}
+        const p=audio.play();
+        if(p&&p.then){
+          p.then(()=>{if(my!==gen)return;btnPlay.textContent="⏸";disc.classList.add("spin");status("");busy=false})
+           .catch(()=>{if(my!==gen)return;status("پخش نشد؛ بعدی...",true);disc.classList.remove("spin");setTimeout(()=>{if(my===gen&&running)next()},800)});
+        }else{btnPlay.textContent="⏸";disc.classList.add("spin");status("");busy=false}
       };
-      audio.addEventListener("canplay", tryPlay, { once: true });
-      setTimeout(tryPlay, 400);
+      audio.addEventListener("canplay",tryPlay,{once:true});
+      setTimeout(tryPlay,400);
     }
-    function next(){ if (!busy) goTo(index + 1); }
-    function prev(){ if (!busy) goTo(index - 1); }
-    audio.addEventListener("ended", () => { if (running) { busy = false; next(); } });
-    audio.addEventListener("error", () => { if (!running) return; status("خطا؛ بعدی...", true); disc.classList.remove("spin"); setTimeout(() => { busy = false; next(); }, 700); });
-    audio.addEventListener("timeupdate", () => {
-      const d = audio.duration, c = audio.currentTime;
-      barEl.style.width = (d && isFinite(d) ? (c / d) * 100 : 0) + "%";
-      curEl.textContent = fmt(c); durEl.textContent = fmt(d);
+    function next(){if(!busy)goTo(index+1)}
+    function prev(){if(!busy)goTo(index-1)}
+    audio.addEventListener("ended",()=>{if(running){busy=false;next()}});
+    audio.addEventListener("error",()=>{if(!running)return;status("خطا؛ بعدی...",true);disc.classList.remove("spin");setTimeout(()=>{busy=false;next()},700)});
+    audio.addEventListener("timeupdate",()=>{
+      const d=audio.duration,c=audio.currentTime;
+      barEl.style.width=(d&&isFinite(d)?(c/d)*100:0)+"%";
+      curEl.textContent=fmt(c); durEl.textContent=fmt(d);
     });
-    audio.addEventListener("playing", () => { btnPlay.textContent = "⏸"; disc.classList.add("spin"); status(""); busy = false; });
-    audio.addEventListener("pause", () => { if (!running) disc.classList.remove("spin"); });
-    btnPlay.addEventListener("click", () => {
-      if (!playlist.length) { status("لیست خالی است", true); return; }
-      if (!running) {
-        running = true;
-        if (!audio.src) goTo(index);
-        else audio.play().then(() => { btnPlay.textContent = "⏸"; disc.classList.add("spin"); }).catch(() => goTo(index));
-      } else if (audio.paused) {
-        audio.play().then(() => { btnPlay.textContent = "⏸"; disc.classList.add("spin"); }).catch(() => {});
-      } else {
-        audio.pause(); running = false; btnPlay.textContent = "▶"; disc.classList.remove("spin");
+    audio.addEventListener("playing",()=>{btnPlay.textContent="⏸";disc.classList.add("spin");status("");busy=false});
+    btnPlay.addEventListener("click",()=>{
+      if(!playlist.length){status("لیست خالی است",true);return}
+      if(!running){running=true;if(!audio.src)goTo(index);else audio.play().then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin")}).catch(()=>goTo(index))}
+      else if(audio.paused){audio.play().then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin")}).catch(()=>{})}
+      else{audio.pause();running=false;btnPlay.textContent="▶";disc.classList.remove("spin")}
+    });
+    document.getElementById("btnNext").addEventListener("click",()=>{running=true;busy=false;next()});
+    document.getElementById("btnPrev").addEventListener("click",()=>{running=true;busy=false;prev()});
+    document.getElementById("progress").addEventListener("click",(e)=>{
+      if(!audio.duration||!isFinite(audio.duration))return;
+      const r=e.currentTarget.getBoundingClientRect();
+      audio.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*audio.duration;
+    });
+
+    // ---- TV ----
+    const tvVideo=document.getElementById("tvVideo");
+    const tvOverlay=document.getElementById("tvOverlay");
+    const tvTitle=document.getElementById("tvTitle");
+    const tvStatus=document.getElementById("tvStatus");
+    const tvChannelsEl=document.getElementById("tvChannels");
+    let hls=null, tvIndex=-1;
+
+    function tvMsg(msg,err){tvStatus.textContent=msg||"";tvStatus.className="status"+(err?" error":"")}
+    function destroyHls(){if(hls){try{hls.destroy()}catch(e){} hls=null}}
+    function stopTv(){
+      destroyHls();
+      try{tvVideo.pause()}catch(e){}
+      tvVideo.removeAttribute("src");
+      try{tvVideo.load()}catch(e){}
+      tvOverlay.classList.remove("hide");
+      tvOverlay.textContent="پخش متوقف شد — کانال را انتخاب کنید";
+    }
+    function playTv(i){
+      if(!TV_CHANNELS.length)return;
+      tvIndex=((i%TV_CHANNELS.length)+TV_CHANNELS.length)%TV_CHANNELS.length;
+      const ch=TV_CHANNELS[tvIndex];
+      tvTitle.textContent="▶ "+(ch.title||"کانال");
+      tvOverlay.classList.remove("hide");
+      tvOverlay.textContent="در حال اتصال...";
+      tvMsg("");
+      renderTvChannels();
+      destroyHls();
+      try{tvVideo.pause()}catch(e){}
+      const url=ch.url||"";
+      const isHls=/\.m3u8(\?|$)/i.test(url)||url.includes("m3u8");
+      if(isHls && window.Hls && Hls.isSupported()){
+        hls=new Hls({enableWorker:true, lowLatencyMode:true});
+        hls.loadSource(url);
+        hls.attachMedia(tvVideo);
+        hls.on(Hls.Events.MANIFEST_PARSED,()=>{
+          tvVideo.play().then(()=>{tvOverlay.classList.add("hide");tvMsg("")}).catch(()=>{tvMsg("برای پخش روی ویدئو ضربه بزنید",true);tvOverlay.classList.add("hide")});
+        });
+        hls.on(Hls.Events.ERROR,(_,data)=>{
+          if(data && data.fatal){tvMsg("خطا در استریم این کانال",true);tvOverlay.textContent="پخش ممکن نشد";tvOverlay.classList.remove("hide")}
+        });
+      }else if(isHls && tvVideo.canPlayType("application/vnd.apple.mpegurl")){
+        tvVideo.src=url;
+        tvVideo.play().then(()=>{tvOverlay.classList.add("hide")}).catch(()=>{tvMsg("برای پخش روی ویدئو ضربه بزنید",true);tvOverlay.classList.add("hide")});
+      }else{
+        tvVideo.src=url;
+        tvVideo.play().then(()=>{tvOverlay.classList.add("hide");tvMsg("")}).catch(()=>{tvMsg("برای پخش روی ویدئو ضربه بزنید",true);tvOverlay.classList.add("hide")});
       }
+    }
+    function renderTvChannels(){
+      if(!TV_CHANNELS.length){tvChannelsEl.innerHTML='<div class="empty">هنوز کانالی اضافه نشده است</div>';return}
+      tvChannelsEl.innerHTML=TV_CHANNELS.map((c,i)=>`<div class="channel ${i===tvIndex?"active":""}" data-i="${i}">
+        <div class="num">${fa(i+1)}</div><div class="t">${esc(c.title||("کانال "+(i+1)))}</div></div>`).join("");
+      tvChannelsEl.querySelectorAll(".channel").forEach(el=>el.addEventListener("click",()=>playTv(parseInt(el.dataset.i,10))));
+    }
+
+    document.getElementById("tvFullscreen").addEventListener("click",()=>{
+      const el=tvVideo;
+      if(el.requestFullscreen) el.requestFullscreen();
+      else if(el.webkitEnterFullscreen) el.webkitEnterFullscreen();
     });
-    document.getElementById("btnNext").addEventListener("click", () => { running = true; busy = false; next(); });
-    document.getElementById("btnPrev").addEventListener("click", () => { running = true; busy = false; prev(); });
-    document.getElementById("btnBack").addEventListener("click", () => {
-      running = false; try { audio.pause(); } catch (e) {}
-      disc.classList.remove("spin"); showScreen("stations");
+    document.getElementById("tvStop").addEventListener("click", stopTv);
+
+    // nav
+    document.getElementById("goRadio").addEventListener("click",()=>{
+      stopTv(); renderStations(); show("screenRadioStations");
     });
-    document.getElementById("progress").addEventListener("click", (e) => {
-      if (!audio.duration || !isFinite(audio.duration)) return;
-      const r = e.currentTarget.getBoundingClientRect();
-      audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration;
+    document.getElementById("goTv").addEventListener("click",()=>{
+      try{audio.pause()}catch(e){} running=false; disc.classList.remove("spin");
+      renderTvChannels(); show("screenTv");
     });
+    document.getElementById("backHome1").addEventListener("click",()=>{try{audio.pause()}catch(e){} running=false; show("screenHome")});
+    document.getElementById("backHome2").addEventListener("click",()=>{stopTv(); show("screenHome")});
+    document.getElementById("backStations").addEventListener("click",()=>{
+      try{audio.pause()}catch(e){} running=false; disc.classList.remove("spin"); show("screenRadioStations");
+    });
+
     renderStations();
-    try { if (window.Bale && Bale.WebApp) { Bale.WebApp.ready && Bale.WebApp.ready(); Bale.WebApp.expand && Bale.WebApp.expand(); } } catch (e) {}
+    renderTvChannels();
+    try{ if(window.Bale&&Bale.WebApp){ Bale.WebApp.ready&&Bale.WebApp.ready(); Bale.WebApp.expand&&Bale.WebApp.expand(); } }catch(e){}
   </script>
 </body>
 </html>
