@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>رادیو ربات</title>
+  <script src="https://tapi.bale.ai/miniapp.js"></script>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --card: #1a1f35;
+      --accent: #6c5ce7;
+      --accent2: #00cec9;
+      --text: #f5f6fa;
+      --muted: #a4b0be;
+      --danger: #ff6b6b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(160deg, #0f1220 0%, #1b1a3a 50%, #0f1220 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .wrap { max-width: 480px; margin: 0 auto; }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 8px;
+    }
+    header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+    .player {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+      margin-bottom: 16px;
+    }
+    .cover {
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 220px;
+      margin: 0 auto 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      box-shadow: 0 8px 24px rgba(108,92,231,.35);
+    }
+    .now-playing {
+      text-align: center;
+      margin-bottom: 14px;
+      min-height: 52px;
+    }
+    .now-playing .title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .now-playing .meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+    .progress-wrap { margin: 12px 0 6px; }
+    .progress {
+      height: 6px;
+      background: rgba(255,255,255,.12);
+      border-radius: 99px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .progress > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width .15s linear;
+    }
+    .times {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 14px;
+    }
+    .btn {
+      border: none;
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .15s, background .15s;
+    }
+    .btn:active { transform: scale(.92); }
+    .btn.play {
+      width: 64px;
+      height: 64px;
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, var(--accent), #a29bfe);
+      box-shadow: 0 6px 20px rgba(108,92,231,.4);
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .list {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .list h2 {
+      font-size: 0.95rem;
+      padding: 14px 16px 8px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .track {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .track:active { background: rgba(255,255,255,.05); }
+    .track.active {
+      background: rgba(108,92,231,.18);
+    }
+    .track .num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .track.active .num {
+      background: var(--accent);
+      color: #fff;
+    }
+    .track .info { flex: 1; min-width: 0; }
+    .track .info .t {
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+    .status {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 12px;
+      min-height: 1.2em;
+    }
+    .status.error { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>📻 رادیو</h1>
+      <p>پخش پشت‌سرهم آهنگ‌ها</p>
+    </header>
+
+    <div class="player">
+      <div class="cover" id="cover">🎵</div>
+      <div class="now-playing">
+        <div class="title" id="title">آماده پخش</div>
+        <div class="meta" id="meta">—</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress" id="progress"><i id="bar"></i></div>
+        <div class="times">
+          <span id="cur">۰:۰۰</span>
+          <span id="dur">۰:۰۰</span>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="btnPrev" title="قبلی">⏮</button>
+        <button class="btn play" id="btnPlay" title="پخش / توقف">▶</button>
+        <button class="btn" id="btnNext" title="بعدی">⏭</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="list">
+      <h2>لیست پخش</h2>
+      <div id="tracks"></div>
+    </div>
+  </div>
+
+  <audio id="audio" preload="metadata" playsinline></audio>
+
+  <script>
+    // ============================================================
+    // پلی‌لیست — این آرایه توسط ربات هنگام تولید فایل پر می‌شود.
+    // هر آیتم: { id, title, url }
+    // ============================================================
+    const PLAYLIST = [{"id": "b8c57a4cdd", "title": "بدون عنوان", "url": "https://irsv.upmusics.com/singletracks/2026/10/Ghasem%20Taghizadeh%20-%20Maftoon%20UpMusics.mp3"}];
+
+    const audio = document.getElementById("audio");
+    const titleEl = document.getElementById("title");
+    const metaEl = document.getElementById("meta");
+    const statusEl = document.getElementById("status");
+    const barEl = document.getElementById("bar");
+    const curEl = document.getElementById("cur");
+    const durEl = document.getElementById("dur");
+    const tracksEl = document.getElementById("tracks");
+    const btnPlay = document.getElementById("btnPlay");
+    const btnPrev = document.getElementById("btnPrev");
+    const btnNext = document.getElementById("btnNext");
+    const progressEl = document.getElementById("progress");
+
+    let index = 0;
+    let isPlaying = false;
+
+    function toFaDigits(str) {
+      return String(str).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+    }
+
+    function fmt(sec) {
+      if (!isFinite(sec) || sec < 0) return "۰:۰۰";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return toFaDigits(m + ":" + String(s).padStart(2, "0"));
+    }
+
+    function setStatus(msg, isError) {
+      statusEl.textContent = msg || "";
+      statusEl.className = "status" + (isError ? " error" : "");
+    }
+
+    function renderList() {
+      if (!PLAYLIST.length) {
+        tracksEl.innerHTML = '<div class="empty">هنوز آهنگی اضافه نشده است.<br>مالک ربات می‌تواند از داخل ربات آهنگ اضافه کند.</div>';
+        return;
+      }
+      tracksEl.innerHTML = PLAYLIST.map((t, i) => `
+        <div class="track ${i === index ? "active" : ""}" data-i="${i}">
+          <div class="num">${toFaDigits(i + 1)}</div>
+          <div class="info"><div class="t">${escapeHtml(t.title || ("آهنگ " + (i + 1)))}</div></div>
+        </div>
+      `).join("");
+      tracksEl.querySelectorAll(".track").forEach(el => {
+        el.addEventListener("click", () => loadTrack(parseInt(el.dataset.i, 10), true));
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function loadTrack(i, autoplay) {
+      if (!PLAYLIST.length) return;
+      index = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
+      const track = PLAYLIST[index];
+      titleEl.textContent = track.title || ("آهنگ " + (index + 1));
+      metaEl.textContent = (index + 1) + " از " + PLAYLIST.length;
+      setStatus("در حال بارگذاری...");
+      audio.src = track.url;
+      audio.load();
+      renderList();
+      if (autoplay) {
+        audio.play().then(() => {
+          isPlaying = true;
+          btnPlay.textContent = "⏸";
+          setStatus("");
+        }).catch(err => {
+          isPlaying = false;
+          btnPlay.textContent = "▶";
+          setStatus("پخش خودکار ممکن نشد؛ روی دکمه پخش بزنید.", true);
+          console.warn(err);
+        });
+      } else {
+        isPlaying = false;
+        btnPlay.textContent = "▶";
+        setStatus("");
+      }
+    }
+
+    function togglePlay() {
+      if (!PLAYLIST.length) {
+        setStatus("لیست پخش خالی است.", true);
+        return;
+      }
+      if (!audio.src) {
+        loadTrack(index, true);
+        return;
+      }
+      if (audio.paused) {
+        audio.play().then(() => {
+          isPlaying = true;
+          btnPlay.textContent = "⏸";
+          setStatus("");
+        }).catch(() => setStatus("خطا در پخش", true));
+      } else {
+        audio.pause();
+        isPlaying = false;
+        btnPlay.textContent = "▶";
+      }
+    }
+
+    btnPlay.addEventListener("click", togglePlay);
+    btnPrev.addEventListener("click", () => loadTrack(index - 1, true));
+    btnNext.addEventListener("click", () => loadTrack(index + 1, true));
+
+    audio.addEventListener("timeupdate", () => {
+      const p = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+      barEl.style.width = p + "%";
+      curEl.textContent = fmt(audio.currentTime);
+      durEl.textContent = fmt(audio.duration);
+    });
+
+    audio.addEventListener("ended", () => {
+      // پخش پشت‌سرهم
+      loadTrack(index + 1, true);
+    });
+
+    audio.addEventListener("error", () => {
+      setStatus("خطا در بارگذاری این آهنگ؛ رفتن به بعدی...", true);
+      setTimeout(() => loadTrack(index + 1, true), 1200);
+    });
+
+    progressEl.addEventListener("click", (e) => {
+      if (!audio.duration) return;
+      const rect = progressEl.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      // در RTL ممکن است مختصات برعکس باشد؛ برای سادگی از left استفاده می‌کنیم
+      audio.currentTime = ratio * audio.duration;
+    });
+
+    // شروع
+    renderList();
+    if (PLAYLIST.length) {
+      loadTrack(0, false);
+    }
+
+    // یکپارچگی با مینی‌اپ بله
+    try {
+      if (window.Bale && Bale.WebApp) {
+        Bale.WebApp.ready && Bale.WebApp.ready();
+        if (Bale.WebApp.expand) Bale.WebApp.expand();
+      }
+    } catch (e) {}
+  </script>
+</body>
+</html>
