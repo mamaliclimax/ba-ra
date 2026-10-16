@@ -93,8 +93,16 @@
     .tv-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-size:.95rem;pointer-events:none}
     .tv-overlay.hide{display:none}
     .tv-title{font-weight:700;font-size:1.05rem;margin-bottom:8px}
-    .tv-actions{display:flex;gap:8px;margin-bottom:12px}
+    .tv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
     .chip{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:8px 12px;font-size:.82rem;cursor:pointer}
+    .chip.active{background:linear-gradient(135deg,#8b7cff,#6c5ce7);border-color:transparent}
+    .chip.rec{background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4)}
+    .chip.rec.on{background:#e74c3c;border-color:#e74c3c;color:#fff;animation:pulse 1.2s infinite}
+    @keyframes pulse{50%{opacity:.75}}
+    .quality-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;align-items:center}
+    .quality-wrap .lab{color:var(--muted);font-size:.78rem;margin-left:4px}
+    .qbtn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:999px;padding:6px 10px;font-size:.75rem;cursor:pointer}
+    .qbtn.active{background:linear-gradient(135deg,#00cec9,#6c5ce7);border-color:transparent}
   </style>
 </head>
 <body>
@@ -158,9 +166,14 @@
         <video id="tvVideo" playsinline controls preload="auto" referrerpolicy="no-referrer"></video>
         <div class="tv-overlay" id="tvOverlay">یک کانال از لیست زیر انتخاب کنید</div>
       </div>
+      <div class="quality-wrap" id="qualityWrap" style="display:none">
+        <span class="lab">کیفیت:</span>
+        <div id="qualityBtns"></div>
+      </div>
       <div class="tv-actions">
         <button class="chip" id="tvFullscreen">⛶ تمام‌صفحه</button>
         <button class="chip" id="tvStop">⏹ توقف</button>
+        <button class="chip rec" id="tvRecord">⏺ ضبط</button>
       </div>
       <div class="list"><h2>کانال‌ها</h2><div id="tvChannels"></div></div>
       <div class="status" id="tvStatus"></div>
@@ -288,16 +301,114 @@
     const tvStatus=document.getElementById("tvStatus");
     const tvChannelsEl=document.getElementById("tvChannels");
     let hls=null, tvIndex=-1;
+    let mediaRecorder=null, recordedChunks=[], isRecording=false;
 
     function tvMsg(msg,err){tvStatus.textContent=msg||"";tvStatus.className="status"+(err?" error":"")}
     function destroyHls(){if(hls){try{hls.destroy()}catch(e){} hls=null}}
+    function stopRecordingSilent(){
+      try{
+        if(mediaRecorder && mediaRecorder.state!=="inactive"){ mediaRecorder.stop(); }
+      }catch(e){}
+      mediaRecorder=null; recordedChunks=[]; isRecording=false;
+      const btn=document.getElementById("tvRecord");
+      if(btn){ btn.textContent="⏺ ضبط"; btn.classList.remove("on"); }
+    }
+    function renderQualityLevels(){
+      const wrap=document.getElementById("qualityWrap");
+      const box=document.getElementById("qualityBtns");
+      if(!wrap||!box) return;
+      box.innerHTML="";
+      if(!hls || !hls.levels || hls.levels.length<2){
+        wrap.style.display="none";
+        return;
+      }
+      wrap.style.display="flex";
+      // Auto
+      const auto=document.createElement("button");
+      auto.className="qbtn"+(hls.currentLevel===-1?" active":"");
+      auto.textContent="خودکار";
+      auto.onclick=()=>{ hls.currentLevel=-1; renderQualityLevels(); tvMsg("کیفیت: خودکار"); };
+      box.appendChild(auto);
+      hls.levels.forEach((lv,i)=>{
+        const h=lv.height||0;
+        const br=lv.bitrate?Math.round(lv.bitrate/1000)+"kb":"";
+        const label=h? (h+"p") : (br||("L"+i));
+        const b=document.createElement("button");
+        b.className="qbtn"+(hls.currentLevel===i?" active":"");
+        b.textContent=label;
+        b.onclick=()=>{ hls.currentLevel=i; renderQualityLevels(); tvMsg("کیفیت: "+label); };
+        box.appendChild(b);
+      });
+    }
+    function startRecording(){
+      if(isRecording) return;
+      const stream = tvVideo.captureStream ? tvVideo.captureStream() : (tvVideo.mozCaptureStream && tvVideo.mozCaptureStream());
+      if(!stream){
+        tvMsg("ضبط در این محیط پشتیبانی نمی‌شود.", true);
+        return;
+      }
+      // اگر ترک ویدئو نباشد (CORS) ضبط بی‌فایده است
+      const vtracks = stream.getVideoTracks ? stream.getVideoTracks() : [];
+      if(!vtracks.length){
+        tvMsg("به‌خاطر محدودیت استریم، ضبط ممکن نیست (CORS).", true);
+        return;
+      }
+      recordedChunks=[];
+      let options={};
+      if(window.MediaRecorder){
+        if(MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")) options={mimeType:"video/webm;codecs=vp9,opus"};
+        else if(MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")) options={mimeType:"video/webm;codecs=vp8,opus"};
+        else if(MediaRecorder.isTypeSupported("video/webm")) options={mimeType:"video/webm"};
+      } else {
+        tvMsg("MediaRecorder پشتیبانی نمی‌شود.", true);
+        return;
+      }
+      try{
+        mediaRecorder=new MediaRecorder(stream, options);
+      }catch(e){
+        try{ mediaRecorder=new MediaRecorder(stream); }catch(e2){
+          tvMsg("شروع ضبط ناموفق بود.", true); return;
+        }
+      }
+      mediaRecorder.ondataavailable=function(e){ if(e.data && e.data.size>0) recordedChunks.push(e.data); };
+      mediaRecorder.onstop=function(){
+        isRecording=false;
+        const btn=document.getElementById("tvRecord");
+        if(btn){ btn.textContent="⏺ ضبط"; btn.classList.remove("on"); }
+        if(!recordedChunks.length){ tvMsg("فایلی ضبط نشد.", true); return; }
+        const blob=new Blob(recordedChunks, {type: recordedChunks[0].type || "video/webm"});
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download="tv-record-"+Date.now()+".webm";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=>{ try{ URL.revokeObjectURL(a.href); a.remove(); }catch(e){} }, 2000);
+        tvMsg("ضبط ذخیره شد.");
+      };
+      mediaRecorder.start(1000);
+      isRecording=true;
+      const btn=document.getElementById("tvRecord");
+      if(btn){ btn.textContent="⏹ پایان ضبط"; btn.classList.add("on"); }
+      tvMsg("در حال ضبط...");
+    }
+    function toggleRecording(){
+      if(isRecording){
+        try{ if(mediaRecorder && mediaRecorder.state!=="inactive") mediaRecorder.stop(); }catch(e){}
+      } else {
+        if(tvVideo.paused || !tvVideo.src && !hls){ tvMsg("اول یک کانال پخش کنید.", true); return; }
+        startRecording();
+      }
+    }
     function stopTv(){
+      stopRecordingSilent();
       destroyHls();
       try{tvVideo.pause()}catch(e){}
       tvVideo.removeAttribute("src");
       try{tvVideo.load()}catch(e){}
       tvOverlay.classList.remove("hide");
       tvOverlay.textContent="پخش متوقف شد — کانال را انتخاب کنید";
+      const qw=document.getElementById("qualityWrap");
+      if(qw) qw.style.display="none";
     }
     function playTv(i){
       if(!TV_CHANNELS.length)return;
@@ -367,10 +478,12 @@
         hls.loadSource(url);
         hls.attachMedia(tvVideo);
         hls.on(Hls.Events.MANIFEST_PARSED,function(){
+          renderQualityLevels();
           const p=tvVideo.play();
           if(p&&p.then){ p.then(onPlaying).catch(onNeedTap); }
           else onPlaying();
         });
+        hls.on(Hls.Events.LEVEL_SWITCHED,function(){ renderQualityLevels(); });
         hls.on(Hls.Events.ERROR,function(_,data){
           if(!data||!data.fatal) return;
           // fallback: یک‌بار native
@@ -408,6 +521,7 @@
       else if(el.webkitEnterFullscreen) el.webkitEnterFullscreen();
     });
     document.getElementById("tvStop").addEventListener("click", stopTv);
+    document.getElementById("tvRecord").addEventListener("click", toggleRecording);
 
     // nav
     document.getElementById("goRadio").addEventListener("click",()=>{
