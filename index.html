@@ -2,6 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>رادیو ربات</title>
   <script src="https://tapi.bale.ai/miniapp.js"></script>
@@ -237,244 +238,179 @@
     const progressEl = document.getElementById("progress");
     const audio = document.getElementById("audio");
 
-    // دکمه ادامه وقتی پخش خودکار قطع می‌شود
-    let resumeBtn = document.getElementById("resumeBtn");
-    if (!resumeBtn) {
-      resumeBtn = document.createElement("button");
-      resumeBtn.id = "resumeBtn";
-      resumeBtn.type = "button";
-      resumeBtn.textContent = "▶  ادامه پخش";
-      resumeBtn.style.cssText = "display:none;position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9999;border:none;border-radius:999px;padding:14px 28px;font-size:1.05rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#6c5ce7,#00cec9);box-shadow:0 8px 24px rgba(0,0,0,.35);";
-      document.body.appendChild(resumeBtn);
-    }
+    // مهم برای دور زدن محدودیت داغ‌لینک بعضی CDNها
+    try { audio.referrerPolicy = "no-referrer"; } catch (e) {}
 
     let index = 0;
-    let wantPlay = false;
-    let playGen = 0;
-    let lastAdvanceAt = 0;
-    let lastEndedAt = 0;
-    let seenPlaying = false;
+    let running = false;   // حالت رادیو روشن است
+    let busy = false;      // در حال تعویض آهنگ
+    let gen = 0;
 
-    function toFaDigits(str) {
-      return String(str).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+    function fa(s){ return String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]); }
+    function fmt(sec){
+      if(!isFinite(sec)||sec<0) return "۰:۰۰";
+      const m=Math.floor(sec/60), s=Math.floor(sec%60);
+      return fa(m+":"+String(s).padStart(2,"0"));
     }
-    function fmt(sec) {
-      if (!isFinite(sec) || sec < 0) return "۰:۰۰";
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return toFaDigits(m + ":" + String(s).padStart(2, "0"));
+    function status(msg, err){
+      statusEl.textContent = msg||"";
+      statusEl.className = "status"+(err?" error":"");
     }
-    function setStatus(msg, isError) {
-      statusEl.textContent = msg || "";
-      statusEl.className = "status" + (isError ? " error" : "");
-    }
-    function escapeHtml(s) {
-      return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-    function showResume(show) {
-      resumeBtn.style.display = show ? "block" : "none";
+    function esc(s){
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
-    function renderList() {
-      if (!PLAYLIST.length) {
-        tracksEl.innerHTML = '<div class="empty">هنوز آهنگی اضافه نشده است.</div>';
+    function renderList(){
+      if(!PLAYLIST.length){
+        tracksEl.innerHTML = '<div class="empty">لیست خالی است.</div>';
         return;
       }
-      tracksEl.innerHTML = PLAYLIST.map((t, i) => `
-        <div class="track ${i === index ? "active" : ""}" data-i="${i}">
-          <div class="num">${toFaDigits(i + 1)}</div>
-          <div class="info"><div class="t">${escapeHtml(t.title || ("آهنگ " + (i + 1)))}</div></div>
-        </div>
-      `).join("");
-      tracksEl.querySelectorAll(".track").forEach(el => {
-        el.addEventListener("click", () => {
-          wantPlay = true;
-          showResume(false);
-          loadTrack(parseInt(el.dataset.i, 10), true);
+      tracksEl.innerHTML = PLAYLIST.map((t,i)=>`
+        <div class="track ${i===index?"active":""}" data-i="${i}">
+          <div class="num">${fa(i+1)}</div>
+          <div class="info"><div class="t">${esc(t.title||("آهنگ "+(i+1)))}</div></div>
+        </div>`).join("");
+      tracksEl.querySelectorAll(".track").forEach(el=>{
+        el.addEventListener("click",()=>{
+          running = true;
+          goTo(parseInt(el.dataset.i,10));
         });
       });
     }
 
-    function safePlay(gen) {
-      const req = audio.play();
-      if (!req || typeof req.then !== "function") {
-        btnPlay.textContent = "⏸";
-        setStatus("");
-        showResume(false);
-        return;
-      }
-      req.then(() => {
-        if (gen !== playGen) return;
-        btnPlay.textContent = "⏸";
-        setStatus("");
-        showResume(false);
-      }).catch((err) => {
-        if (gen !== playGen) return;
-        console.warn("play blocked/failed", err);
-        btnPlay.textContent = "▶";
-        setStatus("برای ادامه پخش، دکمه پایین را بزنید.", true);
-        showResume(true);
-      });
-    }
-
-    function loadTrack(i, autoplay) {
-      if (!PLAYLIST.length) return;
+    function goTo(i){
+      if(!PLAYLIST.length) return;
+      busy = true;
+      gen += 1;
+      const my = gen;
       index = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
       const track = PLAYLIST[index];
-      titleEl.textContent = track.title || ("آهنگ " + (index + 1));
-      metaEl.textContent = toFaDigits((index + 1) + " از " + PLAYLIST.length);
+      titleEl.textContent = track.title || ("آهنگ "+(index+1));
+      metaEl.textContent = fa((index+1)+" از "+PLAYLIST.length);
       renderList();
-      seenPlaying = false;
-      playGen += 1;
-      const gen = playGen;
+      status("در حال بارگذاری...");
 
-      // فقط src را عوض کن؛ pause/removeAttribute نکن تا کمتر قطع شود
-      if (audio.src !== track.url) {
-        audio.src = track.url;
-      } else {
-        try { audio.currentTime = 0; } catch (e) {}
-      }
+      // ساخت Audio تازه برای هر آهنگ — در بعضی وب‌ویوها پایدارتر از عوض کردن src است
+      const a = audio;
+      try { a.pause(); } catch(e){}
+      a.removeAttribute("src");
+      a.referrerPolicy = "no-referrer";
+      a.src = track.url;
+      a.load();
 
-      if (autoplay || wantPlay) {
-        wantPlay = true;
-        setStatus("در حال بارگذاری آهنگ...");
-        // یک‌بار بعد از canplay
-        const kick = () => {
-          if (gen !== playGen) return;
-          safePlay(gen);
-        };
-        audio.addEventListener("canplay", kick, { once: true });
-        // و یک تلاش زودهنگام
-        safePlay(gen);
-        // اگر تا 2.5 ثانیه playing نشد، دکمه ادامه را نشان بده
-        setTimeout(() => {
-          if (gen !== playGen) return;
-          if (wantPlay && (audio.paused || !seenPlaying)) {
-            setStatus("برای ادامه پخش، دکمه پایین را بزنید.", true);
-            showResume(true);
-          }
-        }, 2500);
-      } else {
-        btnPlay.textContent = "▶";
-        setStatus("");
-        showResume(false);
-      }
+      const tryPlay = () => {
+        if (my !== gen) return;
+        if (!running) { busy=false; return; }
+        const p = a.play();
+        if (p && p.then) {
+          p.then(()=>{
+            if (my !== gen) return;
+            btnPlay.textContent = "⏸";
+            status("");
+            busy = false;
+          }).catch(err=>{
+            if (my !== gen) return;
+            console.warn(err);
+            // یک بار دیگر بعد از لود
+            setTimeout(()=>{
+              if (my !== gen || !running) return;
+              a.play().then(()=>{
+                btnPlay.textContent="⏸"; status(""); busy=false;
+              }).catch(()=>{
+                status("این آهنگ پخش نشد؛ می‌روم بعدی...", true);
+                setTimeout(()=>{ if(my===gen && running) next(); }, 700);
+              });
+            }, 300);
+          });
+        } else {
+          btnPlay.textContent="⏸"; status(""); busy=false;
+        }
+      };
+
+      a.addEventListener("canplay", tryPlay, {once:true});
+      // fallback اگر canplay دیر آمد
+      setTimeout(tryPlay, 500);
     }
 
-    function playNext(reason) {
-      const now = Date.now();
-      // ضد دوباره‌کاری: حداقل 1.5 ثانیه بین دو تعویض
-      if (now - lastAdvanceAt < 1500) return;
-      lastAdvanceAt = now;
-      wantPlay = true;
-      setStatus("آهنگ بعدی...");
-      loadTrack(index + 1, true);
+    function next(){
+      if (busy) return;
+      goTo(index+1);
+    }
+    function prev(){
+      if (busy) return;
+      goTo(index-1);
     }
 
-    function togglePlay() {
-      if (!PLAYLIST.length) {
-        setStatus("لیست پخش خالی است.", true);
-        return;
-      }
-      showResume(false);
-      if (!audio.src) {
-        wantPlay = true;
-        loadTrack(index, true);
-        return;
-      }
-      if (audio.paused) {
-        wantPlay = true;
-        safePlay(playGen);
+    audio.addEventListener("ended", ()=>{
+      if (!running) return;
+      // کمی فاصله تا ended دوباره شلیک نشود
+      busy = false;
+      next();
+    });
+
+    audio.addEventListener("error", ()=>{
+      if (!running) return;
+      status("خطا در آهنگ؛ بعدی...", true);
+      setTimeout(()=>{ busy=false; next(); }, 600);
+    });
+
+    audio.addEventListener("timeupdate", ()=>{
+      const d=audio.duration, c=audio.currentTime;
+      barEl.style.width = (d&&isFinite(d)?(c/d)*100:0)+"%";
+      curEl.textContent = fmt(c);
+      durEl.textContent = fmt(d);
+    });
+
+    audio.addEventListener("playing", ()=>{
+      btnPlay.textContent = "⏸";
+      status("");
+      busy = false;
+    });
+
+    btnPlay.addEventListener("click", ()=>{
+      if(!PLAYLIST.length){ status("لیست خالی است.",true); return; }
+      if(!running){
+        running = true;
+        if(!audio.src) goTo(index);
+        else {
+          audio.play().then(()=>{ btnPlay.textContent="⏸"; status(""); })
+            .catch(()=> goTo(index));
+        }
+      } else if (audio.paused) {
+        audio.play().then(()=>{ btnPlay.textContent="⏸"; }).catch(()=>{});
       } else {
         audio.pause();
-        wantPlay = false;
+        running = false;
         btnPlay.textContent = "▶";
       }
-    }
-
-    audio.addEventListener("playing", () => {
-      seenPlaying = true;
-      btnPlay.textContent = "⏸";
-      setStatus("");
-      showResume(false);
     });
 
-    audio.addEventListener("ended", () => {
-      const now = Date.now();
-      if (now - lastEndedAt < 1000) return;
-      lastEndedAt = now;
-      if (!wantPlay) return;
-      playNext("ended");
-    });
+    btnNext.addEventListener("click", ()=>{ running=true; busy=false; next(); });
+    btnPrev.addEventListener("click", ()=>{ running=true; busy=false; prev(); });
 
-    audio.addEventListener("error", () => {
-      setStatus("خطا در دریافت آهنگ.", true);
-      // خطا را خودکار پشت‌سرهم نکن تا تیک‌تیک نشود؛ فقط دکمه ادامه
-      if (wantPlay) showResume(true);
-    });
-
-    audio.addEventListener("timeupdate", () => {
-      const dur = audio.duration;
-      const cur = audio.currentTime;
-      barEl.style.width = (dur && isFinite(dur) ? (cur / dur) * 100 : 0) + "%";
-      curEl.textContent = fmt(cur);
-      durEl.textContent = fmt(dur);
-
-      // فقط یک مسیر برای اتمام با duration مشخص
-      if (wantPlay && isFinite(dur) && dur > 3 && cur >= dur - 0.25) {
-        // اگر ended نیامد
-        if (!audio.ended) {
-          playNext("near-end");
-        }
-      }
-    });
-
-    btnPlay.addEventListener("click", togglePlay);
-    resumeBtn.addEventListener("click", () => {
-      wantPlay = true;
-      showResume(false);
-      // اگر تقریباً اول آهنگ است و پخش نشده، همین را play کن؛ وگرنه بعدی
-      if (!seenPlaying && audio.currentTime < 1) {
-        safePlay(playGen);
-      } else if (audio.paused && audio.currentTime > 0 && isFinite(audio.duration) && audio.currentTime < audio.duration - 1) {
-        safePlay(playGen);
-      } else {
-        playNext("resume");
-      }
-    });
-    btnPrev.addEventListener("click", () => {
-      wantPlay = true;
-      showResume(false);
-      lastAdvanceAt = 0;
-      loadTrack(index - 1, true);
-    });
-    btnNext.addEventListener("click", () => {
-      wantPlay = true;
-      showResume(false);
-      lastAdvanceAt = 0;
-      playNext("button");
-    });
-
-    progressEl.addEventListener("click", (e) => {
-      if (!audio.duration || !isFinite(audio.duration)) return;
-      const rect = progressEl.getBoundingClientRect();
-      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      audio.currentTime = ratio * audio.duration;
+    progressEl.addEventListener("click", (e)=>{
+      if(!audio.duration||!isFinite(audio.duration)) return;
+      const r=progressEl.getBoundingClientRect();
+      const ratio=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+      audio.currentTime = ratio*audio.duration;
     });
 
     renderList();
-    if (PLAYLIST.length) loadTrack(0, false);
+    if(PLAYLIST.length){
+      index = 0;
+      titleEl.textContent = PLAYLIST[0].title || "آهنگ ۱";
+      metaEl.textContent = fa("1 از "+PLAYLIST.length);
+      // فقط آماده کن؛ پخش با ضربه کاربر شروع شود (الزام مرورگر)
+      audio.referrerPolicy = "no-referrer";
+      audio.src = PLAYLIST[0].url;
+    }
 
-    try {
-      if (window.Bale && Bale.WebApp) {
-        Bale.WebApp.ready && Bale.WebApp.ready();
-        if (Bale.WebApp.expand) Bale.WebApp.expand();
+    try{
+      if(window.Bale&&Bale.WebApp){
+        Bale.WebApp.ready&&Bale.WebApp.ready();
+        Bale.WebApp.expand&&Bale.WebApp.expand();
       }
-    } catch (e) {}
+    }catch(e){}
   </script>
 </body>
 </html>
