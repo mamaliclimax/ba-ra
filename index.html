@@ -4,227 +4,217 @@
   <meta charset="UTF-8" />
   <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>رادیو ربات</title>
+  <title>رادیو</title>
   <script src="https://tapi.bale.ai/miniapp.js"></script>
   <style>
     :root {
-      --bg: #0f1220;
-      --card: #1a1f35;
-      --accent: #6c5ce7;
-      --accent2: #00cec9;
-      --text: #f5f6fa;
-      --muted: #a4b0be;
-      --danger: #ff6b6b;
+      --bg0: #07070f;
+      --bg1: #12122a;
+      --card-solid: #16162c;
+      --text: #f4f5ff;
+      --muted: #9aa3c0;
+      --line: rgba(255,255,255,.08);
+      --glow: rgba(139,124,255,.45);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
-      background: linear-gradient(160deg, #0f1220 0%, #1b1a3a 50%, #0f1220 100%);
+      font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
       color: var(--text);
       min-height: 100vh;
-      padding: 16px;
+      background:
+        radial-gradient(1200px 600px at 100% -10%, rgba(139,124,255,.22), transparent 55%),
+        radial-gradient(900px 500px at -10% 100%, rgba(0,206,201,.12), transparent 50%),
+        linear-gradient(165deg, var(--bg0), var(--bg1) 55%, #0b0b18);
+      padding: 18px 16px 28px;
     }
     .wrap { max-width: 480px; margin: 0 auto; }
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-      padding-top: 8px;
+    .screen { display: none; animation: fadeIn .28s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .hero { text-align: center; margin-bottom: 18px; padding-top: 6px; }
+    .hero .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.06); border: 1px solid var(--line);
+      color: var(--muted); font-size: .78rem; margin-bottom: 10px;
     }
-    header h1 {
-      font-size: 1.45rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    .hero h1 {
+      font-size: 1.7rem; letter-spacing: -0.03em;
+      background: linear-gradient(90deg, #fff, #c7c0ff 50%, #7ef0ea);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
     }
-    header p { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
-    .player {
-      background: var(--card);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.35);
-      margin-bottom: 16px;
+    .hero p { color: var(--muted); margin-top: 6px; font-size: .92rem; }
+    .stations { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .station {
+      position: relative; border: 1px solid var(--line); border-radius: 20px;
+      overflow: hidden; background: var(--card-solid); color: var(--text);
+      cursor: pointer; text-align: right; padding: 0;
+      box-shadow: 0 12px 30px rgba(0,0,0,.28);
+      transition: transform .15s ease;
     }
-    .cover {
-      width: 100%;
-      aspect-ratio: 1;
-      max-width: 220px;
-      margin: 0 auto 16px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 4rem;
-      box-shadow: 0 8px 24px rgba(108,92,231,.35);
+    .station:active { transform: scale(.975); }
+    .station .cover {
+      height: 96px; position: relative; display: flex;
+      align-items: center; justify-content: center; overflow: hidden;
     }
-    .now-playing {
-      text-align: center;
-      margin-bottom: 14px;
-      min-height: 52px;
+    .station .cover::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(10,10,22,.8), transparent 60%);
     }
-    .now-playing .title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      line-height: 1.4;
+    .station .cover .emoji {
+      font-size: 2.5rem; position: relative; z-index: 1;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
     }
-    .now-playing .meta {
-      color: var(--muted);
-      font-size: 0.85rem;
-      margin-top: 4px;
+    .station .cover .pattern {
+      position: absolute; inset: 0; opacity: .35;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,.5) 0 2px, transparent 3px),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,.35) 0 1.5px, transparent 2.5px);
+      background-size: 48px 48px, 36px 36px;
     }
-    .progress-wrap { margin: 12px 0 6px; }
+    .station .body { padding: 10px 12px 12px; }
+    .station .name { font-weight: 700; font-size: .95rem; }
+    .station .count { color: var(--muted); font-size: .75rem; margin-top: 3px; }
+    .c-old { background: linear-gradient(135deg, #5c3b1e, #c49a6c 45%, #3a2615); }
+    .c-happy { background: linear-gradient(135deg, #ff6b6b, #feca57 50%, #ff9ff3); }
+    .c-calm { background: linear-gradient(135deg, #3b4a7a, #89a7d6 50%, #c9b6e4); }
+    .c-pop { background: linear-gradient(135deg, #e056fd, #686de0 50%, #ff6b81); }
+    .c-ai { background: linear-gradient(135deg, #0f2027, #00c9a7 45%, #2c5364); }
+    .c-traditional { background: linear-gradient(135deg, #4a1506, #c0392b 40%, #d4a017); }
+    .c-birthday { background: linear-gradient(135deg, #ff85a1, #ffd6a5 50%, #b8e0ff); }
+    .c-foreign { background: linear-gradient(135deg, #0b3d91, #3d7ea6 50%, #1abc9c); }
+    .c-dj { background: linear-gradient(135deg, #12051f, #8e2de2 45%, #00f5d4); }
+    .back {
+      border: 1px solid var(--line); background: rgba(255,255,255,.04);
+      color: var(--muted); border-radius: 999px; padding: 8px 14px;
+      font-size: .85rem; cursor: pointer; margin-bottom: 14px;
+    }
+    .player-card {
+      position: relative; border-radius: 28px; overflow: hidden;
+      border: 1px solid var(--line); background: rgba(20,20,40,.75);
+      box-shadow: 0 20px 50px rgba(0,0,0,.4); margin-bottom: 14px;
+    }
+    .player-cover {
+      height: 210px; position: relative; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .player-cover .glow {
+      position: absolute; width: 160px; height: 160px; border-radius: 50%;
+      filter: blur(30px); opacity: .55; background: #fff;
+    }
+    .player-cover .disc {
+      width: 148px; height: 148px; border-radius: 50%; position: relative;
+      z-index: 1; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,.45), inset 0 0 0 10px rgba(255,255,255,.08);
+      background: repeating-radial-gradient(circle at center, rgba(0,0,0,.35) 0 2px, rgba(255,255,255,.05) 2px 4px);
+    }
+    .player-cover .disc.spin { animation: spin 8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .player-cover .disc .hole {
+      width: 34px; height: 34px; border-radius: 50%; background: #0b0b16;
+      border: 3px solid rgba(255,255,255,.2); display: flex;
+      align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .player-body { padding: 16px 18px 20px; }
+    .now-title { font-size: 1.15rem; font-weight: 700; text-align: center; line-height: 1.35; min-height: 2.6em; }
+    .now-meta { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 4px; }
     .progress {
-      height: 6px;
-      background: rgba(255,255,255,.12);
-      border-radius: 99px;
-      overflow: hidden;
-      cursor: pointer;
+      height: 7px; background: rgba(255,255,255,.1); border-radius: 99px;
+      overflow: hidden; margin: 16px 0 6px; cursor: pointer;
     }
     .progress > i {
-      display: block;
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 99px;
-      transition: width .15s linear;
+      display: block; height: 100%; width: 0%; border-radius: 99px;
+      background: linear-gradient(90deg, #8b7cff, #00cec9);
     }
-    .times {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-    .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      margin-top: 14px;
-    }
+    .times { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 14px; }
     .btn {
-      border: none;
-      background: rgba(255,255,255,.08);
-      color: var(--text);
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      font-size: 1.25rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform .15s, background .15s;
+      border: none; background: rgba(255,255,255,.08); color: var(--text);
+      width: 50px; height: 50px; border-radius: 50%; font-size: 1.25rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--line);
     }
-    .btn:active { transform: scale(.92); }
     .btn.play {
-      width: 64px;
-      height: 64px;
-      font-size: 1.6rem;
-      background: linear-gradient(135deg, var(--accent), #a29bfe);
-      box-shadow: 0 6px 20px rgba(108,92,231,.4);
+      width: 72px; height: 72px; font-size: 1.7rem;
+      background: linear-gradient(135deg, #8b7cff, #6c5ce7);
+      box-shadow: 0 10px 28px var(--glow); border: none;
     }
-    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .status { text-align: center; font-size: .8rem; color: var(--muted); margin-top: 12px; min-height: 1.2em; }
+    .status.error { color: #ff7b8a; }
     .list {
-      background: var(--card);
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 20px; border: 1px solid var(--line);
+      background: rgba(20,20,40,.55); overflow: hidden;
     }
-    .list h2 {
-      font-size: 0.95rem;
-      padding: 14px 16px 8px;
-      color: var(--muted);
-      font-weight: 600;
-    }
+    .list h2 { font-size: .85rem; color: var(--muted); padding: 12px 14px 6px; font-weight: 600; }
     .track {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-top: 1px solid rgba(255,255,255,.06);
-      cursor: pointer;
-      transition: background .15s;
+      display: flex; gap: 12px; align-items: center; padding: 12px 14px;
+      border-top: 1px solid var(--line); cursor: pointer;
     }
-    .track:active { background: rgba(255,255,255,.05); }
-    .track.active {
-      background: rgba(108,92,231,.18);
-    }
+    .track.active { background: rgba(139,124,255,.14); }
     .track .num {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      color: var(--muted);
-      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 9px; background: rgba(255,255,255,.07);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; color: var(--muted); flex-shrink: 0;
     }
-    .track.active .num {
-      background: var(--accent);
-      color: #fff;
-    }
-    .track .info { flex: 1; min-width: 0; }
-    .track .info .t {
-      font-size: 0.95rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-    }
-    .status {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 12px;
-      min-height: 1.2em;
-    }
-    .status.error { color: var(--danger); }
+    .track.active .num { background: linear-gradient(135deg, #8b7cff, #00cec9); color: #fff; }
+    .track .t { font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .empty { text-align: center; padding: 28px 14px; color: var(--muted); font-size: .9rem; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <h1>📻 رادیو</h1>
-      <p>پخش پشت‌سرهم آهنگ‌ها</p>
-    </header>
-
-    <div class="player">
-      <div class="cover" id="cover">🎵</div>
-      <div class="now-playing">
-        <div class="title" id="title">آماده پخش</div>
-        <div class="meta" id="meta">—</div>
+    <div id="screenStations" class="screen active">
+      <div class="hero">
+        <div class="badge">● LIVE RADIO</div>
+        <h1>رادیو هم‌‌دل</h1>
+        <p>ایستگاه مورد علاقه‌ات را انتخاب کن</p>
       </div>
-      <div class="progress-wrap">
-        <div class="progress" id="progress"><i id="bar"></i></div>
-        <div class="times">
-          <span id="cur">۰:۰۰</span>
-          <span id="dur">۰:۰۰</span>
+      <div class="stations" id="stations"></div>
+    </div>
+
+    <div id="screenPlayer" class="screen">
+      <button class="back" id="btnBack">← ایستگاه‌ها</button>
+      <div class="player-card">
+        <div class="player-cover" id="playerCover">
+          <div class="glow" id="coverGlow"></div>
+          <div class="disc" id="disc"><div class="hole" id="discEmoji">🎵</div></div>
+        </div>
+        <div class="player-body">
+          <div class="now-title" id="title">آماده پخش</div>
+          <div class="now-meta" id="meta">—</div>
+          <div class="progress" id="progress"><i id="bar"></i></div>
+          <div class="times"><span id="cur">۰:۰۰</span><span id="dur">۰:۰۰</span></div>
+          <div class="controls">
+            <button class="btn" id="btnPrev">⏮</button>
+            <button class="btn play" id="btnPlay">▶</button>
+            <button class="btn" id="btnNext">⏭</button>
+          </div>
+          <div class="status" id="status"></div>
         </div>
       </div>
-      <div class="controls">
-        <button class="btn" id="btnPrev" title="قبلی">⏮</button>
-        <button class="btn play" id="btnPlay" title="پخش / توقف">▶</button>
-        <button class="btn" id="btnNext" title="بعدی">⏭</button>
+      <div class="list">
+        <h2>لیست این ایستگاه</h2>
+        <div id="tracks"></div>
       </div>
-      <div class="status" id="status"></div>
-    </div>
-
-    <div class="list">
-      <h2>لیست پخش</h2>
-      <div id="tracks"></div>
     </div>
   </div>
-
   <audio id="audio" preload="metadata" playsinline></audio>
-
   <script>
-    const PLAYLIST = [{"id": "7212c2c117", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3"}, {"id": "3cdc260099", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3"}, {"id": "86f94c9561", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3"}, {"id": "71e0971a7e", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3"}, {"id": "14ce58d92a", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3"}, {"id": "c2bc63ee26", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3"}, {"id": "32dc9c6660", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3"}];
-
+    const STATIONS = [{"id": "old", "title": "قدیمی", "emoji": "🕰️", "tracks": [{"id": "7212c2c117", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3"}, {"id": "3cdc260099", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3"}, {"id": "86f94c9561", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3"}, {"id": "71e0971a7e", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3"}, {"id": "14ce58d92a", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3"}, {"id": "c2bc63ee26", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3"}, {"id": "32dc9c6660", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3"}]}, {"id": "happy", "title": "شاد", "emoji": "🎉", "tracks": []}, {"id": "calm", "title": "ملایم", "emoji": "🌙", "tracks": []}, {"id": "pop", "title": "پاپ", "emoji": "🎤", "tracks": []}, {"id": "ai", "title": "ساخته هوش مصنوعی", "emoji": "🤖", "tracks": []}, {"id": "traditional", "title": "سنتی", "emoji": "🎼", "tracks": []}, {"id": "birthday", "title": "تولد", "emoji": "🎂", "tracks": []}, {"id": "foreign", "title": "خارجی", "emoji": "🌍", "tracks": []}, {"id": "dj", "title": "دیجی میکس", "emoji": "🎧", "tracks": []}];
+    const THEMES = {
+      old: { cls: "c-old", glow: "#c49a6c" },
+      happy: { cls: "c-happy", glow: "#feca57" },
+      calm: { cls: "c-calm", glow: "#89a7d6" },
+      pop: { cls: "c-pop", glow: "#e056fd" },
+      ai: { cls: "c-ai", glow: "#00c9a7" },
+      traditional: { cls: "c-traditional", glow: "#d4a017" },
+      birthday: { cls: "c-birthday", glow: "#ff85a1" },
+      foreign: { cls: "c-foreign", glow: "#3d7ea6" },
+      dj: { cls: "c-dj", glow: "#8e2de2" }
+    };
+    const audio = document.getElementById("audio");
+    try { audio.referrerPolicy = "no-referrer"; } catch (e) {}
+    let playlist = [], index = 0, running = false, busy = false, gen = 0, currentStation = null;
     const titleEl = document.getElementById("title");
     const metaEl = document.getElementById("meta");
     const statusEl = document.getElementById("status");
@@ -233,184 +223,131 @@
     const durEl = document.getElementById("dur");
     const tracksEl = document.getElementById("tracks");
     const btnPlay = document.getElementById("btnPlay");
-    const btnPrev = document.getElementById("btnPrev");
-    const btnNext = document.getElementById("btnNext");
-    const progressEl = document.getElementById("progress");
-    const audio = document.getElementById("audio");
-
-    // مهم برای دور زدن محدودیت داغ‌لینک بعضی CDNها
-    try { audio.referrerPolicy = "no-referrer"; } catch (e) {}
-
-    let index = 0;
-    let running = false;   // حالت رادیو روشن است
-    let busy = false;      // در حال تعویض آهنگ
-    let gen = 0;
-
-    function fa(s){ return String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]); }
+    const disc = document.getElementById("disc");
+    const discEmoji = document.getElementById("discEmoji");
+    const playerCover = document.getElementById("playerCover");
+    const coverGlow = document.getElementById("coverGlow");
+    function fa(s){ return String(s).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]); }
     function fmt(sec){
-      if(!isFinite(sec)||sec<0) return "۰:۰۰";
-      const m=Math.floor(sec/60), s=Math.floor(sec%60);
-      return fa(m+":"+String(s).padStart(2,"0"));
+      if (!isFinite(sec) || sec < 0) return "۰:۰۰";
+      const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+      return fa(m + ":" + String(s).padStart(2, "0"));
     }
-    function status(msg, err){
-      statusEl.textContent = msg||"";
-      statusEl.className = "status"+(err?" error":"");
+    function status(msg, err){ statusEl.textContent = msg || ""; statusEl.className = "status" + (err ? " error" : ""); }
+    function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+    function showScreen(name){
+      document.getElementById("screenStations").classList.toggle("active", name === "stations");
+      document.getElementById("screenPlayer").classList.toggle("active", name === "player");
     }
-    function esc(s){
-      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    function themeOf(id){ return THEMES[id] || { cls: "c-pop", glow: "#8b7cff" }; }
+    function renderStations(){
+      const box = document.getElementById("stations");
+      if (!STATIONS.length) { box.innerHTML = '<div class="empty">ایستگاهی نیست</div>'; return; }
+      box.innerHTML = STATIONS.map(st => {
+        const th = themeOf(st.id);
+        const n = (st.tracks || []).length;
+        return `<button class="station" data-id="${esc(st.id)}">
+          <div class="cover ${th.cls}"><div class="pattern"></div><span class="emoji">${st.emoji || "📻"}</span></div>
+          <div class="body"><div class="name">${esc(st.title)}</div><div class="count">${fa(n)} آهنگ</div></div>
+        </button>`;
+      }).join("");
+      box.querySelectorAll(".station").forEach(btn => btn.addEventListener("click", () => openStation(btn.dataset.id)));
     }
-
-    function renderList(){
-      if(!PLAYLIST.length){
-        tracksEl.innerHTML = '<div class="empty">لیست خالی است.</div>';
-        return;
+    function applyStationTheme(st){
+      const th = themeOf(st.id);
+      playerCover.className = "player-cover " + th.cls;
+      coverGlow.style.background = th.glow;
+      discEmoji.textContent = st.emoji || "🎵";
+    }
+    function openStation(id){
+      const st = STATIONS.find(x => x.id === id);
+      if (!st) return;
+      currentStation = st;
+      playlist = Array.isArray(st.tracks) ? st.tracks.slice() : [];
+      index = 0; running = false; busy = false;
+      applyStationTheme(st);
+      disc.classList.remove("spin");
+      try { audio.pause(); } catch (e) {}
+      audio.removeAttribute("src");
+      btnPlay.textContent = "▶";
+      status(playlist.length ? "برای شروع ▶ را بزنید" : "این ایستگاه آهنگی ندارد");
+      renderTracks();
+      if (playlist.length) {
+        titleEl.textContent = playlist[0].title || "آهنگ ۱";
+        metaEl.textContent = (st.emoji || "") + " " + st.title + " · " + fa("1 از " + playlist.length);
+      } else {
+        titleEl.textContent = "خالی"; metaEl.textContent = st.title;
       }
-      tracksEl.innerHTML = PLAYLIST.map((t,i)=>`
-        <div class="track ${i===index?"active":""}" data-i="${i}">
-          <div class="num">${fa(i+1)}</div>
-          <div class="info"><div class="t">${esc(t.title||("آهنگ "+(i+1)))}</div></div>
+      showScreen("player");
+    }
+    function renderTracks(){
+      if (!playlist.length) { tracksEl.innerHTML = '<div class="empty">آهنگی در این ایستگاه نیست</div>'; return; }
+      tracksEl.innerHTML = playlist.map((t, i) => `
+        <div class="track ${i === index ? "active" : ""}" data-i="${i}">
+          <div class="num">${fa(i + 1)}</div>
+          <div class="t">${esc(t.title || ("آهنگ " + (i + 1)))}</div>
         </div>`).join("");
-      tracksEl.querySelectorAll(".track").forEach(el=>{
-        el.addEventListener("click",()=>{
-          running = true;
-          goTo(parseInt(el.dataset.i,10));
-        });
+      tracksEl.querySelectorAll(".track").forEach(el => {
+        el.addEventListener("click", () => { running = true; goTo(parseInt(el.dataset.i, 10)); });
       });
     }
-
     function goTo(i){
-      if(!PLAYLIST.length) return;
-      busy = true;
-      gen += 1;
-      const my = gen;
-      index = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
-      const track = PLAYLIST[index];
-      titleEl.textContent = track.title || ("آهنگ "+(index+1));
-      metaEl.textContent = fa((index+1)+" از "+PLAYLIST.length);
-      renderList();
-      status("در حال بارگذاری...");
-
-      // ساخت Audio تازه برای هر آهنگ — در بعضی وب‌ویوها پایدارتر از عوض کردن src است
-      const a = audio;
-      try { a.pause(); } catch(e){}
-      a.removeAttribute("src");
-      a.referrerPolicy = "no-referrer";
-      a.src = track.url;
-      a.load();
-
+      if (!playlist.length) return;
+      busy = true; gen += 1; const my = gen;
+      index = ((i % playlist.length) + playlist.length) % playlist.length;
+      const track = playlist[index];
+      titleEl.textContent = track.title || ("آهنگ " + (index + 1));
+      metaEl.textContent = (currentStation ? (currentStation.emoji + " " + currentStation.title + " · ") : "") + fa((index + 1) + " از " + playlist.length);
+      renderTracks(); status("در حال بارگذاری...");
+      try { audio.pause(); } catch (e) {}
+      audio.referrerPolicy = "no-referrer"; audio.src = track.url; audio.load();
       const tryPlay = () => {
-        if (my !== gen) return;
-        if (!running) { busy=false; return; }
-        const p = a.play();
+        if (my !== gen || !running) { busy = false; return; }
+        const p = audio.play();
         if (p && p.then) {
-          p.then(()=>{
-            if (my !== gen) return;
-            btnPlay.textContent = "⏸";
-            status("");
-            busy = false;
-          }).catch(err=>{
-            if (my !== gen) return;
-            console.warn(err);
-            // یک بار دیگر بعد از لود
-            setTimeout(()=>{
-              if (my !== gen || !running) return;
-              a.play().then(()=>{
-                btnPlay.textContent="⏸"; status(""); busy=false;
-              }).catch(()=>{
-                status("این آهنگ پخش نشد؛ می‌روم بعدی...", true);
-                setTimeout(()=>{ if(my===gen && running) next(); }, 700);
-              });
-            }, 300);
-          });
-        } else {
-          btnPlay.textContent="⏸"; status(""); busy=false;
-        }
+          p.then(() => { if (my !== gen) return; btnPlay.textContent = "⏸"; disc.classList.add("spin"); status(""); busy = false; })
+           .catch(() => { if (my !== gen) return; status("پخش نشد؛ بعدی...", true); disc.classList.remove("spin"); setTimeout(() => { if (my === gen && running) next(); }, 800); });
+        } else { btnPlay.textContent = "⏸"; disc.classList.add("spin"); status(""); busy = false; }
       };
-
-      a.addEventListener("canplay", tryPlay, {once:true});
-      // fallback اگر canplay دیر آمد
-      setTimeout(tryPlay, 500);
+      audio.addEventListener("canplay", tryPlay, { once: true });
+      setTimeout(tryPlay, 400);
     }
-
-    function next(){
-      if (busy) return;
-      goTo(index+1);
-    }
-    function prev(){
-      if (busy) return;
-      goTo(index-1);
-    }
-
-    audio.addEventListener("ended", ()=>{
-      if (!running) return;
-      // کمی فاصله تا ended دوباره شلیک نشود
-      busy = false;
-      next();
+    function next(){ if (!busy) goTo(index + 1); }
+    function prev(){ if (!busy) goTo(index - 1); }
+    audio.addEventListener("ended", () => { if (running) { busy = false; next(); } });
+    audio.addEventListener("error", () => { if (!running) return; status("خطا؛ بعدی...", true); disc.classList.remove("spin"); setTimeout(() => { busy = false; next(); }, 700); });
+    audio.addEventListener("timeupdate", () => {
+      const d = audio.duration, c = audio.currentTime;
+      barEl.style.width = (d && isFinite(d) ? (c / d) * 100 : 0) + "%";
+      curEl.textContent = fmt(c); durEl.textContent = fmt(d);
     });
-
-    audio.addEventListener("error", ()=>{
-      if (!running) return;
-      status("خطا در آهنگ؛ بعدی...", true);
-      setTimeout(()=>{ busy=false; next(); }, 600);
-    });
-
-    audio.addEventListener("timeupdate", ()=>{
-      const d=audio.duration, c=audio.currentTime;
-      barEl.style.width = (d&&isFinite(d)?(c/d)*100:0)+"%";
-      curEl.textContent = fmt(c);
-      durEl.textContent = fmt(d);
-    });
-
-    audio.addEventListener("playing", ()=>{
-      btnPlay.textContent = "⏸";
-      status("");
-      busy = false;
-    });
-
-    btnPlay.addEventListener("click", ()=>{
-      if(!PLAYLIST.length){ status("لیست خالی است.",true); return; }
-      if(!running){
+    audio.addEventListener("playing", () => { btnPlay.textContent = "⏸"; disc.classList.add("spin"); status(""); busy = false; });
+    audio.addEventListener("pause", () => { if (!running) disc.classList.remove("spin"); });
+    btnPlay.addEventListener("click", () => {
+      if (!playlist.length) { status("لیست خالی است", true); return; }
+      if (!running) {
         running = true;
-        if(!audio.src) goTo(index);
-        else {
-          audio.play().then(()=>{ btnPlay.textContent="⏸"; status(""); })
-            .catch(()=> goTo(index));
-        }
+        if (!audio.src) goTo(index);
+        else audio.play().then(() => { btnPlay.textContent = "⏸"; disc.classList.add("spin"); }).catch(() => goTo(index));
       } else if (audio.paused) {
-        audio.play().then(()=>{ btnPlay.textContent="⏸"; }).catch(()=>{});
+        audio.play().then(() => { btnPlay.textContent = "⏸"; disc.classList.add("spin"); }).catch(() => {});
       } else {
-        audio.pause();
-        running = false;
-        btnPlay.textContent = "▶";
+        audio.pause(); running = false; btnPlay.textContent = "▶"; disc.classList.remove("spin");
       }
     });
-
-    btnNext.addEventListener("click", ()=>{ running=true; busy=false; next(); });
-    btnPrev.addEventListener("click", ()=>{ running=true; busy=false; prev(); });
-
-    progressEl.addEventListener("click", (e)=>{
-      if(!audio.duration||!isFinite(audio.duration)) return;
-      const r=progressEl.getBoundingClientRect();
-      const ratio=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-      audio.currentTime = ratio*audio.duration;
+    document.getElementById("btnNext").addEventListener("click", () => { running = true; busy = false; next(); });
+    document.getElementById("btnPrev").addEventListener("click", () => { running = true; busy = false; prev(); });
+    document.getElementById("btnBack").addEventListener("click", () => {
+      running = false; try { audio.pause(); } catch (e) {}
+      disc.classList.remove("spin"); showScreen("stations");
     });
-
-    renderList();
-    if(PLAYLIST.length){
-      index = 0;
-      titleEl.textContent = PLAYLIST[0].title || "آهنگ ۱";
-      metaEl.textContent = fa("1 از "+PLAYLIST.length);
-      // فقط آماده کن؛ پخش با ضربه کاربر شروع شود (الزام مرورگر)
-      audio.referrerPolicy = "no-referrer";
-      audio.src = PLAYLIST[0].url;
-    }
-
-    try{
-      if(window.Bale&&Bale.WebApp){
-        Bale.WebApp.ready&&Bale.WebApp.ready();
-        Bale.WebApp.expand&&Bale.WebApp.expand();
-      }
-    }catch(e){}
+    document.getElementById("progress").addEventListener("click", (e) => {
+      if (!audio.duration || !isFinite(audio.duration)) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration;
+    });
+    renderStations();
+    try { if (window.Bale && Bale.WebApp) { Bale.WebApp.ready && Bale.WebApp.ready(); Bale.WebApp.expand && Bale.WebApp.expand(); } } catch (e) {}
   </script>
 </body>
 </html>
