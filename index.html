@@ -360,6 +360,28 @@
 
     renderStations();
     renderTvChannels();
+
+    // ورود مستقیم از ربات: ?mode=tv یا ?mode=radio
+    (function bootFromQuery(){
+      try {
+        const q = new URLSearchParams(location.search || "");
+        let mode = (q.get("mode") || q.get("section") || "").toLowerCase();
+        if (!mode && location.hash) {
+          mode = location.hash.replace("#", "").toLowerCase();
+        }
+        if (mode === "tv" || mode === "television" || mode === "live") {
+          try { audio.pause(); } catch (e) {}
+          running = false;
+          renderTvChannels();
+          show("screenTv");
+        } else if (mode === "radio") {
+          stopTv();
+          renderStations();
+          show("screenRadioStations");
+        }
+      } catch (e) {}
+    })();
+
     try{ if(window.Bale&&Bale.WebApp){ Bale.WebApp.ready&&Bale.WebApp.ready(); Bale.WebApp.expand&&Bale.WebApp.expand(); } }catch(e){}
   </script>
 </body>
