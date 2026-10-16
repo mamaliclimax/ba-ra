@@ -222,9 +222,6 @@
   <audio id="audio" preload="metadata" playsinline></audio>
 
   <script>
-    // ============================================================
-    // پلی‌لیست — این آرایه توسط ربات هنگام تولید فایل پر می‌شود.
-    // ============================================================
     const PLAYLIST = [{"id": "b8c57a4cdd", "title": "بدون عنوان", "url": "https://irsv.upmusics.com/singletracks/2026/10/Ghasem%20Taghizadeh%20-%20Maftoon%20UpMusics.mp3"}, {"id": "7da333053e", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/serv11/Jahan%20-%20Farda%20Baz%20Dobare%20Paeeiz%20Mishe%20[SevilMusic].mp3"}, {"id": "d4189ba80f", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/serv11/Touraj%20Shabankhani%20-%20Hanozam%20Cheshmay%20To%20[SevilMusic].mp3"}, {"id": "a00a8dc53b", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvru/Ahange%20Mahshari%20Hanoz%20[SevilMusic].mp3"}, {"id": "fbed423f81", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvry/Ahange%20Behesh%20Begin%20Sabzezare%20[SevilMusic].mp3"}, {"id": "2927378f1f", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrx/Ahange%20Mikhastam%20To%20Begi%20[SevilMusic].mp3"}, {"id": "cee3451017", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrf/Ahange%20Naleh%20Saz%20Miad%20[SevilMusic].mp3"}, {"id": "bb2660dbb8", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrf/Ahange%20Ghado%20Balaye%20To%20Rana%20[SevilMusic].mp3"}, {"id": "bad9319c5e", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/svx/Ahange%20Zange%20Tafrih%20[SevilMusic].mp3"}, {"id": "5b5f477d66", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrv/Ey%20Sabze%20Negar%20Bia%20Be%20Balinam%20[SevilMusic].mp3"}, {"id": "9346aa17a1", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvre/Ahange%20Zane%20Ziba%20[SevilMusic].mp3"}, {"id": "e9e0ffb231", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrt/Ahange%20Ahoo%20Khanom%20[SevilMusic].mp3"}, {"id": "9a54ba5798", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrw/Ahange%20Harfet%20Harfe%20Man%20[SevilMusic].mp3"}, {"id": "04846b71c0", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrw/Ahange%20Geleh%20Hey%20[SevilMusic].mp3"}, {"id": "57e124399f", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvru/Ahange%20Parande%20Ghashangam%20[SevilMusic].mp3"}, {"id": "17de7ac72c", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvru/Mehrdad%20Asemani%20-%20Maryam%20Gole%20Naze%20Mane%20[SevilMusic].mp3"}, {"id": "a53d173534", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvru/Ahange%20Bordi%20Az%20Yadam%20[SevilMusic].mp3"}, {"id": "133ce6848c", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvru/Saman%20-%20Esmesh%20Bahar%20Bod%20[SevilMusic].mp3"}, {"id": "5a4f54a2cb", "title": "بدون عنوان", "url": "https://dl.sevilmusics.com/cdn/music/srvrs/Hooshmand%20Aghili%20-%20Darya%20[SevilMusic].mp3"}];
 
     const titleEl = document.getElementById("title");
@@ -240,13 +237,23 @@
     const progressEl = document.getElementById("progress");
     const audio = document.getElementById("audio");
 
+    // دکمه ادامه وقتی پخش خودکار قطع می‌شود
+    let resumeBtn = document.getElementById("resumeBtn");
+    if (!resumeBtn) {
+      resumeBtn = document.createElement("button");
+      resumeBtn.id = "resumeBtn";
+      resumeBtn.type = "button";
+      resumeBtn.textContent = "▶  ادامه پخش";
+      resumeBtn.style.cssText = "display:none;position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:9999;border:none;border-radius:999px;padding:14px 28px;font-size:1.05rem;font-weight:700;color:#fff;background:linear-gradient(135deg,#6c5ce7,#00cec9);box-shadow:0 8px 24px rgba(0,0,0,.35);";
+      document.body.appendChild(resumeBtn);
+    }
+
     let index = 0;
     let wantPlay = false;
-    let advancing = false;
-    let playToken = 0; // برای باطل کردن playهای قدیمی
-    let lastCur = 0;
-    let stuck = 0;
-    let startedAt = 0;
+    let playGen = 0;
+    let lastAdvanceAt = 0;
+    let lastEndedAt = 0;
+    let seenPlaying = false;
 
     function toFaDigits(str) {
       return String(str).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
@@ -268,6 +275,9 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
+    function showResume(show) {
+      resumeBtn.style.display = show ? "block" : "none";
+    }
 
     function renderList() {
       if (!PLAYLIST.length) {
@@ -283,82 +293,86 @@
       tracksEl.querySelectorAll(".track").forEach(el => {
         el.addEventListener("click", () => {
           wantPlay = true;
+          showResume(false);
           loadTrack(parseInt(el.dataset.i, 10), true);
         });
       });
     }
 
-    // تلاش چندباره برای play — بدون setTimeout طولانی تا gesture از دست نرود
-    function forcePlay(token) {
-      if (token !== playToken) return Promise.resolve(false);
-      const p = audio.play();
-      if (!p || typeof p.then !== "function") {
-        wantPlay = true;
+    function safePlay(gen) {
+      const req = audio.play();
+      if (!req || typeof req.then !== "function") {
         btnPlay.textContent = "⏸";
         setStatus("");
-        return Promise.resolve(true);
+        showResume(false);
+        return;
       }
-      return p.then(() => {
-        if (token !== playToken) return false;
-        wantPlay = true;
+      req.then(() => {
+        if (gen !== playGen) return;
         btnPlay.textContent = "⏸";
         setStatus("");
-        startedAt = Date.now();
-        stuck = 0;
-        return true;
+        showResume(false);
       }).catch((err) => {
-        if (token !== playToken) return false;
-        console.warn("play()", err);
-        // بلافاصله دوباره روی canplay تلاش می‌شود
-        return false;
+        if (gen !== playGen) return;
+        console.warn("play blocked/failed", err);
+        btnPlay.textContent = "▶";
+        setStatus("برای ادامه پخش، دکمه پایین را بزنید.", true);
+        showResume(true);
       });
     }
 
     function loadTrack(i, autoplay) {
       if (!PLAYLIST.length) return;
-      advancing = false;
-      stuck = 0;
-      lastCur = 0;
       index = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
       const track = PLAYLIST[index];
       titleEl.textContent = track.title || ("آهنگ " + (index + 1));
       metaEl.textContent = toFaDigits((index + 1) + " از " + PLAYLIST.length);
       renderList();
+      seenPlaying = false;
+      playGen += 1;
+      const gen = playGen;
 
-      playToken += 1;
-      const token = playToken;
-
-      // مهم: pause نکن و src را خالی نکن — فقط عوض کن تا session پخش حفظ شود
-      audio.src = track.url;
-      try { audio.load(); } catch (e) {}
+      // فقط src را عوض کن؛ pause/removeAttribute نکن تا کمتر قطع شود
+      if (audio.src !== track.url) {
+        audio.src = track.url;
+      } else {
+        try { audio.currentTime = 0; } catch (e) {}
+      }
 
       if (autoplay || wantPlay) {
-        setStatus("در حال پخش...");
-        // تلاش فوری (هم‌زمان با event در صورت امکان)
-        forcePlay(token);
-        // و وقتی آماده شد دوباره
-        const onReady = () => {
-          if (token !== playToken) return;
-          if (audio.paused && wantPlay) forcePlay(token);
+        wantPlay = true;
+        setStatus("در حال بارگذاری آهنگ...");
+        // یک‌بار بعد از canplay
+        const kick = () => {
+          if (gen !== playGen) return;
+          safePlay(gen);
         };
-        audio.addEventListener("loadeddata", onReady, { once: true });
-        audio.addEventListener("canplay", onReady, { once: true });
-        audio.addEventListener("canplaythrough", onReady, { once: true });
+        audio.addEventListener("canplay", kick, { once: true });
+        // و یک تلاش زودهنگام
+        safePlay(gen);
+        // اگر تا 2.5 ثانیه playing نشد، دکمه ادامه را نشان بده
+        setTimeout(() => {
+          if (gen !== playGen) return;
+          if (wantPlay && (audio.paused || !seenPlaying)) {
+            setStatus("برای ادامه پخش، دکمه پایین را بزنید.", true);
+            showResume(true);
+          }
+        }, 2500);
       } else {
         btnPlay.textContent = "▶";
         setStatus("");
+        showResume(false);
       }
     }
 
-    function playNext() {
-      if (advancing || !PLAYLIST.length) return;
-      advancing = true;
-      wantPlay = true; // حتماً حالت پخش بماند
+    function playNext(reason) {
+      const now = Date.now();
+      // ضد دوباره‌کاری: حداقل 1.5 ثانیه بین دو تعویض
+      if (now - lastAdvanceAt < 1500) return;
+      lastAdvanceAt = now;
+      wantPlay = true;
       setStatus("آهنگ بعدی...");
-      const next = index + 1;
-      // بدون تأخیر — تأخیر باعث از دست رفتن اجازه پخش در وب‌ویو می‌شود
-      loadTrack(next, true);
-      advancing = false;
+      loadTrack(index + 1, true);
     }
 
     function togglePlay() {
@@ -366,6 +380,7 @@
         setStatus("لیست پخش خالی است.", true);
         return;
       }
+      showResume(false);
       if (!audio.src) {
         wantPlay = true;
         loadTrack(index, true);
@@ -373,7 +388,7 @@
       }
       if (audio.paused) {
         wantPlay = true;
-        forcePlay(playToken);
+        safePlay(playGen);
       } else {
         audio.pause();
         wantPlay = false;
@@ -381,20 +396,25 @@
       }
     }
 
+    audio.addEventListener("playing", () => {
+      seenPlaying = true;
+      btnPlay.textContent = "⏸";
+      setStatus("");
+      showResume(false);
+    });
+
     audio.addEventListener("ended", () => {
+      const now = Date.now();
+      if (now - lastEndedAt < 1000) return;
+      lastEndedAt = now;
       if (!wantPlay) return;
-      playNext();
+      playNext("ended");
     });
 
     audio.addEventListener("error", () => {
-      setStatus("خطا در آهنگ؛ بعدی...", true);
-      if (wantPlay) {
-        // خطای شبکه — یک تأخیر کوتاه لازم است
-        const t = playToken;
-        setTimeout(() => {
-          if (wantPlay && playToken === t) playNext();
-        }, 400);
-      }
+      setStatus("خطا در دریافت آهنگ.", true);
+      // خطا را خودکار پشت‌سرهم نکن تا تیک‌تیک نشود؛ فقط دکمه ادامه
+      if (wantPlay) showResume(true);
     });
 
     audio.addEventListener("timeupdate", () => {
@@ -403,50 +423,41 @@
       barEl.style.width = (dur && isFinite(dur) ? (cur / dur) * 100 : 0) + "%";
       curEl.textContent = fmt(cur);
       durEl.textContent = fmt(dur);
-      lastCur = cur;
-    });
 
-    audio.addEventListener("playing", () => {
-      btnPlay.textContent = "⏸";
-      setStatus("");
-      stuck = 0;
-    });
-
-    // نگهبان انتها / گیر کردن
-    setInterval(() => {
-      if (!wantPlay || !PLAYLIST.length) return;
-      if (audio.ended) {
-        playNext();
-        return;
-      }
-      const dur = audio.duration;
-      const cur = audio.currentTime;
-      if (isFinite(dur) && dur > 1 && cur >= dur - 0.35) {
-        playNext();
-        return;
-      }
-      // اگر paused شده ولی هنوز wantPlay و نزدیک انتها
-      if (audio.paused && isFinite(dur) && dur > 1 && cur > 1 && cur >= dur - 1.2) {
-        playNext();
-        return;
-      }
-      // اگر پخش باید باشد ولی pause است و از شروع > 2s گذشته → دوباره play
-      if (audio.paused && wantPlay && !advancing && Date.now() - startedAt > 2000 && cur < 0.5) {
-        forcePlay(playToken);
-      }
-      if (!audio.paused) {
-        if (Math.abs(cur - lastCur) < 0.01) stuck++;
-        else stuck = 0;
-        if (stuck > 20 && Date.now() - startedAt > 6000) {
-          setStatus("گیر کرد؛ بعدی...", true);
-          playNext();
+      // فقط یک مسیر برای اتمام با duration مشخص
+      if (wantPlay && isFinite(dur) && dur > 3 && cur >= dur - 0.25) {
+        // اگر ended نیامد
+        if (!audio.ended) {
+          playNext("near-end");
         }
       }
-    }, 400);
+    });
 
     btnPlay.addEventListener("click", togglePlay);
-    btnPrev.addEventListener("click", () => { wantPlay = true; loadTrack(index - 1, true); });
-    btnNext.addEventListener("click", () => { wantPlay = true; playNext(); });
+    resumeBtn.addEventListener("click", () => {
+      wantPlay = true;
+      showResume(false);
+      // اگر تقریباً اول آهنگ است و پخش نشده، همین را play کن؛ وگرنه بعدی
+      if (!seenPlaying && audio.currentTime < 1) {
+        safePlay(playGen);
+      } else if (audio.paused && audio.currentTime > 0 && isFinite(audio.duration) && audio.currentTime < audio.duration - 1) {
+        safePlay(playGen);
+      } else {
+        playNext("resume");
+      }
+    });
+    btnPrev.addEventListener("click", () => {
+      wantPlay = true;
+      showResume(false);
+      lastAdvanceAt = 0;
+      loadTrack(index - 1, true);
+    });
+    btnNext.addEventListener("click", () => {
+      wantPlay = true;
+      showResume(false);
+      lastAdvanceAt = 0;
+      playNext("button");
+    });
 
     progressEl.addEventListener("click", (e) => {
       if (!audio.duration || !isFinite(audio.duration)) return;
