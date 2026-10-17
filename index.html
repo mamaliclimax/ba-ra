@@ -103,6 +103,43 @@
     .quality-wrap .lab{color:var(--muted);font-size:.78rem;margin-left:4px}
     .qbtn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:999px;padding:6px 10px;font-size:.75rem;cursor:pointer}
     .qbtn.active{background:linear-gradient(135deg,#00cec9,#6c5ce7);border-color:transparent}
+  
+    .tv-stage{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#000;margin-bottom:12px;aspect-ratio:16/9;position:relative}
+    .tv-stage video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+    .tv-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-size:.95rem;pointer-events:none;z-index:2}
+    .tv-overlay.hide{display:none}
+    .tv-hud{
+      position:absolute; top:10px; left:10px; z-index:5;
+      display:flex; gap:8px; flex-direction:row;
+    }
+    .hud-btn{
+      width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
+      background:rgba(0,0,0,.55);color:#fff;font-size:1.15rem;
+      backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 14px rgba(0,0,0,.35);
+    }
+    .hud-btn.rec-on{background:#e74c3c;animation:pulse 1.2s infinite}
+    .sheet-mask{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
+      align-items:flex-end;justify-content:center;
+    }
+    .sheet-mask.open{display:flex}
+    .sheet{
+      width:100%;max-width:480px;background:#12121c;border-radius:18px 18px 0 0;
+      padding:8px 0 18px;color:#fff;max-height:70vh;overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .sheet-handle{width:42px;height:4px;border-radius:99px;background:rgba(255,255,255,.25);margin:6px auto 10px}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;padding:4px 18px 12px;font-weight:700;font-size:1.05rem}
+    .sheet-close{background:transparent;border:none;color:#fff;font-size:1.2rem;cursor:pointer}
+    .sheet-item{
+      width:100%;display:flex;justify-content:space-between;align-items:center;
+      padding:14px 18px;background:transparent;border:none;border-top:1px solid rgba(255,255,255,.08);
+      color:#fff;font-size:.95rem;cursor:pointer;text-align:right;
+    }
+    .sheet-item .check{opacity:0;color:#6c5ce7;font-weight:700}
+    .sheet-item.active .check{opacity:1}
+
   </style>
 </head>
 <body>
@@ -162,21 +199,34 @@
       <button class="back" id="backHome2">← منوی اصلی</button>
       <div class="hero"><h1>📺 تلویزیون</h1><p>کانال را انتخاب و تماشا کن</p></div>
       <div class="tv-title" id="tvTitle">کانالی انتخاب نشده</div>
-      <div class="tv-stage">
+      <div class="tv-stage" id="tvStage">
         <video id="tvVideo" playsinline controls preload="auto" referrerpolicy="no-referrer"></video>
         <div class="tv-overlay" id="tvOverlay">یک کانال از لیست زیر انتخاب کنید</div>
-      </div>
-      <div class="quality-wrap" id="qualityWrap" style="display:none">
-        <span class="lab">کیفیت:</span>
-        <div id="qualityBtns"></div>
+        <div class="tv-hud">
+          <button type="button" class="hud-btn" id="tvRecord" title="ضبط">⏺</button>
+          <button type="button" class="hud-btn" id="tvQualityBtn" title="کیفیت">⚙</button>
+          <button type="button" class="hud-btn" id="tvFullscreen" title="تمام‌صفحه">⛶</button>
+        </div>
       </div>
       <div class="tv-actions">
-        <button class="chip" id="tvFullscreen">⛶ تمام‌صفحه</button>
         <button class="chip" id="tvStop">⏹ توقف</button>
-        <button class="chip rec" id="tvRecord">⏺ ضبط</button>
       </div>
       <div class="list"><h2>کانال‌ها</h2><div id="tvChannels"></div></div>
       <div class="status" id="tvStatus"></div>
+
+      <!-- شیت کیفیت -->
+      <div class="sheet-mask" id="qualitySheet">
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <span>کیفیت</span>
+            <button type="button" class="sheet-close" id="qualityClose">→</button>
+          </div>
+          <div class="sheet-body" id="qualityList">
+            <button type="button" class="sheet-item active" data-q="-1"><span>خودکار</span><span class="check">✓</span></button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -311,34 +361,50 @@
       }catch(e){}
       mediaRecorder=null; recordedChunks=[]; isRecording=false;
       const btn=document.getElementById("tvRecord");
-      if(btn){ btn.textContent="⏺ ضبط"; btn.classList.remove("on"); }
+      if(btn){ btn.textContent="⏺"; btn.classList.remove("rec-on"); }
+    }
+    function qualityLabel(lv){
+      const h = lv && lv.height ? lv.height : 0;
+      if(h>=1080) return "وضوح بالا (Full HD)";
+      if(h>=720) return "وضوح متوسط (HD)";
+      if(h>=480) return "اقتصادی (۴۸۰p)";
+      if(h>=360) return "وضوح کم (۳۶۰p)";
+      if(h>=240) return "وضوح کم (۲۴۰p)";
+      if(h>0) return h+"p";
+      const br = lv && lv.bitrate ? Math.round(lv.bitrate/1000) : 0;
+      return br ? (br+"kbps") : "کیفیت";
     }
     function renderQualityLevels(){
-      const wrap=document.getElementById("qualityWrap");
-      const box=document.getElementById("qualityBtns");
-      if(!wrap||!box) return;
-      box.innerHTML="";
-      if(!hls || !hls.levels || hls.levels.length<2){
-        wrap.style.display="none";
-        return;
-      }
-      wrap.style.display="flex";
-      // Auto
-      const auto=document.createElement("button");
-      auto.className="qbtn"+(hls.currentLevel===-1?" active":"");
-      auto.textContent="خودکار";
-      auto.onclick=()=>{ hls.currentLevel=-1; renderQualityLevels(); tvMsg("کیفیت: خودکار"); };
-      box.appendChild(auto);
-      hls.levels.forEach((lv,i)=>{
-        const h=lv.height||0;
-        const br=lv.bitrate?Math.round(lv.bitrate/1000)+"kb":"";
-        const label=h? (h+"p") : (br||("L"+i));
-        const b=document.createElement("button");
-        b.className="qbtn"+(hls.currentLevel===i?" active":"");
-        b.textContent=label;
-        b.onclick=()=>{ hls.currentLevel=i; renderQualityLevels(); tvMsg("کیفیت: "+label); };
-        box.appendChild(b);
+      const list=document.getElementById("qualityList");
+      if(!list) return;
+      const levels = (hls && hls.levels) ? hls.levels : [];
+      let html = "";
+      const cur = hls ? hls.currentLevel : -1;
+      html += '<button type="button" class="sheet-item '+(cur===-1?"active":"")+'" data-q="-1"><span>خودکار</span><span class="check">✓</span></button>';
+      levels.forEach((lv,i)=>{
+        html += '<button type="button" class="sheet-item '+(cur===i?"active":"")+'" data-q="'+i+'"><span>'+qualityLabel(lv)+'</span><span class="check">✓</span></button>';
       });
+      list.innerHTML = html;
+      list.querySelectorAll(".sheet-item").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          const q = parseInt(btn.getAttribute("data-q"),10);
+          if(hls){
+            hls.currentLevel = q;
+            tvMsg(q===-1 ? "کیفیت: خودکار" : ("کیفیت: "+qualityLabel(hls.levels[q]||{})));
+          }
+          renderQualityLevels();
+          closeQualitySheet();
+        });
+      });
+    }
+    function openQualitySheet(){
+      renderQualityLevels();
+      const m=document.getElementById("qualitySheet");
+      if(m) m.classList.add("open");
+    }
+    function closeQualitySheet(){
+      const m=document.getElementById("qualitySheet");
+      if(m) m.classList.remove("open");
     }
     function startRecording(){
       if(isRecording) return;
@@ -374,7 +440,7 @@
       mediaRecorder.onstop=function(){
         isRecording=false;
         const btn=document.getElementById("tvRecord");
-        if(btn){ btn.textContent="⏺ ضبط"; btn.classList.remove("on"); }
+        if(btn){ btn.textContent="⏺"; btn.classList.remove("rec-on"); }
         if(!recordedChunks.length){ tvMsg("فایلی ضبط نشد.", true); return; }
         const blob=new Blob(recordedChunks, {type: recordedChunks[0].type || "video/webm"});
         const a=document.createElement("a");
@@ -383,12 +449,12 @@
         document.body.appendChild(a);
         a.click();
         setTimeout(()=>{ try{ URL.revokeObjectURL(a.href); a.remove(); }catch(e){} }, 2000);
-        tvMsg("ضبط ذخیره شد.");
+        tvMsg("فایل ضبط دانلود شد. در پوشه دانلود/گالری بررسی کنید.");
       };
       mediaRecorder.start(1000);
       isRecording=true;
       const btn=document.getElementById("tvRecord");
-      if(btn){ btn.textContent="⏹ پایان ضبط"; btn.classList.add("on"); }
+      if(btn){ btn.textContent="⏹"; btn.classList.add("rec-on"); }
       tvMsg("در حال ضبط...");
     }
     function toggleRecording(){
@@ -400,6 +466,7 @@
       }
     }
     function stopTv(){
+      try{closeQualitySheet()}catch(e){}
       stopRecordingSilent();
       destroyHls();
       try{tvVideo.pause()}catch(e){}
@@ -522,6 +589,11 @@
     });
     document.getElementById("tvStop").addEventListener("click", stopTv);
     document.getElementById("tvRecord").addEventListener("click", toggleRecording);
+    document.getElementById("tvQualityBtn").addEventListener("click", openQualitySheet);
+    document.getElementById("qualityClose").addEventListener("click", closeQualitySheet);
+    document.getElementById("qualitySheet").addEventListener("click",function(e){
+      if(e.target===this) closeQualitySheet();
+    });
 
     // nav
     document.getElementById("goRadio").addEventListener("click",()=>{
