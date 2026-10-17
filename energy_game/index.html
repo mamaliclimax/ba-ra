@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="referrer" content="no-referrer"/>
+<title>ستارهٔ برق — بازی مدیریت انرژی</title>
+<style>
+:root{--sky1:#7ec8ff;--sky2:#b8f0ff;--night1:#1a1a4a;--night2:#2d1b69;--ink:#1f2a44;--card:rgba(255,255,255,.94);--line:rgba(31,42,68,.12);--good:#2ecc71;--bad:#e74c3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:Tahoma,"Segoe UI",sans-serif;overflow:hidden;color:var(--ink)}
+body{background:linear-gradient(180deg,var(--sky1),var(--sky2) 55%,#dff7c8);transition:background 1s}
+body.night{background:linear-gradient(180deg,var(--night1),var(--night2) 60%,#1a3040);color:#f4f0ff}
+body.night .card{background:rgba(30,28,60,.94);color:#f4f0ff;border-color:rgba(255,255,255,.1)}
+body.night .muted{color:#b8b0e0}
+#app{height:100%;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 6px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800}
+.logo{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#fff,#ffe9a8);font-size:1.3rem;animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.stats{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:.75rem;font-weight:700}
+.screen{display:none;flex:1;min-height:0;flex-direction:column;padding:0 12px 8px;overflow:auto}
+.screen.active{display:flex}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 30px rgba(31,42,68,.1);padding:14px}
+.hero{text-align:center;margin:4px 0 10px}.hero h1{margin:0 0 6px;font-size:1.22rem}.hero p{margin:0;opacity:.85;font-size:.86rem;line-height:1.6}
+.muted{color:#5a6a88;font-size:.82rem}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.btn{border:none;border-radius:16px;padding:11px 14px;font-weight:800;cursor:pointer;font-size:.86rem;box-shadow:0 8px 18px rgba(0,0,0,.1);transition:transform .12s}
+.btn.primary{background:linear-gradient(135deg,#6c5ce7,#00cec9);color:#fff}
+.btn.soft{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.sun{background:linear-gradient(135deg,#ffd66b,#ff9f43);color:#5a3b00}
+.btn.moon{background:linear-gradient(135deg,#6c5ce7,#2d1b69);color:#fff}
+.btn.gold{background:linear-gradient(135deg,#f6d365,#fda085);color:#5a2e00}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.mascot-wrap{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.mascot{width:72px;height:72px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 30% 30%,#fff,#ffd66b 40%,#6c5ce7);display:grid;place-items:center;font-size:2rem;animation:floaty 3s ease-in-out infinite;position:relative}
+.mascot.talk::after{content:"";position:absolute;bottom:-2px;right:8px;width:10px;height:10px;background:#2ecc71;border-radius:50%;box-shadow:0 0 8px #2ecc71;animation:blink 1s infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.bubble{flex:1;background:#fff;border-radius:18px;padding:10px 12px;border:1px solid var(--line);font-size:.84rem;line-height:1.7;position:relative}
+.bubble::before{content:"";position:absolute;right:-8px;top:22px;border:8px solid transparent;border-left-color:#fff}
+body.night .bubble{background:rgba(40,36,80,.95)}
+body.night .bubble::before{border-left-color:rgba(40,36,80,.95)}
+.scene-wrap{min-height:210px;perspective:900px;display:flex;align-items:center;justify-content:center}
+.house3d{width:min(92vw,360px);height:240px;position:relative;transform-style:preserve-3d;transform:rotateX(18deg) rotateY(-22deg)}
+.floor{position:absolute;inset:40% -10% -10% -10%;background:linear-gradient(135deg,#8fd19e,#6bbf7a);transform:rotateX(90deg) translateZ(-20px);border-radius:30px;opacity:.85}
+.room{position:absolute;width:42%;height:38%;border-radius:16px;cursor:pointer;border:3px solid rgba(255,255,255,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:.68rem;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.25);transition:filter .2s,box-shadow .2s}
+.room .ic{font-size:1.25rem}.room.on{filter:brightness(1.12);box-shadow:0 0 22px rgba(255,220,100,.5)}.room.off{filter:brightness(.65)}
+.r1{top:4%;right:3%;background:linear-gradient(145deg,#74b9ff,#0984e3);transform:translateZ(30px)}
+.r2{top:4%;left:3%;background:linear-gradient(145deg,#fd79a8,#e84393);transform:translateZ(20px)}
+.r3{bottom:4%;right:3%;background:linear-gradient(145deg,#55efc4,#00b894);transform:translateZ(25px)}
+.r4{bottom:4%;left:3%;background:linear-gradient(145deg,#ffeaa7,#fdcb6e);color:#5a3b00;transform:translateZ(15px)}
+.r5{top:30%;right:29%;width:42%;height:28%;background:linear-gradient(145deg,#a29bfe,#6c5ce7);transform:translateZ(35px)}
+.meter-bar{height:12px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;margin:6px 0}
+.meter-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#2ecc71,#f1c40f,#e74c3c);transition:width .4s}
+.device{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:16px;border:1px solid var(--line);margin-bottom:7px;background:rgba(255,255,255,.55)}
+body.night .device{background:rgba(255,255,255,.06)}
+.device .left{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.88rem}
+.toggle{width:48px;height:28px;border-radius:999px;background:#ccc;position:relative;cursor:pointer;transition:background .2s}
+.toggle.on{background:var(--good)}.toggle::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(-20px)}
+.form input{width:100%;padding:12px;margin:6px 0;border-radius:14px;border:1px solid var(--line);font-size:.95rem}
+.toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:rgba(31,42,68,.92);color:#fff;padding:10px 16px;border-radius:999px;font-size:.84rem;font-weight:700;opacity:0;transition:opacity .3s;z-index:30;max-width:92%;text-align:center}
+.toast.show{opacity:1}
+.badge-pop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:40}
+.badge-pop.show{display:flex}
+.badge-card{background:#fff;border-radius:28px;padding:22px;text-align:center;max-width:300px;animation:popIn .35s ease}
+@keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+body.night .badge-card{background:#2a2450;color:#fff}
+.stage-bar{display:flex;gap:4px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.stage-dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.65rem;font-weight:900;background:rgba(0,0,0,.08);cursor:pointer}
+.stage-dot.on{background:linear-gradient(135deg,#6c5ce7,#00cec9);color:#fff}.stage-dot.done{background:#2ecc71;color:#fff}.stage-dot.lock{opacity:.4}
+.leader li{padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:.85rem}
+.back-mini{border:none;background:transparent;font-weight:800;cursor:pointer;color:inherit;font-size:.85rem}
+.progress-txt{text-align:center;font-size:.78rem;margin:4px 0}
+.quiz-opt{display:block;width:100%;text-align:right;padding:12px;margin:6px 0;border-radius:14px;border:2px solid var(--line);background:rgba(255,255,255,.7);font-weight:700;cursor:pointer;font-size:.9rem}
+body.night .quiz-opt{background:rgba(255,255,255,.08)}
+.quiz-opt.correct{border-color:var(--good);background:rgba(46,204,113,.15)}
+.quiz-opt.wrong{border-color:var(--bad);background:rgba(231,76,60,.12)}
+.wheel-box{display:flex;flex-direction:column;align-items:center;gap:10px}
+.wheel-wrap{position:relative;width:240px;height:240px}
+.wheel{width:240px;height:240px;border-radius:50%;background:conic-gradient(#ff6b6b 0 25%,#ffd93d 25% 50%,#6bcB77 50% 75%,#4d96ff 75% 100%);border:8px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.2);transition:transform 4s cubic-bezier(.15,.85,.25,1);position:relative}
+.wheel-labels{position:absolute;inset:0;pointer-events:none}
+.wheel-labels span{position:absolute;font-weight:900;font-size:1.15rem;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.4)}
+.l1{top:18%;right:18%}.l2{top:18%;left:18%}.l4{bottom:18%;left:18%}.l10{bottom:18%;right:14%}
+.wheel-pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:1.6rem;z-index:2}
+.media-item{padding:12px;border-radius:16px;border:1px solid var(--line);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;background:rgba(255,255,255,.5)}
+body.night .media-item{background:rgba(255,255,255,.06)}
+.nav{display:flex;gap:2px;padding:6px 4px 10px;background:rgba(255,255,255,.55);border-top:1px solid var(--line);overflow-x:auto;flex-shrink:0}
+body.night .nav{background:rgba(20,18,45,.85)}
+.nav button{flex:1;min-width:52px;border:none;background:transparent;padding:6px 2px;font-size:.65rem;font-weight:700;color:inherit;cursor:pointer;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav button span{font-size:1.15rem}.nav button.active{background:rgba(108,92,231,.15);color:#6c5ce7}
+body.night .nav button.active{background:rgba(108,92,231,.35);color:#c4b5fd}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="top"><div class="brand"><div class="logo">⚡</div><div>ستارهٔ برق</div></div>
+<div class="stats"><div class="pill">⭐ <span id="starsVal">0</span></div><div class="pill">🏆 <span id="scoreVal">0</span></div><div class="pill">⚡ <span id="energyVal">0</span>W</div></div></div>
+
+<div class="screen" id="screenProfile"><div class="card">
+<div class="mascot-wrap"><div class="mascot talk">🤖</div><div class="bubble">سلام قهرمان! من <b>برقو</b> هستم، دوست انرژی تو. نام و شهرت و شهرت را بگو تا ستاره‌هایت برای همیشه ذخیره شود و در جدول هفته بدرخشی!</div></div>
+<div class="hero"><h1>ثبت‌نام قهرمان انرژی</h1><p class="muted">برای شروع ماجراجویی مدیریت مصرف</p></div>
+<div class="form"><input id="inpFirst" placeholder="نام" maxlength="40"/><input id="inpLast" placeholder="نام خانوادگی" maxlength="40"/><input id="inpCity" placeholder="شهر" maxlength="40"/></div>
+<div class="btn-row"><button class="btn primary" id="btnSaveProfile">شروع ماجراجویی 🚀</button></div>
+</div></div>
+
+<div class="screen" id="screenHome"><div class="card">
+<div class="mascot-wrap"><div class="mascot talk">🤖</div><div class="bubble" id="homeBubble">خوش آمدی! خانه را مدیریت کن، کویینز بزن، گردونه بچرخان و قصه گوش بده.</div></div>
+<div class="hero"><h1 id="homeTitle">خانهٔ هوشمند ستاره</h1><p class="muted" id="homeSub"></p></div>
+<div class="btn-row">
+<button class="btn primary" data-go="game">🎮 بازی خانه</button>
+<button class="btn gold" data-go="quiz">👑 کویینز</button>
+<button class="btn sun" data-go="wheel">🎡 گردونه</button>
+<button class="btn soft" data-go="board">🏅 جدول هفته</button>
+</div>
+<div class="btn-row">
+<button class="btn soft" id="btnDay">☀️ روز</button>
+<button class="btn moon" id="btnNight">🌙 شب</button>
+<button class="btn soft" id="btnSound">🔊 صدا</button>
+</div></div></div>
+
+<div class="screen" id="screenGame">
+<div class="mascot-wrap"><div class="mascot" style="width:56px;height:56px;font-size:1.5rem">🤖</div><div class="bubble" id="coachBubble">مرحله را انتخاب کن و وسایل پرمصرف را خاموش کن تا ستاره بگیری!</div></div>
+<div class="stage-bar" id="stageBar"></div>
+<div class="progress-txt muted" id="stageInfo"></div>
+<div class="meter-bar"><div class="meter-fill" id="meterFill"></div></div>
+<div class="scene-wrap"><div class="house3d" id="house3d"></div></div>
+<div class="card" id="roomPanel" style="display:none"><button class="back-mini" id="closeRoom">← بازگشت به خانه</button><div id="roomTitle" style="font-weight:900;margin:8px 0"></div><div id="deviceList"></div></div>
+</div>
+
+<div class="screen" id="screenQuiz"><div class="card" style="flex:1">
+<div class="mascot-wrap"><div class="mascot" style="width:56px;height:56px;font-size:1.5rem">👑</div><div class="bubble" id="quizBubble">کویینز: ۲۰۰ سؤال مدیریت مصرف برق — هر پاسخ درست ۱ امتیاز</div></div>
+<div class="hero"><h1>👑 کویینز انرژی</h1><p class="muted" id="quizMeta">هر بار ۴ سؤال · سپس ۱ ساعت صبر برای دور بعد</p></div>
+<div id="quizArea"></div>
+<div class="btn-row" id="quizActions"></div>
+</div></div>
+
+<div class="screen" id="screenWheel"><div class="card">
+<div class="mascot-wrap"><div class="mascot" style="width:56px;height:56px;font-size:1.5rem">🎡</div><div class="bubble" id="wheelBubble">روزی یک‌بار گردونه را بچرخان — امتیاز ۱، ۲، ۴ یا ۱۰</div></div>
+<div class="wheel-box"><div class="wheel-wrap"><div class="wheel-pin">▼</div>
+<div class="wheel" id="wheel"><div class="wheel-labels"><span class="l1">۱</span><span class="l10">۱۰</span><span class="l4">۴</span><span class="l2">۲</span></div></div>
+</div>
+<button class="btn primary" id="btnSpin">چرخاندن گردونه 🎡</button>
+<p class="muted" id="wheelMeta" style="text-align:center"></p>
+</div></div>
+
+<div class="screen" id="screenStory"><div class="card" style="flex:1">
+<div class="mascot-wrap"><div class="mascot" style="width:56px;height:56px;font-size:1.5rem">🌙</div><div class="bubble">هر قصه شب که گوش بدهی ۵ ستاره می‌گیری (یک‌بار برای هر قصه)</div></div>
+<div class="hero"><h1>🌙 قصه شب</h1><p class="muted">قصه‌های آرامش‌بخش درباره انرژی و طبیعت</p></div>
+<div id="storyList"></div>
+<div id="storyPlayer" style="display:none;margin-top:8px"><video id="storyVideo" controls playsinline style="width:100%;border-radius:16px;max-height:220px;background:#000"></video><audio id="storyAudio" controls style="display:none;width:100%;margin-top:8px"></audio></div>
+</div></div>
+
+<div class="screen" id="screenAnim"><div class="card" style="flex:1">
+<div class="mascot-wrap"><div class="mascot" style="width:56px;height:56px;font-size:1.5rem">🎬</div><div class="bubble">هر انیمیشن ۵ امتیاز دارد — یک‌بار برای هر مورد</div></div>
+<div class="hero"><h1>🎬 انیمیشن آموزشی</h1><p class="muted">یادگیری با تصویر و حرکت</p></div>
+<div id="animList"></div>
+<div id="animPlayer" style="display:none;margin-top:8px"><video id="animVideo" controls playsinline style="width:100%;border-radius:16px;max-height:220px;background:#000"></video></div>
+</div></div>
+
+<div class="screen" id="screenBoard"><div class="card">
+<div class="hero"><h1>🏅 جدول هفته</h1><p class="muted">بیشترین امتیاز هفته برای جایزه از طرف ما</p></div>
+<p class="muted" id="weekLabel" style="text-align:center"></p>
+<ol class="leader" id="leaderList" style="padding:0 18px;margin:0"></ol>
+<div class="btn-row"><button class="btn soft" id="btnCopyScore">📋 کپی کد امتیاز برای ربات</button></div>
+<p class="muted" style="text-align:center;margin-top:8px">کد را در چت ربات بفرست تا در جدول رسمی ثبت شود.</p>
+</div></div>
+
+<nav class="nav">
+<button type="button" data-go="home"><span>🏠</span>خانه</button>
+<button type="button" data-go="game"><span>🎮</span>بازی</button>
+<button type="button" data-go="quiz"><span>👑</span>کویینز</button>
+<button type="button" data-go="wheel"><span>🎡</span>گردونه</button>
+<button type="button" data-go="story"><span>🌙</span>قصه</button>
+<button type="button" data-go="anim"><span>🎬</span>انیمه</button>
+<button type="button" data-go="board"><span>🏅</span>جدول</button>
+</nav>
+</div>
+<div class="toast" id="toast"></div>
+<div class="badge-pop" id="badgePop"><div class="badge-card"><div style="font-size:2.8rem" id="badgeEmoji">🌟</div><h2 id="badgeTitle">آفرین!</h2><p id="badgeText" class="muted"></p><button class="btn primary" id="badgeOk">ادامه</button></div></div>
+
+<script>
+(function(){
+const STORIES=[];
+const ANIMATIONS=[];
+const STORAGE='starPower_v3',HOUR_MS=3600000,BUDGET=850;
+let soundOn=true,audioCtx=null;
+
+function ctx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function beep(f,d,type,vol){if(!soundOn)return;try{var c=ctx(),o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.value=vol||0.08;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+(d||0.12));o.stop(c.currentTime+(d||0.12)+0.02);}catch(e){}}
+function sfxClick(){beep(520,0.06,'triangle',0.06);}
+function sfxOk(){beep(660,0.08,'sine',0.09);setTimeout(function(){beep(880,0.12,'sine',0.08);},70);}
+function sfxWrong(){beep(220,0.15,'sawtooth',0.07);}
+function sfxStar(){beep(740,0.08,'sine',0.1);setTimeout(function(){beep(980,0.1,'sine',0.09);},80);setTimeout(function(){beep(1175,0.14,'sine',0.08);},160);}
+function sfxLevel(){beep(523,0.1,'square',0.07);setTimeout(function(){beep(659,0.1,'square',0.07);},100);setTimeout(function(){beep(784,0.18,'square',0.08);},200);}
+function sfxSpin(){var i=0;var t=setInterval(function(){beep(300+i*40,0.04,'triangle',0.05);i++;if(i>12)clearInterval(t);},80);}
+function sfxWin(){beep(523,0.1,'sine',0.1);setTimeout(function(){beep(659,0.1,'sine',0.1);},90);setTimeout(function(){beep(784,0.12,'sine',0.1);},180);setTimeout(function(){beep(1046,0.2,'sine',0.12);},280);}
+
+const QUIZ_BANK=[
+{q:"چراغ را وقتی از اتاق می‌روی چه کار کنی؟",opts:["روشن بماند", "خاموش کنیم", "چندتا روشن کنیم", "جای تلویزیون"],a:1},
+{q:"نور خورشید چه کمکی به صرفه‌جویی می‌کند؟",opts:["هیچ", "جایگزین چراغ روز", "خاموشی یخچال", "ساخت گوشی"],a:1},
+{q:"شارژر بدون گوشی را چه کنیم؟",opts:["در برق بماند", "از برق بکشیم", "آب بخورد", "یخ بزند"],a:1},
+{q:"چرا در یخچال را زود ببندیم؟",opts:["زیبایی", "موتور کمتر کار کند", "گرم شود", "صدا بدهد"],a:1},
+{q:"کدام وسیله معمولاً پرمصرف‌تر است؟",opts:["چراغ خواب", "کولر گازی", "کتاب", "مداد"],a:1},
+{q:"لامپ LED معمولاً چه ویژگی دارد؟",opts:["خیلی پرمصرف", "کم‌مصرف و بادوام", "آب‌بر", "پرسروصدا"],a:1},
+{q:"پنجره باز + کولر روشن چه مشکلی دارد؟",opts:["صرفه‌جویی", "هدر رفتن سرما و مصرف بالا", "خاموشی یخچال", "هیچ"],a:1},
+{q:"انرژی خورشیدی از کجا می‌آید؟",opts:["باد", "نور خورشید", "بنزین", "شیر"],a:1},
+{q:"تلویزیون بدون بیننده را چه کنیم؟",opts:["بلندتر کنیم", "خاموش کنیم", "سه تا روشن کنیم", "به یخچال وصل کنیم"],a:1},
+{q:"«وات» یعنی چه؟",opts:["رنگ", "واحد توان برق", "نام شهر", "نوع بازی"],a:1},
+{q:"کدام انرژی تجدیدپذیر است؟",opts:["زغال‌سنگ", "خورشید و باد", "بنزین", "باتری خالی"],a:1},
+{q:"چراغ قبل از خواب بهتر است؟",opts:["روشن بماند", "معمولاً خاموش شود", "حداکثر روشن", "جای تلویزیون"],a:1},
+{q:"هدف اصلی مدیریت مصرف برق چیست؟",opts:["یادگیری مصرف درست", "خاموش کردن شهر", "خرید ماشین", "حذف یخچال"],a:0},
+{q:"گردونه شانس چند بار در روز می‌چرخد؟",opts:["بی‌نهایت", "یک‌بار", "سالی یک‌بار", "هر ثانیه"],a:1},
+{q:"گوش دادن به قصه شب چند امتیاز دارد؟",opts:["۰", "۵", "۱۰۰", "۱"],a:1},
+{q:"دیدن انیمیشن چند امتیاز دارد؟",opts:["۰", "۵", "۵۰", "۲"],a:1},
+{q:"وقتی از اتاق بیرون می‌روی، چراغ را چه کار کنی؟",opts:["بیشتر روشن کن", "خاموش کن", "جایگزین کن", "روشن بگذار"],a:1},
+{q:"بهترین کار با شارژر بلااستفاده چیست؟",opts:["آب بریز روی آن", "یخچال بگذار", "از پریز بکش", "وصل بماند"],a:2},
+{q:"برای صرفه‌جویی در روز، از چه نوری استفاده کنیم؟",opts:["نور خورشید", "چراغ زیاد", "چند لامپ", "تلویزیون"],a:0},
+{q:"کدام وسیله اغلب برق بیشتری مصرف می‌کند؟",opts:["چراغ LED", "ساعت دیواری", "کولر گازی", "رادیو کوچک"],a:2},
+{q:"اگر پنجره باز باشد و کولر روشن، چه اتفاقی می‌افتد؟",opts:["یخچال خاموش می‌شود", "هیچ مشکلی نیست", "سرما هدر می‌رود و مصرف بالا می‌رود", "صرفه‌جویی می‌شود"],a:2},
+{q:"لامپ کم‌مصرف معمولاً کدام است؟",opts:["شمع", "LED", "رشته‌ای قدیمی", "هالوژن پرمصرف"],a:1},
+{q:"تلویزیون را وقتی کسی نگاه نمی‌کند چه کنیم؟",opts:["به شارژر وصل کنیم", "خاموش کنیم", "روشن بماند", "صدا را زیاد کنیم"],a:1},
+{q:"یخچال را بهتر است چگونه استفاده کنیم؟",opts:["کنار بخاری بگذاریم", "همیشه خالی بگذاریم", "در را سریع ببندیم", "در را زیاد باز کنیم"],a:2},
+{q:"انرژی پاک از کدام منبع می‌آید؟",opts:["زغال", "بنزین", "خورشید و باد", "گازوئیل"],a:2},
+{q:"قبل از خواب بهتر است چه کار کنیم؟",opts:["کولر را بیشتر کنیم", "همه چراغ‌ها را روشن بگذاریم", "تلویزیون را بلند کنیم", "چراغ‌های اضافی را خاموش کنیم"],a:3},
+{q:"کدام عادت به صرفه‌جویی کمک می‌کند؟",opts:["شارژرها را همیشه وصل بگذاریم", "وسایل بلااستفاده را خاموش کنیم", "همه وسایل را روشن بگذاریم", "پنجره‌ها را باز بگذاریم با کولر"],a:1},
+{q:"کولر را در چه دمایی بهتر است تنظیم کنیم؟",opts:["خیلی سرد", "حداکثر سرما", "خاموش نکنیم", "دمای مناسب و متعادل"],a:3},
+{q:"کامپیوتر یا لپ‌تاپ بلااستفاده را چه کنیم؟",opts:["روشن بماند", "صدا را زیاد کنیم", "به یخچال وصل کنیم", "خاموش یا خواب کنیم"],a:3},
+{q:"کدام کار مصرف برق را کم می‌کند؟",opts:["استفاده از لامپ LED", "پنجره باز + کولر", "شارژر همیشه وصل", "چراغ‌های اضافی روشن"],a:0},
+{q:"وقتی کسی در خانه نیست، خوب است؟",opts:["کولر در حداکثر", "تلویزیون روشن بماند", "وسایل غیرضروری خاموش شوند", "همه چیز روشن باشد"],a:2},
+{q:"پنکه نسبت به کولر گازی اغلب؟",opts:["هیچ فرقی ندارد", "برق تولید می‌کند", "کمتر مصرف می‌کند", "بیشتر مصرف می‌کند"],a:2},
+{q:"برای روشنایی شب بهتر است از چه استفاده کنیم؟",opts:["یخچال", "تلویزیون", "چند لامپ قوی", "لامپ مناسب و کم‌مصرف"],a:3},
+{q:"اگر لباس‌شویی را پر کنیم، چه کمکی می‌کند؟",opts:["هیچ کمکی نمی‌کند", "برق قطع می‌شود", "مصرف بیشتر می‌شود", "تعداد دفعات شستشو کم و صرفه‌جویی می‌شود"],a:3},
+{q:"اتو را بعد از استفاده چه کنیم؟",opts:["کنار آب بگذاریم", "روشن بماند", "خاموش و از برق بکشیم", "روی لباس بگذاریم"],a:2},
+{q:"کدام وسیله را می‌توانیم کمتر روشن کنیم تا صرفه‌جویی شود؟",opts:["چراغ‌های تزئینی و اضافی", "ساعت", "یخچال", "قفل در"],a:0},
+{q:"اگر لامپ بسوزد، بهتر است چه نوعی بخریم؟",opts:["پرمصرف قدیمی", "LED کم‌مصرف", "هر نوعی", "شمع"],a:1},
+{q:"دمای مناسب یخچال حدوداً چند درجه است؟",opts:["۱۰ درجه", "۴ تا ۵ درجه", "۲۰ درجه", "۰ درجه"],a:1},
+{q:"کولر آبی نسبت به کولر گازی معمولاً؟",opts:["بیشتر برق می‌خورد", "کمتر برق می‌خورد", "هیچ فرقی ندارد", "برق تولید می‌کند"],a:1},
+{q:"وقتی تلویزیون روشن است و کسی نگاه نمی‌کند، چه اتفاقی می‌افتد؟",opts:["صرفه‌جویی", "برق هدر می‌رود", "یخچال خنک‌تر می‌شود", "هیچ"],a:1},
+{q:"شارژ گوشی را شب تا صبح وصل بگذاریم؟",opts:["بله همیشه", "بهتر است بعد از شارژ کامل بکشیم", "حتماً باید بماند", "فرقی ندارد"],a:1},
+{q:"کدام کار به سیاره زمین کمک می‌کند؟",opts:["مصرف بی‌رویه برق", "صرفه‌جویی در مصرف انرژی", "همه چیز را روشن گذاشتن", "دور ریختن لامپ‌ها"],a:1},
+{q:"اگر در اتاق نور کافی از پنجره می‌آید، چه کنیم؟",opts:["چراغ را هم روشن کنیم", "چراغ را خاموش کنیم", "چند چراغ اضافه کنیم", "پرده را ببندیم و چراغ روشن کنیم"],a:1},
+{q:"وسایل برقی را از حالت آماده‌به‌کار (استندبای) درآوردن چه کمکی می‌کند؟",opts:["هیچ", "مصرف پنهان را کم می‌کند", "صدا بیشتر می‌شود", "یخچال خراب می‌شود"],a:1},
+{q:"بهترین زمان برای استفاده از وسایل پرمصرف مثل لباس‌شویی؟",opts:["ساعت اوج مصرف", "ساعات کم‌بار (غیر اوج)", "همیشه یکسان", "شب‌های خیلی دیر"],a:1},
+{q:"اگر خانه را ترک می‌کنیم، چه کار خوبی است؟",opts:["همه چیز را روشن بگذاریم", "چراغ‌ها و وسایل غیرضروری را خاموش کنیم", "تلویزیون را روشن بگذاریم", "کولر را در حداکثر بگذاریم"],a:1},
+{q:"لامپ‌های رشته‌ای قدیمی نسبت به LED؟",opts:["کم‌مصرف‌ترند", "پرمصرف‌ترند", "هیچ فرقی ندارند", "برق تولید می‌کنند"],a:1},
+{q:"استفاده از پرده ضخیم در تابستان چه کمکی می‌کند؟",opts:["خانه گرم‌تر می‌شود", "ورود گرما کمتر و کولر کمتر کار می‌کند", "هیچ کمکی نمی‌کند", "برق بیشتر مصرف می‌شود"],a:1},
+{q:"کدام عادت غلط است؟",opts:["خاموش کردن چراغ اضافی", "باز گذاشتن در یخچال طولانی", "استفاده از نور روز", "کشیدن شارژر بلااستفاده"],a:1},
+{q:"پنکه سقفی یا رومیزی معمولاً نسبت به کولر؟",opts:["بیشتر مصرف می‌کند", "خیلی کمتر مصرف می‌کند", "دقیقاً مثل هم", "برق تولید می‌کند"],a:1},
+{q:"اگر لباس‌ها را در آفتاب خشک کنیم به جای خشک‌کن برقی؟",opts:["برق بیشتری مصرف می‌شود", "صرفه‌جویی بزرگی در برق می‌شود", "هیچ فرقی ندارد", "یخچال خراب می‌شود"],a:1},
+{q:"دمای کولر را چند درجه بالاتر بگذاریم چه کمکی می‌کند؟",opts:["مصرف بیشتر می‌شود", "مصرف کمتر و صرفه‌جویی می‌شود", "هیچ کمکی نمی‌کند", "خانه سردتر می‌شود"],a:1},
+{q:"وسایل آشپزخانه مثل مایکروویو را بعد از استفاده چه کنیم؟",opts:["روشن بماند", "خاموش کنیم", "در را باز بگذاریم", "به یخچال وصل کنیم"],a:1},
+{q:"کدام کار مصرف برق را افزایش می‌دهد؟",opts:["استفاده از LED", "روشن گذاشتن چراغ‌های اضافی", "کشیدن شارژر", "بستن در یخچال"],a:1},
+{q:"اگر فیلتر کولر را تمیز نگه داریم چه اتفاقی می‌افتد؟",opts:["مصرف بیشتر می‌شود", "کولر بهتر کار می‌کند و کمتر برق می‌خورد", "هیچ فرقی ندارد", "صدا بیشتر می‌شود"],a:1},
+{q:"استفاده از تایمر برای وسایل برقی چه کمکی می‌کند؟",opts:["هیچ", "از روشن ماندن بی‌مورد جلوگیری می‌کند", "مصرف را دو برابر می‌کند", "وسایل را خراب می‌کند"],a:1},
+{q:"کدام وسیله را نباید زیاد در باز بگذاریم؟",opts:["کمد لباس", "یخچال", "کتابخانه", "جعبه اسباب‌بازی"],a:1},
+{q:"اگر از لامپ مناسب برای هر فضا استفاده کنیم؟",opts:["برق هدر می‌رود", "نور کافی با مصرف کمتر داریم", "خانه تاریک می‌شود", "هیچ کمکی نمی‌کند"],a:1},
+{q:"شارژر را وقتی گوشی پر شد چه کنیم؟",opts:["وصل بماند", "از برق بکشیم", "آب بریزیم", "کنار بخاری بگذاریم"],a:1},
+{q:"کدام منبع انرژی تمام‌نشدنی‌تر است؟",opts:["نفت", "خورشید", "زغال‌سنگ", "گاز"],a:1},
+{q:"اگر در زمستان پرده‌ها را روزها کنار بزنیم چه کمکی می‌کند؟",opts:["خانه سردتر می‌شود", "گرمای خورشید وارد و کمتر نیاز به وسایل گرمایشی داریم", "برق بیشتر مصرف می‌شود", "هیچ"],a:1},
+{q:"وسایل برقی را از حالت استندبای خارج کردن معادل چیست؟",opts:["روشن کردن بیشتر", "کم کردن مصرف پنهان", "خراب کردن وسیله", "هیچ"],a:1},
+{q:"بهترین راه برای خنک کردن خانه در روزهای معتدل؟",opts:["کولر در حداکثر", "باز کردن پنجره‌ها و جریان هوا", "همه چراغ‌ها روشن", "تلویزیون روشن"],a:1},
+{q:"اگر لباس‌شویی را با آب سرد بشوییم (وقتی مناسب است)؟",opts:["برق بیشتری مصرف می‌شود", "انرژی کمتری مصرف می‌شود", "لباس کثیف می‌ماند", "هیچ فرقی ندارد"],a:1},
+{q:"کدام کار به کاهش مصرف کمک می‌کند؟",opts:["چراغ‌های تزئینی همیشه روشن", "خاموش کردن مانیتور و کامپیوتر بلااستفاده", "باز گذاشتن در یخچال", "شارژر همیشه وصل"],a:1},
+{q:"اگر لامپ‌های راهرو را سنسوردار کنیم چه کمکی می‌کند؟",opts:["همیشه روشن می‌مانند", "فقط وقتی لازم است روشن می‌شوند", "مصرف دو برابر می‌شود", "هیچ"],a:1},
+{q:"چراغ اتاق مطالعه را وقتی تمام شدی چه کنی؟",opts:["روشن بماند", "بیشتر روشن کنیم", "جایگزین کنیم", "خاموش کنیم"],a:3},
+{q:"اگر نور کافی داری، چراغ اضافه روشن کردن درست است؟",opts:["بله درست است", "فرقی ندارد", "حتماً باید روشن باشد", "خیر، بهتر است خاموش کنیم"],a:3},
+{q:"کولر را روی دمای خیلی پایین گذاشتن چه نتیجه‌ای دارد؟",opts:["صرفه‌جویی", "یخچال خراب می‌شود", "هیچ مشکلی", "مصرف خیلی بالا و سرمایش بیش از حد"],a:3},
+{q:"تلویزیون را در طول روز با نور خورشید چه کنیم؟",opts:["در صورت امکان خاموش یا کم‌نور کنیم", "روشن بماند", "صدا را زیاد کنیم", "چند تا روشن کنیم"],a:0},
+{q:"شارژر تبلت را شب تا صبح وصل بگذاریم؟",opts:["بهتر است بعد از پر شدن بکشیم", "حتماً بماند", "آب بریزیم", "بله همیشه"],a:0},
+{q:"یخچال را کنار اجاق گاز گذاشتن خوب است؟",opts:["خیر، مصرف یخچال بالا می‌رود", "بله عالی است", "یخچال خنک‌تر می‌شود", "فرقی ندارد"],a:0},
+{q:"استفاده از چند لایه لباس در زمستان به جای بخاری قوی؟",opts:["هیچ کمکی نمی‌کند", "کمک به کاهش نیاز به گرمایش برقی", "مصرف بیشتر", "خانه سردتر می‌شود"],a:1},
+{q:"لامپ سوخته را با چه نوعی عوض کنیم؟",opts:["پرمصرف قدیمی", "شمع", "هر نوعی", "LED کم‌مصرف"],a:3},
+{q:"پنجره‌ها را در تابستان روزها چگونه نگه داریم؟",opts:["چراغ روشن کنیم", "کاملاً باز", "بدون پرده", "با پرده مناسب جلوی ورود گرما را بگیریم"],a:3},
+{q:"وسایل آشپزخانه را بعد از پخت‌وپز چه کنیم؟",opts:["به یخچال وصل کنیم", "خاموش کنیم", "روشن بمانند", "صدا را زیاد کنیم"],a:1},
+{q:"کامپیوتر را وقتی کار نداریم در چه حالتی بگذاریم؟",opts:["خواب یا خاموش", "روشن کامل", "صدا زیاد", "به شارژر وصل"],a:0},
+{q:"اگر خانه را برای چند روز ترک می‌کنیم چه کار کنیم؟",opts:["همه چیز روشن", "تلویزیون روشن", "کولر حداکثر", "وسایل غیرضروری را خاموش کنیم"],a:3},
+{q:"استفاده از نور طبیعی به جای چراغ چه مزیتی دارد؟",opts:["هیچ", "کاهش مصرف برق و نور دلپذیر", "خانه تاریک", "مصرف بیشتر"],a:1},
+{q:"فیلتر کولر کثیف چه اثری روی مصرف دارد؟",opts:["صدا کمتر", "مصرف بیشتر و کارایی کمتر", "هیچ فرقی", "مصرف کمتر"],a:1},
+{q:"لباس‌ها را با خشک‌کن برقی خشک کردن در روز آفتابی؟",opts:["لباس بهتر خشک می‌شود", "صرفه‌جویی", "هیچ", "هدر دادن برق در حالی که آفتاب هست"],a:3},
+{q:"دمای مناسب اتاق در تابستان حدوداً چقدر است؟",opts:["۲۴ تا ۲۶ درجه", "۳۰ درجه", "۱۶ درجه", "۱۰ درجه"],a:0},
+{q:"وسایل برقی را از چندراهی با کلید خاموش کردن؟",opts:["مصرف پنهان را کم می‌کند", "صدا بیشتر می‌شود", "هیچ کمکی نمی‌کند", "وسایل خراب می‌شوند"],a:0},
+{q:"چراغ‌های حیاط را روز روشن گذاشتن درست است؟",opts:["فرقی ندارد", "حتماً روشن", "بله درست", "خیر، باید خاموش باشند"],a:3},
+{q:"استفاده از پنکه به همراه کولر چه کمکی می‌کند؟",opts:["هیچ", "مصرف بیشتر", "کولر خراب می‌شود", "توزیع بهتر هوا و احساس خنکی با مصرف کمتر"],a:3},
+{q:"اگر در یخچال را محکم نبندیم چه می‌شود؟",opts:["یخچال خنک‌تر می‌شود", "سرما خارج و موتور بیشتر کار می‌کند", "صرفه‌جویی", "هیچ"],a:1},
+{q:"برای چراغ راهرو بهتر است چه کار کنیم؟",opts:["همه گزینه‌ها غلط است", "هیچ کاری نکنیم", "سنسوردار کردن", "همیشه روشن گذاشتن"],a:2},
+{q:"برای مانیتور کامپیوتر بهتر است چه کار کنیم؟",opts:["همه گزینه‌ها غلط است", "خاموش کردن وقتی کار نداریم", "هیچ کاری نکنیم", "روشن گذاشتن"],a:1},
+{q:"برای مایکروویو بهتر است چه کار کنیم؟",opts:["بعد از استفاده خاموش کردن", "روشن ماندن", "همه گزینه‌ها غلط است", "هیچ کاری نکنیم"],a:0},
+{q:"برای اتو بهتر است چه کار کنیم؟",opts:["همه گزینه‌ها غلط است", "وصل ماندن", "هیچ کاری نکنیم", "بعد از اتو کشیدن از برق کشیدن"],a:3},
+{q:"برای چراغ مطالعه بهتر است چه کار کنیم؟",opts:["فقط موقع درس خواندن روشن کردن", "هیچ کاری نکنیم", "همه گزینه‌ها غلط است", "همیشه روشن"],a:0},
+{q:"برای پنکه بهتر است چه کار کنیم؟",opts:["هیچ کاری نکنیم", "همه گزینه‌ها غلط است", "همیشه کولر", "استفاده به جای کولر در روزهای معتدل"],a:3},
+{q:"برای لباس‌شویی بهتر است چه کار کنیم؟",opts:["پر کردن کامل قبل از روشن کردن", "نیمه‌پر روشن کردن", "هیچ کاری نکنیم", "همه گزینه‌ها غلط است"],a:0},
+{q:"برای ظرف‌شویی بهتر است چه کار کنیم؟",opts:["فقط وقتی پر است روشن کردن", "هیچ کاری نکنیم", "همه گزینه‌ها غلط است", "با چند ظرف روشن کردن"],a:0},
+{q:"برای بخاری برقی بهتر است چه کار کنیم؟",opts:["حداکثر روشن کردن", "هیچ کاری نکنیم", "همه گزینه‌ها غلط است", "استفاده همراه با لباس گرم"],a:3},
+{q:"برای چراغ حیاط بهتر است چه کار کنیم؟",opts:["شب تا صبح روشن", "همه گزینه‌ها غلط است", "استفاده از سنسور یا تایمر", "هیچ کاری نکنیم"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 97)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 98)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 99)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 100)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 101)",opts:["باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 102)",opts:["شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 103)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 104)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 105)",opts:["باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 106)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 107)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 108)",opts:["روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 109)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 110)",opts:["باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 111)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 112)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 113)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 114)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 115)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 116)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 117)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 118)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 119)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 120)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 121)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 122)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 123)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 124)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 125)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 126)",opts:["روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 127)",opts:["شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 128)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 129)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 130)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 131)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 132)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 133)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 134)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 135)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 136)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 137)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 138)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 139)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 140)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 141)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 142)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 143)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 144)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 145)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 146)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 147)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 148)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 149)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 150)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 151)",opts:["روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 152)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 153)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 154)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 155)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 156)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 157)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 158)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 159)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 160)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 161)",opts:["باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 162)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 163)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 164)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 165)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 166)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 167)",opts:["خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 168)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 169)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 170)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 171)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 172)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 173)",opts:["روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 174)",opts:["روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 175)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 176)",opts:["روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 177)",opts:["روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 178)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 179)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 180)",opts:["شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 181)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 182)",opts:["شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 183)",opts:["شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 184)",opts:["باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 185)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 186)",opts:["باز گذاشتن پنجره با کولر", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 187)",opts:["باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 188)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 189)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 190)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 191)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 192)",opts:["خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 193)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 194)",opts:["شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 195)",opts:["خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:0},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 196)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 197)",opts:["شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 198)",opts:["شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده", "روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر"],a:1},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 199)",opts:["باز گذاشتن پنجره با کولر", "روشن گذاشتن همه وسایل", "شارژر همیشه وصل", "خاموش کردن وسایل بلااستفاده"],a:3},
+{q:"کدام کار به مدیریت بهتر مصرف برق کمک می‌کند؟ (سؤال 200)",opts:["روشن گذاشتن همه وسایل", "باز گذاشتن پنجره با کولر", "خاموش کردن وسایل بلااستفاده", "شارژر همیشه وصل"],a:2}
+];
+
+const STAGES=[
+{id:1,title:"مرحله ۱ — شروع سبز",unlock:0,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ سقفی",icon:"💡",watts:45,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:95,on:true}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ خواب",icon:"🌙",watts:18,on:true},{id:"d2",name:"شارژر بیکار",icon:"🔌",watts:5,on:true}]}
+}},
+{id:2,title:"مرحله ۲ — آشپزخانه هوشمند",unlock:12,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ",icon:"💡",watts:40,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:90,on:false},{id:"l3",name:"کولر",icon:"❄️",watts:650,on:false}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ آشپزخانه",icon:"💡",watts:25,on:true},{id:"k2",name:"یخچال",icon:"🧊",watts:120,on:true,locked:true},{id:"k3",name:"مایکروویو بیکار",icon:"📡",watts:8,on:true}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ",icon:"💡",watts:15,on:false},{id:"d2",name:"شارژر",icon:"🔌",watts:5,on:true}]}
+}},
+{id:3,title:"مرحله ۳ — خانه کامل",unlock:28,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ LED",icon:"💡",watts:22,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:100,on:true},{id:"l3",name:"کولر",icon:"❄️",watts:700,on:true}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:20,on:true},{id:"k2",name:"یخچال",icon:"🧊",watts:110,on:true,locked:true},{id:"k3",name:"سماور برقی",icon:"🫖",watts:1500,on:false}]},
+bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ",icon:"💡",watts:15,on:true},{id:"b2",name:"آبگرمکن",icon:"🚿",watts:350,on:true}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ مطالعه",icon:"📖",watts:12,on:true},{id:"d2",name:"شارژر",icon:"🔌",watts:4,on:true}]}
+}},
+{id:4,title:"مرحله ۴ — اتاق بازی",unlock:45,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ",icon:"💡",watts:20,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:85,on:false},{id:"l3",name:"کولر",icon:"❄️",watts:600,on:false}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:18,on:true},{id:"k2",name:"یخچال کم‌مصرف",icon:"🧊",watts:95,on:true,locked:true}]},
+bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ",icon:"💡",watts:12,on:false},{id:"b2",name:"آبگرمکن",icon:"🚿",watts:300,on:false}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ",icon:"💡",watts:10,on:false},{id:"d2",name:"شارژر کشیده",icon:"🔌",watts:0,on:false}]},
+play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"چراغ رنگی",icon:"🌈",watts:40,on:true},{id:"p2",name:"کنسول",icon:"🎮",watts:160,on:true},{id:"p3",name:"اسپیکر",icon:"🔈",watts:35,on:true}]}
+}},
+{id:5,title:"مرحله ۵ — قهرمان انرژی",unlock:70,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ LED",icon:"💡",watts:18,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:80,on:false},{id:"l3",name:"کولر هوشمند",icon:"❄️",watts:480,on:false}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:14,on:true},{id:"k2",name:"یخچال A+++",icon:"🧊",watts:85,on:true,locked:true},{id:"k3",name:"ماشین ظرفشویی",icon:"🍽️",watts:0,on:false}]},
+bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ حسگر",icon:"💡",watts:10,on:false},{id:"b2",name:"آبگرمکن",icon:"🚿",watts:250,on:false}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ مطالعه",icon:"📖",watts:8,on:false},{id:"d2",name:"شارژر",icon:"🔌",watts:0,on:false}]},
+play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"چراغ",icon:"💡",watts:12,on:false},{id:"p2",name:"کنسول خواب",icon:"🎮",watts:8,on:false}]}
+}},
+{id:6,title:"مرحله ۶ — خانه خورشیدی",unlock:100,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ خورشیدی",icon:"☀️",watts:12,on:true},{id:"l2",name:"تلویزیون LED",icon:"📺",watts:60,on:false},{id:"l3",name:"پنکه سقفی",icon:"🌀",watts:45,on:false}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:10,on:true},{id:"k2",name:"یخچال",icon:"🧊",watts:80,on:true,locked:true},{id:"k3",name:"سماور",icon:"🫖",watts:0,on:false}]},
+bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ",icon:"💡",watts:8,on:false},{id:"b2",name:"آبگرمکن خورشیدی",icon:"☀️",watts:50,on:false}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ",icon:"💡",watts:6,on:false},{id:"d2",name:"شارژر خورشیدی",icon:"🔌",watts:0,on:false}]},
+play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"چراغ",icon:"💡",watts:10,on:false},{id:"p2",name:"تبلت",icon:"📱",watts:15,on:true}]}
+}},
+{id:7,title:"مرحله ۷ — شهر هوشمند",unlock:140,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ هوشمند",icon:"💡",watts:10,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:55,on:false},{id:"l3",name:"کولر اینورتر",icon:"❄️",watts:350,on:false}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:8,on:true},{id:"k2",name:"یخچال",icon:"🧊",watts:70,on:true,locked:true}]},
+bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ",icon:"💡",watts:6,on:false},{id:"b2",name:"آبگرمکن",icon:"🚿",watts:120,on:false}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ",icon:"💡",watts:5,on:false}]},
+play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"چراغ",icon:"💡",watts:8,on:false},{id:"p2",name:"کنسول",icon:"🎮",watts:5,on:false}]},
+garden:{title:"🌳 حیاط",devices:[{id:"g1",name:"چراغ باغ",icon:"💡",watts:20,on:true},{id:"g2",name:"پمپ آب",icon:"💧",watts:200,on:false}]}
+}},
+{id:8,title:"مرحله ۸ — افسانه انرژی",unlock:190,rooms:{
+living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ LED",icon:"💡",watts:8,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:40,on:false}]},
+kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:6,on:true},{id:"k2",name:"یخچال فوق‌کم‌مصرف",icon:"🧊",watts:55,on:true,locked:true}]},
+bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ",icon:"💡",watts:4,on:false}]},
+bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ",icon:"💡",watts:4,on:false}]},
+play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"چراغ",icon:"💡",watts:5,on:false}]},
+garden:{title:"🌳 حیاط",devices:[{id:"g1",name:"چراغ خورشیدی",icon:"☀️",watts:0,on:true},{id:"g2",name:"پنل خورشیدی",icon:"🔋",watts:0,on:true,locked:true}]}
+}}
+];
+
+const COACH={
+welcome:["سلام قهرمان انرژی! آماده‌ای خانه را سبز کنیم؟","برقو اینجاست! بیا با هم ستاره جمع کنیم.","خوش اومدی به خانه هوشمند. وسایل پرمصرف رو پیدا کن!"],
+good:["آفرین! این کار خیلی هوشمندانه بود.","ستاره گرفتی! داری قهرمان می‌شی.","عالی! موتور یخچال هم ازت ممنونِ.","چه تصمیم خوبی برای آینده سیاره!"],
+bad:["اوه، این وسیله بهتره روشن بمونه (مثل یخچال).","مواظب باش مصرف از بودجه رد نشه!","هنوز می‌تونی بهتر مدیریت کنی."],
+level:["مرحله جدید باز شد! آماده‌ای چالش بیشتر؟","وای! قهرمان انرژی داری رشد می‌کنی.","خانه بزرگ‌تر شد. مراقب مصرف باش."],
+quiz:["۴ سؤال داری. هر درست = ۱ امتیاز.","فکر کن و انتخاب کن. برقو هواتو داره!","کویینز مدیریت مصرف شروع شد!"],
+wheel:["روزی یک‌بار شانس با توست!","بچرخون و امتیاز بگیر.","۱ یا ۲ یا ۴ یا حتی ۱۰؟"]
+};
+
+function weekId(){var d=new Date();var onejan=new Date(d.getFullYear(),0,1);var week=Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);return d.getFullYear()+"-W"+week;}
+function defaultState(){return{profile:null,score:0,stars:0,stage:1,soundOn:true,night:false,quizNextAt:0,wheelDay:"",mediaBonus:{},weekly:{},badges:{},devices:{}};}
+function load(){try{var r=localStorage.getItem(STORAGE);if(!r)return defaultState();return Object.assign(defaultState(),JSON.parse(r));}catch(e){return defaultState();}}
+var S=load();soundOn=S.soundOn!==false;
+function save(){try{localStorage.setItem(STORAGE,JSON.stringify(S));}catch(e){}syncWeeklyBoard();}
+function fa(n){return String(n).replace(/\d/g,function(d){return"۰۱۲۳۴۵۶۷۸۹"[d];});}
+function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove("show");},2400);}
+function showBadge(e,t,x){document.getElementById("badgeEmoji").textContent=e;document.getElementById("badgeTitle").textContent=t;document.getElementById("badgeText").textContent=x||"";document.getElementById("badgePop").classList.add("show");sfxWin();}
+document.getElementById("badgeOk").onclick=function(){document.getElementById("badgePop").classList.remove("show");sfxClick();};
+
+function addScore(n,reason){
+  S.score=(S.score||0)+n;
+  S.stars=(S.stars||0)+n;
+  var w=weekId();
+  if(!S.weekly)S.weekly={};
+  S.weekly[w]=(S.weekly[w]||0)+n;
+  save();
+  renderStats();
+  if(n>0){sfxStar();toast("+"+fa(n)+" امتیاز"+(reason?" · "+reason:""));}
+  checkStageUnlock();
+  checkBadges();
+}
+
+function renderStats(){
+  document.getElementById("starsVal").textContent=fa(S.stars||0);
+  document.getElementById("scoreVal").textContent=fa(S.score||0);
+}
+
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+function showScreen(name){
+  sfxClick();
+  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
+  var map={profile:"screenProfile",home:"screenHome",game:"screenGame",quiz:"screenQuiz",wheel:"screenWheel",story:"screenStory",anim:"screenAnim",board:"screenBoard"};
+  if(!S.profile&&name!=="profile"){document.getElementById("screenProfile").classList.add("active");return;}
+  document.getElementById(map[name]||"screenHome").classList.add("active");
+  document.querySelectorAll(".nav button").forEach(function(b){b.classList.toggle("active",b.dataset.go===name);});
+  if(name==="game")renderHouse();
+  if(name==="quiz")renderQuiz();
+  if(name==="wheel")renderWheelMeta();
+  if(name==="story")renderStories();
+  if(name==="anim")renderAnims();
+  if(name==="board")renderBoard();
+  if(name==="home")renderHome();
+}
+
+document.querySelectorAll("[data-go]").forEach(function(b){
+  b.addEventListener("click",function(){showScreen(b.dataset.go);});
+});
+
+document.getElementById("btnSaveProfile").onclick=function(){
+  var f=document.getElementById("inpFirst").value.trim();
+  var l=document.getElementById("inpLast").value.trim();
+  var c=document.getElementById("inpCity").value.trim();
+  if(!f||!l||!c){toast("نام، نام خانوادگی و شهر را کامل بنویس");sfxWrong();return;}
+  S.profile={first:f,last:l,city:c};
+  save();
+  sfxOk();
+  showBadge("🚀","خوش آمدی "+f+"!","حالا خانه را مدیریت کن و ستاره جمع کن.");
+  showScreen("home");
+};
+
+function renderHome(){
+  var name=S.profile?S.profile.first:"";
+  document.getElementById("homeTitle").textContent="خانهٔ هوشمند "+(name||"ستاره");
+  document.getElementById("homeSub").textContent="امتیاز هفته: "+fa(S.weekly[weekId()]||0)+" · مرحله "+fa(S.stage);
+  document.getElementById("homeBubble").textContent=pick(COACH.welcome)+" امتیاز این هفته‌ات: "+fa(S.weekly[weekId()]||0);
+}
+
+function currentStageData(){
+  var st=STAGES.find(function(s){return s.id===S.stage;})||STAGES[0];
+  return st;
+}
+function getDeviceState(stageId,roomId,devId,defOn){
+  var key=stageId+"_"+roomId+"_"+devId;
+  if(S.devices&&S.devices.hasOwnProperty(key))return S.devices[key];
+  return defOn;
+}
+function setDeviceState(stageId,roomId,devId,on){
+  if(!S.devices)S.devices={};
+  S.devices[stageId+"_"+roomId+"_"+devId]=on;
+  save();
+}
+function calcEnergy(st){
+  var total=0;
+  Object.keys(st.rooms).forEach(function(rk){
+    st.rooms[rk].devices.forEach(function(d){
+      var on=getDeviceState(st.id,rk,d.id,d.on);
+      if(on)total+=d.watts||0;
+    });
+  });
+  return total;
+}
+function checkStageUnlock(){
+  var next=STAGES.find(function(s){return s.id===S.stage+1;});
+  if(next&&(S.stars||0)>=next.unlock){
+    S.stage=next.id;
+    save();
+    sfxLevel();
+    showBadge("🏆","مرحله "+fa(next.id)+" باز شد!",next.title);
+    document.getElementById("coachBubble").textContent=pick(COACH.level);
+  }
+}
+function checkBadges(){
+  if(!S.badges)S.badges={};
+  if((S.stars||0)>=50&&!S.badges.s50){S.badges.s50=true;save();showBadge("⭐","۵۰ ستاره!","داری تبدیل به قهرمان می‌شی.");}
+  if((S.stars||0)>=100&&!S.badges.s100){S.badges.s100=true;save();showBadge("🌟","۱۰۰ ستاره!","مدیریتت عالیه.");}
+  if((S.stars||0)>=200&&!S.badges.s200){S.badges.s200=true;save();showBadge("👑","۲۰۰ ستاره!","قهرمان مدیریت مصرف!");}
+}
+
+function renderHouse(){
+  var st=currentStageData();
+  var bar=document.getElementById("stageBar");
+  bar.innerHTML="";
+  STAGES.forEach(function(s){
+    var d=document.createElement("div");
+    d.className="stage-dot"+(s.id===S.stage?" on":"")+(s.id<S.stage?" done":"")+(s.id>S.stage?" lock":"");
+    d.textContent=fa(s.id);
+    d.title=s.title;
+    if(s.id<=S.stage)d.onclick=function(){S.stage=s.id;save();renderHouse();sfxClick();};
+    bar.appendChild(d);
+  });
+  document.getElementById("stageInfo").textContent=st.title+" · برای مرحله بعد "+fa((STAGES.find(function(x){return x.id===S.stage+1;})||{}).unlock||"—")+" ستاره";
+  var energy=calcEnergy(st);
+  document.getElementById("energyVal").textContent=fa(energy);
+  var pct=Math.min(100,Math.round(energy/BUDGET*100));
+  document.getElementById("meterFill").style.width=pct+"%";
+  var house=document.getElementById("house3d");
+  house.innerHTML='<div class="floor"></div>';
+  var roomKeys=Object.keys(st.rooms);
+  var classes=["r1","r2","r3","r4","r5"];
+  roomKeys.forEach(function(rk,i){
+    var room=st.rooms[rk];
+    var anyOn=room.devices.some(function(d){return getDeviceState(st.id,rk,d.id,d.on);});
+    var el=document.createElement("div");
+    el.className="room "+(classes[i]||"r5")+(anyOn?" on":" off");
+    el.innerHTML='<div class="ic">'+(room.title.split(" ")[0]||"🏠")+'</div><div>'+esc(room.title.replace(/^[^\s]+\s/,""))+'</div>';
+    el.onclick=function(){openRoom(st,rk);sfxClick();};
+    house.appendChild(el);
+  });
+  document.getElementById("roomPanel").style.display="none";
+  document.getElementById("coachBubble").textContent=energy>BUDGET?"مصرف بالاست! وسایل اضافه را خاموش کن.":pick(COACH.good);
+}
+
+function openRoom(st,rk){
+  var room=st.rooms[rk];
+  document.getElementById("roomPanel").style.display="block";
+  document.getElementById("roomTitle").textContent=room.title;
+  var list=document.getElementById("deviceList");
+  list.innerHTML="";
+  room.devices.forEach(function(d){
+    var on=getDeviceState(st.id,rk,d.id,d.on);
+    var row=document.createElement("div");
+    row.className="device";
+    var locked=!!d.locked;
+    row.innerHTML='<div class="left"><span>'+d.icon+'</span><span>'+esc(d.name)+(locked?" 🔒":"")+' <span class="muted">'+fa(d.watts)+'W</span></span></div><div class="toggle '+(on?"on":"")+'" data-id="'+d.id+'"></div>';
+    var tog=row.querySelector(".toggle");
+    tog.onclick=function(){
+      if(locked){toast("این وسیله باید روشن بماند");sfxWrong();document.getElementById("coachBubble").textContent=pick(COACH.bad);return;}
+      var now=!getDeviceState(st.id,rk,d.id,d.on);
+      setDeviceState(st.id,rk,d.id,now);
+      tog.classList.toggle("on",now);
+      var energy=calcEnergy(st);
+      document.getElementById("energyVal").textContent=fa(energy);
+      document.getElementById("meterFill").style.width=Math.min(100,Math.round(energy/BUDGET*100))+"%";
+      if(!now){addScore(1,"خاموش کردن "+d.name);document.getElementById("coachBubble").textContent=pick(COACH.good);}
+      else{sfxClick();document.getElementById("coachBubble").textContent="روشن شد. مراقب مصرف باش.";}
+      renderHouse();
+      openRoom(st,rk);
+    };
+    list.appendChild(row);
+  });
+}
+document.getElementById("closeRoom").onclick=function(){document.getElementById("roomPanel").style.display="none";sfxClick();};
+
+var quizSession=null;
+function renderQuiz(){
+  var area=document.getElementById("quizArea");
+  var actions=document.getElementById("quizActions");
+  actions.innerHTML="";
+  var now=Date.now();
+  if(S.quizNextAt&&now<S.quizNextAt){
+    var left=Math.ceil((S.quizNextAt-now)/60000);
+    area.innerHTML='<p class="muted" style="text-align:center;padding:20px">برای دور بعدی کویینز حدود <b>'+fa(left)+'</b> دقیقه صبر کن.<br>برو بازی کن یا قصه گوش بده!</p>';
+    document.getElementById("quizBubble").textContent="صبر قهرمانانه هم بخشی از مدیریت انرژیه!";
+    return;
+  }
+  if(!quizSession){
+    var pool=QUIZ_BANK.slice().sort(function(){return Math.random()-0.5;}).slice(0,4);
+    quizSession={qs:pool,idx:0,correct:0};
+  }
+  var q=quizSession.qs[quizSession.idx];
+  if(!q){
+    var pts=quizSession.correct;
+    S.quizNextAt=Date.now()+HOUR_MS;
+    save();
+    area.innerHTML='<p style="text-align:center;padding:16px">دور تمام شد!<br>درست‌ها: <b>'+fa(pts)+'</b> از ۴<br>امتیاز اضافه‌شده: +'+fa(pts)+'</p>';
+    if(pts>0)addScore(pts,"کویینز");
+    document.getElementById("quizBubble").textContent=pts>=3?"عالی بودی قهرمان!":"خوب بود، دفعه بعد بهتر!";
+    quizSession=null;
+    actions.innerHTML='<button class="btn soft" id="btnQuizHome">بازگشت</button>';
+    document.getElementById("btnQuizHome").onclick=function(){showScreen("home");};
+    return;
+  }
+  document.getElementById("quizMeta").textContent="سؤال "+fa(quizSession.idx+1)+" از ۴ · هر درست ۱ امتیاز";
+  document.getElementById("quizBubble").textContent=pick(COACH.quiz);
+  var html='<p style="font-weight:800;margin:8px 0 12px">'+esc(q.q)+'</p>';
+  q.opts.forEach(function(o,i){
+    html+='<button class="quiz-opt" data-i="'+i+'">'+esc(o)+'</button>';
+  });
+  area.innerHTML=html;
+  area.querySelectorAll(".quiz-opt").forEach(function(btn){
+    btn.onclick=function(){
+      var i=parseInt(btn.dataset.i,10);
+      area.querySelectorAll(".quiz-opt").forEach(function(b){b.disabled=true;});
+      if(i===q.a){btn.classList.add("correct");quizSession.correct++;sfxOk();toast("درست! +۱");}
+      else{btn.classList.add("wrong");area.querySelectorAll(".quiz-opt")[q.a].classList.add("correct");sfxWrong();toast("اشتباه — پاسخ درست مشخص شد");}
+      setTimeout(function(){quizSession.idx++;renderQuiz();},700);
+    };
+  });
+}
+
+function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function renderWheelMeta(){
+  var used=S.wheelDay===todayStr();
+  document.getElementById("wheelMeta").textContent=used?"امروز چرخاندی. فردا دوباره بیا!":"آماده چرخاندن — روزی یک‌بار";
+  document.getElementById("btnSpin").disabled=used;
+  document.getElementById("wheelBubble").textContent=used?"فردا شانس تازه‌ای داری!":pick(COACH.wheel);
+}
+document.getElementById("btnSpin").onclick=function(){
+  if(S.wheelDay===todayStr()){toast("امروز یک‌بار مجاز است");sfxWrong();return;}
+  var prizes=[1,2,4,10];
+  var idx=Math.floor(Math.random()*4);
+  var prize=prizes[idx];
+  var deg=360*5 + (idx*90) + 45;
+  sfxSpin();
+  var w=document.getElementById("wheel");
+  w.style.transition="transform 4s cubic-bezier(.15,.85,.25,1)";
+  w.style.transform="rotate("+deg+"deg)";
+  document.getElementById("btnSpin").disabled=true;
+  setTimeout(function(){
+    S.wheelDay=todayStr();
+    save();
+    addScore(prize,"گردونه شانس");
+    showBadge("🎡","+"+fa(prize)+" امتیاز!",prize===10?"جایزه بزرگ!":"آفرین قهرمان");
+    renderWheelMeta();
+  },4200);
+};
+
+function renderStories(){
+  var list=document.getElementById("storyList");
+  if(!STORIES||!STORIES.length){list.innerHTML='<p class="muted" style="text-align:center;padding:16px">هنوز قصه‌ای اضافه نشده. صاحب ربات از پنل اضافه می‌کند.</p>';return;}
+  list.innerHTML=STORIES.map(function(s,i){
+    var key="story:"+(s.id||i);
+    var done=S.mediaBonus&&S.mediaBonus[key];
+    return '<div class="media-item" data-i="'+i+'"><span>'+esc(s.title||("قصه "+(i+1)))+(done?" ✅":"")+'</span><span class="muted">'+(done?"امتیاز گرفته":"+۵")+'</span></div>';
+  }).join("");
+  list.querySelectorAll(".media-item").forEach(function(el){
+    el.onclick=function(){
+      var i=parseInt(el.dataset.i,10);var s=STORIES[i];
+      document.getElementById("storyPlayer").style.display="block";
+      var v=document.getElementById("storyVideo");var a=document.getElementById("storyAudio");
+      if(s.url&&/\.(mp3|ogg|wav|m4a)(\?|$)/i.test(s.url)){v.style.display="none";a.style.display="block";a.src=s.url;a.play().catch(function(){});}
+      else{a.style.display="none";v.style.display="block";v.src=s.url||"";v.play().catch(function(){});}
+      var key="story:"+(s.id||i);
+      if(!S.mediaBonus)S.mediaBonus={};
+      if(!S.mediaBonus[key]){S.mediaBonus[key]=true;save();addScore(5,"قصه شب");}
+      else toast("قبلاً امتیاز این قصه را گرفته‌ای");
+    };
+  });
+}
+function renderAnims(){
+  var list=document.getElementById("animList");
+  if(!ANIMATIONS||!ANIMATIONS.length){list.innerHTML='<p class="muted" style="text-align:center;padding:16px">هنوز انیمیشنی اضافه نشده. از پنل ربات لینک بگذار.</p>';return;}
+  list.innerHTML=ANIMATIONS.map(function(s,i){
+    var key="anim:"+(s.id||i);
+    var done=S.mediaBonus&&S.mediaBonus[key];
+    return '<div class="media-item" data-i="'+i+'"><span>'+esc(s.title||("انیمیشن "+(i+1)))+(done?" ✅":"")+'</span><span class="muted">'+(done?"امتیاز گرفته":"+۵")+'</span></div>';
+  }).join("");
+  list.querySelectorAll(".media-item").forEach(function(el){
+    el.onclick=function(){
+      var i=parseInt(el.dataset.i,10);var s=ANIMATIONS[i];
+      document.getElementById("animPlayer").style.display="block";
+      var v=document.getElementById("animVideo");v.src=s.url||"";v.play().catch(function(){});
+      var key="anim:"+(s.id||i);
+      if(!S.mediaBonus)S.mediaBonus={};
+      if(!S.mediaBonus[key]){S.mediaBonus[key]=true;save();addScore(5,"انیمیشن");}
+      else toast("قبلاً امتیاز گرفته‌ای");
+    };
+  });
+}
+
+function boardKey(){return "starPower_board_"+weekId();}
+function syncWeeklyBoard(){
+  if(!S.profile)return;
+  try{
+    var key=boardKey();
+    var board=[];
+    try{board=JSON.parse(localStorage.getItem(key)||"[]");}catch(e){board=[];}
+    var id=(S.profile.first+"|"+S.profile.last+"|"+S.profile.city).slice(0,80);
+    var entry={id:id,name:S.profile.first+" "+S.profile.last,city:S.profile.city,score:S.weekly[weekId()]||0,total:S.score};
+    board=board.filter(function(x){return x.id!==id;});
+    board.push(entry);
+    board.sort(function(a,b){return b.score-a.score;});
+    board=board.slice(0,20);
+    localStorage.setItem(key,JSON.stringify(board));
+  }catch(e){}
+}
+function renderBoard(){
+  document.getElementById("weekLabel").textContent="هفته "+weekId();
+  syncWeeklyBoard();
+  var board=[];
+  try{board=JSON.parse(localStorage.getItem(boardKey())||"[]");}catch(e){}
+  var ol=document.getElementById("leaderList");
+  if(!board.length){ol.innerHTML="<li class='muted'>هنوز امتیازی نیست</li>";return;}
+  ol.innerHTML=board.map(function(x,i){return "<li><span>"+fa(i+1)+". "+esc(x.name)+' <span class="muted">('+esc(x.city)+")</span></span><b>"+fa(x.score)+"</b></li>";}).join("");
+}
+document.getElementById("btnCopyScore").onclick=function(){
+  if(!S.profile){toast("اول ثبت‌نام کن");return;}
+  var code=["GAME_SCORE",weekId(),S.profile.first,S.profile.last,S.profile.city,String(S.weekly[weekId()]||0),String(S.score)].join("|");
+  try{navigator.clipboard.writeText(code).then(function(){toast("کد کپی شد — در ربات بفرست");});}catch(e){prompt("کپی:",code);}
+  sfxOk();
+};
+
+document.getElementById("btnDay").onclick=function(){S.night=false;document.body.classList.remove("night");save();sfxClick();};
+document.getElementById("btnNight").onclick=function(){S.night=true;document.body.classList.add("night");save();sfxClick();};
+document.getElementById("btnSound").onclick=function(){soundOn=!soundOn;S.soundOn=soundOn;save();document.getElementById("btnSound").textContent=soundOn?"🔊 صدا":"🔇 بی‌صدا";if(soundOn)sfxOk();};
+
+if(S.night)document.body.classList.add("night");
+document.getElementById("btnSound").textContent=soundOn?"🔊 صدا":"🔇 بی‌صدا";
+renderStats();
+checkStageUnlock();
+if(!S.profile)showScreen("profile");else showScreen("home");
+try{if(window.Bale&&Bale.WebApp){Bale.WebApp.ready&&Bale.WebApp.ready();Bale.WebApp.expand&&Bale.WebApp.expand();}}catch(e){}
+try{console.log("[StarPower] questions=",QUIZ_BANK.length,"stages=",STAGES.length);}catch(e){}
+})();
+</script>
+</body>
+</html>
