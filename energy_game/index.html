@@ -1,827 +1,1808 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<meta name="referrer" content="no-referrer"/>
-<title>ستارهٔ برق</title>
+<meta charset="UTF-8" />
+<meta name="referrer" content="no-referrer" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>قهرمانان برق - بازی مدیریت انرژی</title>
+<script src="https://tapi.bale.ai/miniapp.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://supabase-js@2" ></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root{--sky1:#7ec8ff;--sky2:#b8f0ff;--night1:#1a1a4a;--night2:#2d1b69;--ink:#1f2a44;--card:rgba(255,255,255,.94);--line:rgba(31,42,68,.12);--good:#2ecc71;--bad:#e74c3c}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;font-family:Tahoma,"Segoe UI",sans-serif;overflow:hidden;color:var(--ink)}
-body{background:linear-gradient(180deg,var(--sky1),var(--sky2) 55%,#dff7c8);transition:background 1s}
-body.night{background:linear-gradient(180deg,var(--night1),var(--night2) 60%,#1a3040);color:#f4f0ff}
-body.night .card{background:rgba(30,28,60,.94);color:#f4f0ff;border-color:rgba(255,255,255,.1)}
-body.night .muted{color:#b8b0e0}
-#app{height:100%;display:flex;flex-direction:column}
-.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 6px}
-.brand{display:flex;align-items:center;gap:8px;font-weight:800}
-.logo{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#fff,#ffe9a8);font-size:1.3rem}
-.stats{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:.75rem;font-weight:700}
-.screen{display:none;flex:1;min-height:0;flex-direction:column;padding:0 12px 8px;overflow:auto}
-.screen.active{display:flex}
-.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 30px rgba(31,42,68,.1);padding:14px}
-.hero{text-align:center;margin:4px 0 10px}.hero h1{margin:0 0 6px;font-size:1.22rem}.hero p{margin:0;opacity:.85;font-size:.86rem;line-height:1.6}
-.muted{color:#5a6a88;font-size:.82rem}
-.btn-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
-.btn{border:none;border-radius:16px;padding:11px 14px;font-weight:800;cursor:pointer;font-size:.86rem;box-shadow:0 8px 18px rgba(0,0,0,.1)}
-.btn.primary{background:linear-gradient(135deg,#6c5ce7,#00cec9);color:#fff}
-.btn.soft{background:#fff;color:var(--ink);border:1px solid var(--line)}
-.btn.sun{background:linear-gradient(135deg,#ffd66b,#ff9f43);color:#5a3b00}
-.btn.moon{background:linear-gradient(135deg,#6c5ce7,#2d1b69);color:#fff}
-.btn.gold{background:linear-gradient(135deg,#f6d365,#fda085);color:#5a2e00}
-.btn.green{background:linear-gradient(135deg,#55efc4,#00b894);color:#fff}
-.btn.pink{background:linear-gradient(135deg,#fd79a8,#e84393);color:#fff}
-.btn:active{transform:scale(.97)}.btn:disabled{opacity:.45}
-.mascot-wrap{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
-.mascot{width:64px;height:64px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 30% 30%,#fff,#ffd66b 40%,#6c5ce7);display:grid;place-items:center;font-size:1.8rem;animation:floaty 3s ease-in-out infinite}
-@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.bubble{flex:1;background:#fff;border-radius:18px;padding:10px 12px;border:1px solid var(--line);font-size:.84rem;line-height:1.7}
-body.night .bubble{background:rgba(40,36,80,.95)}
-.scene-wrap{min-height:200px;perspective:900px;display:flex;align-items:center;justify-content:center}
-.house3d{width:min(92vw,360px);height:230px;position:relative;transform-style:preserve-3d;transform:rotateX(18deg) rotateY(-22deg)}
-.floor{position:absolute;inset:40% -10% -10% -10%;background:linear-gradient(135deg,#8fd19e,#6bbf7a);transform:rotateX(90deg) translateZ(-20px);border-radius:30px;opacity:.85}
-.room{position:absolute;width:42%;height:40%;border-radius:16px;cursor:pointer;border:3px solid rgba(255,255,255,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:.7rem;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.25)}
-.room .ic{font-size:1.3rem}.room.on{filter:brightness(1.12);box-shadow:0 0 22px rgba(255,220,100,.5)}.room.off{filter:brightness(.7)}
-.r1{top:6%;right:4%;background:linear-gradient(145deg,#74b9ff,#0984e3);transform:translateZ(30px)}
-.r2{top:6%;left:4%;background:linear-gradient(145deg,#fd79a8,#e84393);transform:translateZ(20px)}
-.r3{bottom:6%;right:4%;background:linear-gradient(145deg,#55efc4,#00b894);transform:translateZ(25px)}
-.r4{bottom:6%;left:4%;background:linear-gradient(145deg,#ffeaa7,#fdcb6e);color:#5a3b00;transform:translateZ(15px)}
-.r5{top:32%;right:29%;width:42%;height:28%;background:linear-gradient(145deg,#a29bfe,#6c5ce7);transform:translateZ(35px)}
-.meter-bar{height:12px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden;margin:6px 0}
-.meter-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#2ecc71,#f1c40f,#e74c3c);transition:width .4s}
-.device{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:16px;border:1px solid var(--line);margin-bottom:7px;background:rgba(255,255,255,.55)}
-body.night .device{background:rgba(255,255,255,.06)}
-.device .left{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.85rem}
-.toggle{width:48px;height:28px;border-radius:999px;background:#ccc;position:relative;cursor:pointer;flex-shrink:0}
-.toggle.on{background:var(--good)}
-.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
-.toggle.on::after{left:23px}
-.stage-bar{display:flex;gap:4px;justify-content:center;margin:6px 0;flex-wrap:wrap}
-.stage-dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;font-weight:900;background:rgba(0,0,0,.08);cursor:pointer}
-.stage-dot.on{background:linear-gradient(135deg,#6c5ce7,#00cec9);color:#fff}
-.stage-dot.done{background:#2ecc71;color:#fff}
-.stage-dot.lock{opacity:.4;cursor:default}
-.progress-txt{text-align:center;font-size:.78rem;margin:4px 0}
-.wheel-box{display:flex;flex-direction:column;align-items:center;gap:10px}
-.wheel-wrap{position:relative;width:240px;height:240px}
-.wheel{width:240px;height:240px;border-radius:50%;background:conic-gradient(#ff6b6b 0 25%,#ffd93d 25% 50%,#6bcB77 50% 75%,#4d96ff 75% 100%);border:8px solid #fff;box-shadow:0 12px 30px rgba(0,0,0,.2);transition:transform 4s cubic-bezier(.15,.85,.25,1);position:relative}
-.wheel-labels{position:absolute;inset:0;pointer-events:none}
-.wheel-labels span{position:absolute;font-weight:900;font-size:1.1rem;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.4)}
-.l1{top:18%;right:18%}.l2{top:18%;left:18%}.l4{bottom:18%;left:18%}.l10{bottom:18%;right:14%}
-.wheel-pin{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:1.6rem;z-index:2}
-.form input{width:100%;padding:12px;margin:6px 0;border-radius:14px;border:1px solid var(--line);font-size:.95rem}
-.toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:rgba(31,42,68,.92);color:#fff;padding:10px 16px;border-radius:999px;font-size:.84rem;font-weight:700;opacity:0;transition:opacity .3s;z-index:30;max-width:92%;text-align:center}
-.toast.show{opacity:1}
-.badge-pop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:40}
-.badge-pop.show{display:flex}
-.badge-card{background:#fff;border-radius:28px;padding:22px;text-align:center;max-width:300px}
-body.night .badge-card{background:#2a2450;color:#fff}
-.leader li{padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;font-size:.85rem}
-.back-mini{border:none;background:transparent;font-weight:800;cursor:pointer;color:inherit;font-size:.85rem;margin-bottom:6px}
-.nav{display:flex;gap:2px;padding:6px 4px 10px;background:rgba(255,255,255,.75);border-top:1px solid var(--line);overflow-x:auto;flex-shrink:0}
-body.night .nav{background:rgba(20,18,45,.9)}
-.nav button{flex:1;min-width:56px;border:none;background:transparent;padding:6px 2px;font-size:.65rem;font-weight:700;color:inherit;cursor:pointer;border-radius:12px}
-.nav button.active{background:rgba(108,92,231,.15)}
-.nav button span{display:block;font-size:1.15rem}
-.quiz-opt{display:block;width:100%;text-align:right;padding:12px;margin:6px 0;border-radius:14px;border:2px solid var(--line);background:#fff;font-weight:700;cursor:pointer}
-body.night .quiz-opt{background:rgba(255,255,255,.06)}
-.quiz-opt.ok{border-color:var(--good);background:rgba(46,204,113,.15)}
-.quiz-opt.bad{border-color:var(--bad);background:rgba(231,76,60,.12)}
-/* board games */
-.board-grid{display:grid;gap:3px;margin:8px auto;width:min(92vw,340px)}
-.board-grid.snl{grid-template-columns:repeat(10,1fr)}
-.board-grid.ludo{grid-template-columns:repeat(15,1fr)}
-.cell{aspect-ratio:1;border-radius:6px;display:grid;place-items:center;font-size:.55rem;font-weight:800;background:rgba(255,255,255,.7);border:1px solid var(--line);position:relative}
-body.night .cell{background:rgba(255,255,255,.08)}
-.cell.snake{background:rgba(231,76,60,.25)}
-.cell.ladder{background:rgba(46,204,113,.25)}
-.cell.player{box-shadow:inset 0 0 0 3px #6c5ce7}
-.token{width:14px;height:14px;border-radius:50%;position:absolute}
-.token.p1{background:#e74c3c}.token.p2{background:#3498db}.token.p3{background:#2ecc71}.token.p4{background:#f1c40f}
-.dice{width:56px;height:56px;border-radius:12px;background:#fff;border:2px solid var(--line);display:grid;place-items:center;font-size:1.6rem;font-weight:900;margin:8px auto;cursor:pointer}
-.media-item{padding:12px;border-radius:16px;border:1px solid var(--line);margin-bottom:8px;cursor:pointer;font-weight:700}
-.media-item:active{transform:scale(.98)}
+:root {
+  --bg0: #0a0e27;
+  --bg1: #1a1f3a;
+  --card: #1e2445;
+  --primary: #00d4aa;
+  --secondary: #7c5cff;
+  --accent: #ff6b9d;
+  --gold: #ffd700;
+  --text: #f0f4ff;
+  --muted: #8892b0;
+  --success: #00e676;
+  --danger: #ff5252;
+  --line: rgba(255,255,255,.08);
+  --glow: rgba(0,212,170,.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(124,92,255,.25), transparent 55%),
+    radial-gradient(900px 500px at -10% 110%, rgba(0,212,170,.15), transparent 50%),
+    linear-gradient(165deg, var(--bg0), var(--bg1) 55%, #0b0b18);
+  padding: 12px;
+  overflow-x: hidden;
+}
+
+.app { max-width: 100%; margin: 0 auto; position: relative; }
+
+/* صفحه‌ها */
+.screen {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* هدر */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(30,36,69,.8);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-title h1 {
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.score-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, var(--gold), #ffaa00);
+  color: #1a1a2e;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 16px rgba(255,215,0,.3);
+}
+
+/* کارت‌ها */
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* دکمه‌ها */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  border: none;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #00b894);
+  color: #0a0e27;
+  box-shadow: 0 6px 20px var(--glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--glow);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--secondary), #6c5ce7);
+  color: white;
+  box-shadow: 0 6px 20px rgba(124,92,255,.4);
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent), #e84393);
+  color: white;
+  box-shadow: 0 6px 20px rgba(255,107,157,.4);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), #ffaa00);
+  color: #1a1a2e;
+  box-shadow: 0 6px 20px rgba(255,215,0,.3);
+}
+
+/* ورودی‌ها */
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(0,212,170,.05);
+}
+
+.input::placeholder { color: var(--muted); }
+
+/* سه‌بعدی */
+#gameCanvas {
+  width: 100%;
+  height: 280px;
+  border-radius: 20px;
+  background: #0a0e1a;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* صحنه بازی */
+.stage-container {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.stage-scene {
+  width: 100%;
+  height: 240px;
+  background: linear-gradient(180deg, #1a1f3a 0%, #2a2f4a 100%);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.room-object {
+  position: absolute;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+}
+
+.room-object:hover {
+  transform: scale(1.1);
+}
+
+.room-object.on {
+  animation: pulse-glow 1.5s infinite;
+}
+
+.room-object.off {
+  filter: grayscale(1) brightness(0.5);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--gold)); }
+  50% { filter: drop-shadow(0 0 20px var(--gold)); }
+}
+
+/* کوییز */
+.question-card {
+  background: linear-gradient(135deg, rgba(124,92,255,.2), rgba(0,212,170,.1));
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(124,92,255,.3);
+}
+
+.question-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.option-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-align: right;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+
+.option-btn:hover {
+  border-color: var(--primary);
+  background: rgba(0,212,170,.1);
+}
+
+.option-btn.correct {
+  border-color: var(--success);
+  background: rgba(0,230,118,.15);
+}
+
+.option-btn.wrong {
+  border-color: var(--danger);
+  background: rgba(255,82,82,.15);
+}
+
+/* پیشرفت */
+.progress-bar {
+  height: 8px;
+  background: rgba(255,255,255,.1);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 99px;
+  transition: width 0.3s;
+}
+
+/* گردونه */
+.wheel-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 20px auto;
+}
+
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 6px solid var(--gold);
+  position: relative;
+  transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  box-shadow: 0 0 40px rgba(255,215,0,.4), inset 0 0 40px rgba(0,0,0,.3);
+  overflow: hidden;
+}
+
+.wheel-segment {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  transform-origin: 100% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  z-index: 10;
+}
+
+/* قصه و انیمیشن */
+.media-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,.05);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.media-item:hover {
+  background: rgba(255,255,255,.08);
+  border-color: var(--primary);
+}
+
+.media-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.media-info { flex: 1; }
+
+.media-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.media-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* تب‌ها */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tab {
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border-color: transparent;
+}
+
+/* پنل مالک */
+.admin-panel {
+  background: rgba(0,212,170,.08);
+  border: 1px solid rgba(0,212,170,.2);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.admin-panel h3 {
+  color: var(--primary);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+/* جوایز */
+.reward-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255,215,0,.15);
+  color: var(--gold);
+  border: 1px solid rgba(255,215,0,.3);
+}
+
+/* لیدربورد */
+.leader-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.03);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.leader-rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: rgba(255,255,255,.1);
+}
+
+.leader-rank.gold { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #1a1a2e; }
+.leader-rank.silver { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #1a1a2e; }
+.leader-rank.bronze { background: linear-gradient(135deg, #cd7f32, #b87333); color: #1a1a2e; }
+
+.leader-name { flex: 1; font-weight: 600; }
+.leader-score { font-weight: 700; color: var(--gold); }
+
+/* مدال */
+.medal {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(255,215,0,.2), rgba(255,107,157,.1));
+  border-radius: 20px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,215,0,.3);
+}
+
+.medal-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* پاپ‌آپ */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--success), #00b894);
+  color: #0a0e27;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(0,230,118,.4);
+  z-index: 1000;
+  animation: slideUp 0.3s ease;
+  max-width: 90%;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* بارگذاری */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255,255,255,.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* شخصیت */
+.character {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  font-size: 3rem;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(0,212,170,.4));
+  z-index: 5;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+/* دیالوگ */
+.dialog-box {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  left: 100px;
+  background: rgba(30,36,69,.95);
+  border: 2px solid var(--primary);
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  z-index: 6;
+  backdrop-filter: blur(10px);
+}
+
+.dialog-name {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+}
+
+/* ویجت صدا */
+.sound-toggle {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+
+/* اسکرول افقی */
+.scroll-x {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.scroll-x::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scroll-x::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* آواتارها */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.avatar-option {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background: rgba(255,255,255,.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.avatar-option:hover, .avatar-option.selected {
+  border-color: var(--primary);
+  background: rgba(0,212,170,.15);
+  transform: scale(1.05);
+}
+
+/* جدول امتیازات */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.score-table th, .score-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.score-table th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.score-table td {
+  font-weight: 600;
+}
+
+/* نوار پایین */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(30,36,69,.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 50;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item span:first-child {
+  font-size: 1.3rem;
+}
+
+/* فاصله برای نوار پایین */
+.app { padding-bottom: 80px; }
+
+/* حذف scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+/* ریسپانسیو */
+@media (max-width: 400px) {
+  .header-title h1 { font-size: 0.95rem; }
+  .card { padding: 16px; }
+  .btn { padding: 12px 20px; font-size: 0.9rem; }
+}
 </style>
 </head>
+
 <body>
-<div id="app">
-<div class="top">
-  <div class="brand"><div class="logo">⚡</div><div>ستارهٔ برق</div></div>
-  <div class="stats">
-    <div class="pill">⭐ <span id="starsVal">0</span></div>
-    <div class="pill">🏆 <span id="scoreVal">0</span></div>
-    <div class="pill">⚡ <span id="energyVal">0</span>W</div>
-  </div>
-</div>
+<div class="app" id="app">
 
-<!-- PROFILE -->
-<div class="screen" id="screenProfile"><div class="card">
-  <div class="mascot-wrap"><div class="mascot">🤖</div><div class="bubble">سلام! من <b>برقو</b> هستم. نام و شهرت را بگو تا ستاره‌هایت ذخیره شود.</div></div>
-  <div class="hero"><h1>ثبت‌نام قهرمان انرژی</h1></div>
-  <div class="form">
-    <input id="inpFirst" placeholder="نام" maxlength="40"/>
-    <input id="inpLast" placeholder="نام خانوادگی" maxlength="40"/>
-    <input id="inpCity" placeholder="شهر" maxlength="40"/>
-  </div>
-  <div class="btn-row"><button class="btn primary" id="btnSaveProfile">شروع ماجراجویی 🚀</button></div>
-</div></div>
+  <!-- صفحه خوش‌آمد و ثبت‌نام -->
+  <div class="screen active" id="screen-welcome">
+    <div style="text-align:center; padding: 40px 20px;">
+      <div style="font-size: 5rem; margin-bottom: 20px; animation: float 3s ease-in-out infinite;">⚡</div>
+      <h1 style="font-size: 2rem; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 10px;">
+        قهرمانان برق
+      </h1>
+      <p style="color: var(--muted); margin-bottom: 30px; line-height: 1.8;">
+        ماجراجویی در دنیای صرفه‌جویی انرژی!<br>
+        با مدیریت هوشمند مصرف برق، قهرمان خانه شو! 🌟
+      </p>
+    </div>
 
-<!-- HOME -->
-<div class="screen" id="screenHome"><div class="card">
-  <div class="mascot-wrap"><div class="mascot">🤖</div><div class="bubble" id="homeBubble">خوش آمدی! بازی کن، کویینز بزن، گردونه بچرخان.</div></div>
-  <div class="hero"><h1>خانهٔ هوشمند ستاره</h1><p class="muted" id="homeSub"></p></div>
-  <div class="btn-row">
-    <button class="btn primary" data-go="game">🎮 خانه هوشمند</button>
-    <button class="btn gold" data-go="quiz">👑 کویینز</button>
-    <button class="btn sun" data-go="wheel">🎡 گردونه</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn green" data-go="snakes">🐍 مار و پله</button>
-    <button class="btn pink" data-go="ludo">🎲 منچ</button>
-    <button class="btn soft" data-go="board">🏅 جدول هفته</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn soft" data-go="story">🌙 قصه</button>
-    <button class="btn soft" data-go="anim">🎬 انیمه</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn soft" id="btnDay">☀️ روز</button>
-    <button class="btn moon" id="btnNight">🌙 شب</button>
-    <button class="btn soft" id="btnSound">🔊 صدا</button>
-  </div>
-</div></div>
+    <div class="card">
+      <div class="card-title">🎮 ثبت‌نام و شروع بازی</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
+        نام و مشخصات خود را وارد کن تا سفر تو آغاز شود!
+      </p>
+      
+      <input type="text" class="input" id="input-fname" placeholder="نام" />
+      <input type="text" class="input" id="input-lname" placeholder="نام خانوادگی" />
+      <input type="text" class="input" id="input-city" placeholder="شهر" />
+      
+      <div style="margin: 16px 0 8px; color: var(--muted); font-size: 0.85rem;">
+        قهرمان خود را انتخاب کن:
+      </div>
+      <div class="avatar-grid" id="avatar-grid">
+        <div class="avatar-option" data-avatar="🦸">🦸</div>
+        <div class="avatar-option" data-avatar="🦹">🦹</div>
+        <div class="avatar-option" data-avatar="🧙">🧙</div>
+        <div class="avatar-option" data-avatar="👦">👦</div>
+        <div class="avatar-option" data-avatar="👧">👧</div>
+        <div class="avatar-option" data-avatar="🐱">🐱</div>
+      </div>
+      
+      <button class="btn btn-primary" id="btn-start">
+        🚀 شروع ماجراجویی
+      </button>
+    </div>
 
-<!-- HOUSE GAME -->
-<div class="screen" id="screenGame">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="mascot-wrap"><div class="mascot" style="width:52px;height:52px;font-size:1.4rem">🤖</div><div class="bubble" id="coachBubble">اتاق را انتخاب کن و وسایل اضافی را خاموش کن.</div></div>
-  <div class="stage-bar" id="stageBar"></div>
-  <div class="progress-txt muted" id="stageInfo"></div>
-  <div class="meter-bar"><div class="meter-fill" id="meterFill"></div></div>
-  <div class="scene-wrap"><div class="house3d" id="house3d"></div></div>
-  <div class="card" id="roomPanel" style="display:none">
-    <button class="back-mini" id="closeRoom">← بستن اتاق</button>
-    <div id="roomTitle" style="font-weight:900;margin-bottom:8px"></div>
-    <div id="deviceList"></div>
+    <div class="card" style="background: linear-gradient(135deg, rgba(124,92,255,.15), rgba(0,212,170,.05));">
+      <div class="card-title">🏆 جوایز هفتگی</div>
+      <p style="color: var(--muted); font-size: 0.85rem; line-height: 1.8;">
+        هر هفته به قهرمانانی که بیشترین امتیاز دارند، جوایز ویژه اهدا می‌شود:
+      </p>
+      <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+        <span class="reward-badge">🥇 رتبه اول</span>
+        <span class="reward-badge">🥈 رتبه دوم</span>
+        <span class="reward-badge">🥉 رتبه سوم</span>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- QUIZ -->
-<div class="screen" id="screenQuiz"><div class="card" style="flex:1">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="mascot-wrap"><div class="mascot" style="width:52px;height:52px;font-size:1.4rem">👑</div><div class="bubble" id="quizBubble">کویینز: ۲۰۰ سؤال مدیریت مصرف — هر درست ۱ امتیاز</div></div>
-  <div class="hero"><h1>👑 کویینز انرژی</h1><p class="muted" id="quizMeta">هر ورود ۴ سؤال · سپس ۱ ساعت صبر</p></div>
-  <div id="quizArea"></div>
-  <div class="btn-row" id="quizActions"></div>
-</div></div>
+  <!-- صفحه اصلی -->
+  <div class="screen" id="screen-home">
+    <div class="header">
+      <div class="header-title">
+        <span style="font-size: 1.5rem;">⚡</span>
+        <h1>قهرمانان برق</h1>
+      </div>
+      <div class="score-badge" id="home-score">
+        <span>⭐</span>
+        <span id="home-score-value">0</span>
+      </div>
+    </div>
 
-<!-- WHEEL -->
-<div class="screen" id="screenWheel"><div class="card">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="mascot-wrap"><div class="mascot" style="width:52px;height:52px;font-size:1.4rem">🎡</div><div class="bubble" id="wheelBubble">روزی یک‌بار — امتیاز ۱، ۲، ۴ یا ۱۰</div></div>
-  <div class="wheel-box">
-    <div class="wheel-wrap">
-      <div class="wheel-pin">▼</div>
-      <div class="wheel" id="wheel">
-        <div class="wheel-labels">
-          <span class="l1">۱</span><span class="l2">۲</span><span class="l4">۴</span><span class="l10">۱۰</span>
+    <div class="card" id="home-welcome">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 3rem;" id="home-avatar">🦸</div>
+        <div>
+          <div style="font-weight: 700; font-size: 1.1rem;" id="home-name">قهرمان</div>
+          <div style="color: var(--muted); font-size: 0.85rem;" id="home-city">ایران</div>
         </div>
       </div>
     </div>
-    <button class="btn primary" id="btnSpin">چرخاندن گردونه 🎡</button>
-    <p class="muted" id="wheelMeta" style="text-align:center"></p>
+
+    <div class="card">
+      <div class="card-title">🎮 مراحل بازی</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
+        در خانه قدم بزن و با خاموش کردن وسایل اضافی، امتیاز جمع کن!
+      </p>
+      
+      <div class="scroll-x" id="levels-scroll">
+        <!-- مراحل به صورت داینامیک اضافه می‌شوند -->
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏆 چالش‌های روزانه</div>
+      
+      <div class="media-item" onclick="openQuiz()">
+        <div class="media-icon">📝</div>
+        <div class="media-info">
+          <div class="media-title">کوییز مدیریت برق</div>
+          <div class="media-meta">۴ سوال • هر سوال ۱ امتیاز</div>
+        </div>
+        <span style="color: var(--gold); font-weight: 700;">→</span>
+      </div>
+      
+      <div class="media-item" onclick="openWheel()">
+        <div class="media-icon">🎡</div>
+        <div class="media-info">
+          <div class="media-title">گردونه شانس</div>
+          <div class="media-meta">روزی یک‌بار • تا ۱۰ امتیاز</div>
+        </div>
+        <span style="color: var(--gold); font-weight: 700;">→</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📚 سرگرمی و آموزش</div>
+      
+      <div class="media-item" onclick="showTab('stories')">
+        <div class="media-icon">📖</div>
+        <div class="media-info">
+          <div class="media-title">قصه‌های شب</div>
+          <div class="media-meta">هر قصه ۵ امتیاز</div>
+        </div>
+        <span style="color: var(--gold); font-weight: 700;">→</span>
+      </div>
+      
+      <div class="media-item" onclick="showTab('animations')">
+        <div class="media-icon">🎬</div>
+        <div class="media-info">
+          <div class="media-title">انیمیشن‌های آموزشی</div>
+          <div class="media-meta">هر انیمیشن ۵ امتیاز</div>
+        </div>
+        <span style="color: var(--gold); font-weight: 700;">→</span>
+      </div>
+      
+      <div class="media-item" onclick="openLeaderboard()">
+        <div class="media-icon">👑</div>
+        <div class="media-info">
+          <div class="media-title">جدول قهرمانان</div>
+          <div class="media-meta">رتبه‌بندی برترین‌ها</div>
+        </div>
+        <span style="color: var(--gold); font-weight: 700;">→</span>
+      </div>
+    </div>
   </div>
-</div></div>
 
-<!-- SNAKES -->
-<div class="screen" id="screenSnakes"><div class="card" style="flex:1">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="hero"><h1>🐍 مار و پله انرژی</h1><p class="muted">با تاس برو بالا · مارها انرژی هدر می‌دهند!</p></div>
-  <div class="board-grid snl" id="snlBoard"></div>
-  <div class="dice" id="snlDice">🎲</div>
-  <p class="muted" style="text-align:center" id="snlStatus">تاس را بزن</p>
-  <div class="btn-row"><button class="btn soft" id="snlReset">شروع دوباره</button></div>
-</div></div>
+  <!-- صفحه بازی مرحله -->
+  <div class="screen" id="screen-level">
+    <div class="header">
+      <button class="btn btn-ghost" style="width: auto; padding: 8px 16px; margin: 0;" onclick="goHome()">
+        ← بازگشت
+      </button>
+      <div class="score-badge">
+        <span>⭐</span>
+        <span id="level-score-value">0</span>
+      </div>
+    </div>
 
-<!-- LUDO -->
-<div class="screen" id="screenLudo"><div class="card" style="flex:1">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="hero"><h1>🎲 منچ ستاره</h1><p class="muted">ساده‌شده برای موبایل · با تاس حرکت کن</p></div>
-  <div id="ludoInfo" class="muted" style="text-align:center;margin:6px 0"></div>
-  <div class="dice" id="ludoDice">🎲</div>
-  <div id="ludoTokens" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0"></div>
-  <p class="muted" style="text-align:center" id="ludoStatus">تاس را بزن تا مهره‌ات حرکت کند</p>
-  <div class="btn-row"><button class="btn soft" id="ludoReset">شروع دوباره</button></div>
-</div></div>
+    <div class="card">
+      <div class="card-title" id="level-title">🏠 اتاق کودک</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;" id="level-desc">
+        لامپ‌های اضافی را خاموش کن!
+      </p>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" id="level-progress" style="width: 0%;"></div>
+      </div>
+      
+      <div class="stage-container">
+        <div class="stage-scene" id="level-scene">
+          <!-- اشیاء به صورت داینامیک اضافه می‌شوند -->
+        </div>
+      </div>
 
-<!-- STORY -->
-<div class="screen" id="screenStory"><div class="card" style="flex:1">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="hero"><h1>🌙 قصه شب</h1><p class="muted">هر قصه = ۵ امتیاز (یک‌بار)</p></div>
-  <div id="storyList"></div>
-  <div id="storyPlayer" style="display:none;margin-top:8px">
-    <video id="storyVideo" controls playsinline style="width:100%;border-radius:16px;max-height:220px;background:#000"></video>
-    <audio id="storyAudio" controls style="display:none;width:100%;margin-top:8px"></audio>
+      <div id="level-result" style="display: none;">
+        <div class="medal">
+          <div class="medal-icon">🏆</div>
+          <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;" id="medal-title">عالی بود!</div>
+          <div style="color: var(--muted); font-size: 0.9rem;" id="medal-desc">مرحله را با موفقیت تمام کردی</div>
+          <div class="score-badge" style="margin: 16px auto; justify-content: center; display: inline-flex;">
+            <span>⭐</span>
+            <span id="medal-score">0</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="nextLevel()">
+          ➡️ مرحله بعد
+        </button>
+        <button class="btn btn-ghost" onclick="goHome()">
+          🏠 بازگشت به خانه
+        </button>
+      </div>
+    </div>
   </div>
-</div></div>
 
-<!-- ANIM -->
-<div class="screen" id="screenAnim"><div class="card" style="flex:1">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="hero"><h1>🎬 انیمیشن</h1><p class="muted">هر انیمیشن = ۵ امتیاز (یک‌بار)</p></div>
-  <div id="animList"></div>
-  <div id="animPlayer" style="display:none;margin-top:8px">
-    <video id="animVideo" controls playsinline style="width:100%;border-radius:16px;max-height:220px;background:#000"></video>
+  <!-- صفحه کوییز -->
+  <div class="screen" id="screen-quiz">
+    <div class="header">
+      <button class="btn btn-ghost" style="width: auto; padding: 8px 16px; margin: 0;" onclick="goHome()">
+        ← بازگشت
+      </button>
+      <div class="score-badge">
+        <span>📝</span>
+        <span id="quiz-progress">1/4</span>
+      </div>
+    </div>
+
+    <div class="card" id="quiz-card">
+      <div class="question-card">
+        <div class="question-text" id="quiz-question">در حال بارگذاری...</div>
+        <div id="quiz-options"></div>
+      </div>
+    </div>
+
+    <div class="card" id="quiz-result" style="display: none;">
+      <div class="medal">
+        <div class="medal-icon">🎉</div>
+        <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">کوییز تمام شد!</div>
+        <div style="color: var(--muted); font-size: 0.9rem; margin-bottom: 16px;">
+          امتیاز این دور: <span id="quiz-round-score" style="color: var(--gold); font-weight: 700;">0</span>
+        </div>
+        <div style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;" id="quiz-cooldown-msg">
+          می‌توانی یک ساعت دیگر دوباره امتحان کنی! ⏰
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goHome()">
+        🏠 بازگشت به خانه
+      </button>
+    </div>
   </div>
-</div></div>
 
-<!-- BOARD -->
-<div class="screen" id="screenBoard"><div class="card">
-  <button class="back-mini" data-go="home">🏠 بازگشت به خانه</button>
-  <div class="hero"><h1>🏅 جدول هفته</h1><p class="muted">بیشترین امتیاز هفته برای جایزه</p></div>
-  <p class="muted" id="weekLabel" style="text-align:center"></p>
-  <p class="muted" style="text-align:center">امتیاز هفتهٔ تو: <b id="myWeekScore">۰</b></p>
-  <ol class="leader" id="leaderList" style="padding:0 18px;margin:0"></ol>
-  <div class="btn-row"><button class="btn soft" id="btnCopyScore">📋 کپی کد امتیاز برای ربات</button></div>
-  <p class="muted" style="text-align:center;margin-top:8px">کد را در چت ربات بفرست تا در جدول رسمی ثبت شود.</p>
-</div></div>
+  <!-- صفحه گردونه شانس -->
+  <div class="screen" id="screen-wheel">
+    <div class="header">
+      <button class="btn btn-ghost" style="width: auto; padding: 8px 16px; margin: 0;" onclick="goHome()">
+        ← بازگشت
+      </button>
+      <div class="score-badge">
+        <span>🎡</span>
+        <span id="wheel-spins-left">3</span> چرخش
+      </div>
+    </div>
 
-<nav class="nav">
-  <button type="button" data-go="home"><span>🏠</span>خانه</button>
-  <button type="button" data-go="game"><span>🎮</span>خانه</button>
-  <button type="button" data-go="quiz"><span>👑</span>کویینز</button>
-  <button type="button" data-go="wheel"><span>🎡</span>گردونه</button>
-  <button type="button" data-go="snakes"><span>🐍</span>مارپله</button>
-  <button type="button" data-go="ludo"><span>🎲</span>منچ</button>
-  <button type="button" data-go="board"><span>🏅</span>جدول</button>
-</nav>
+    <div class="card">
+      <div class="card-title">🎡 گردونه شانس</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
+        روزی یک‌بار، ۳ بار گردونه را بچرخان و امتیاز جمع کن!
+      </p>
+
+      <div class="wheel-container">
+        <div class="wheel-pointer">▼</div>
+        <div class="wheel" id="wheel">
+          <!-- قطعات گردونه به صورت داینامیک اضافه می‌شوند -->
+        </div>
+      </div>
+
+      <button class="btn btn-gold" id="btn-spin" onclick="spinWheel()">
+        🎲 چرخاندن گردونه
+      </button>
+
+      <div id="wheel-result" style="text-align: center; margin-top: 16px; display: none;">
+        <div style="font-size: 1.3rem; font-weight: 700; color: var(--gold);" id="wheel-prize">
+          🎉 ۱۰ امتیاز بردی!
+        </div>
+      </div>
+
+      <div id="wheel-cooldown" style="display: none; text-align: center; padding: 20px;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">⏰</div>
+        <div style="color: var(--muted); line-height: 1.8;">
+          امروز گردونه‌ات را چرخاندی!<br>
+          فردا دوباره برگرد! 🌟
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- صفحه قصه‌ها -->
+  <div class="screen" id="screen-stories">
+    <div class="header">
+      <button class="btn btn-ghost" style="width: auto; padding: 8px 16px; margin: 0;" onclick="goHome()">
+        ← بازگشت
+      </button>
+      <div class="score-badge">
+        <span>📖</span>
+        <span>قصه‌های شب</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📖 قصه‌های شب</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
+        گوش دادن به هر قصه ۵ امتیاز دارد! 🌙
+      </p>
+      <div id="stories-list"></div>
+    </div>
+  </div>
+
+  <!-- صفحه انیمیشن‌ها -->
+  <div class="screen" id="screen-animations">
+    <div class="header">
+      <button class="btn btn-ghost" style="width: auto; padding: 8px 16px; margin: 0;" onclick="goHome()">
+        ← بازگشت
+      </button>
+      <div class="score-badge">
+        <span>🎬</span>
+        <span>انیمیشن‌ها</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎬 انیمیشن‌های آموزشی</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
+        دیدن هر انیمیشن ۵ امتیاز دارد! 🌟
+      </p>
+      <div id="animations-list"></div>
+    </div>
+  </div>
+
+  <!-- صفحه جدول قهرمانان -->
+  <div class="screen" id="screen-leaderboard">
+    <div class="header">
+      <button class="btn btn-ghost" style="width: auto; padding: 8px 16px; margin: 0;" onclick="goHome()">
+        ← بازگشت
+      </button>
+      <div class="score-badge">
+        <span>👑</span>
+        <span>قهرمانان</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👑 جدول قهرمانان هفته</div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 16px;">
+        به‌روزرسانی خودکار • بر اساس امتیاز کل
+      </p>
+      <div id="leaderboard-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏆 جوایز هفتگی</div>
+      <div style="display: grid; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: linear-gradient(135deg, rgba(255,215,0,.15), transparent); border-radius: 12px; border: 1px solid rgba(255,215,0,.3);">
+          <span style="font-size: 2rem;">🥇</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: var(--gold);">رتبه اول</div>
+            <div style="font-size: 0.8rem; color: var(--muted);">جایزه ویژه + مدال طلا</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: linear-gradient(135deg, rgba(192,192,192,.15), transparent); border-radius: 12px; border: 1px solid rgba(192,192,192,.3);">
+          <span style="font-size: 2rem;">🥈</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: #c0c0c0;">رتبه دوم</div>
+            <div style="font-size: 0.8rem; color: var(--muted);">جایزه نقره‌ای</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: linear-gradient(135deg, rgba(205,127,50,.15), transparent); border-radius: 12px; border: 1px solid rgba(205,127,50,.3);">
+          <span style="font-size: 2rem;">🥉</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: #cd7f32;">رتبه سوم</div>
+            <div style="font-size: 0.8rem; color: var(--muted);">جایزه برنزی</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<div class="toast" id="toast"></div>
-<div class="badge-pop" id="badgePop">
-  <div class="badge-card">
-    <div style="font-size:2.8rem" id="badgeEmoji">🌟</div>
-    <h2 id="badgeTitle">آفرین!</h2>
-    <p id="badgeText" class="muted"></p>
-    <button class="btn primary" id="badgeOk">ادامه</button>
+<!-- نوار پایین -->
+<div class="bottom-nav" id="bottom-nav" style="display: none;">
+  <div class="nav-item active" onclick="switchTab('home')">
+    <span>🏠</span><span>خانه</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('quiz')">
+    <span>📝</span><span>کوییز</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('wheel')">
+    <span>🎡</span><span>شانس</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('stories')">
+    <span>📖</span><span>قصه‌ها</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('animations')">
+    <span>🎬</span><span>انیمیشن</span>
   </div>
 </div>
 
 <script>
-(function(){
-const STORIES=[];
-const ANIMATIONS=[];
-const STORAGE="starPower_v3";
-const HOUR_MS=3600000;
-const BUDGET=900;
+// ============ تنظیمات Supabase ============
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key';
 
-// ===== 200 QUIZ QUESTIONS (consumption management) =====
-const QUIZ_BANK=[
-{q:"چراغ را وقتی از اتاق می‌روی چه کار کنی؟",opts:["روشن بماند","خاموش کنیم","چندتا روشن کنیم","جای تلویزیون"],a:1},
-{q:"نور خورشید چه کمکی به صرفه‌جویی می‌کند؟",opts:["هیچ","جایگزین چراغ روز","خاموشی یخچال","ساخت گوشی"],a:1},
-{q:"شارژر بدون گوشی را چه کنیم؟",opts:["در برق بماند","از برق بکشیم","آب بخورد","یخ بزند"],a:1},
-{q:"چرا در یخچال را زود ببندیم؟",opts:["زیبایی","موتور کمتر کار کند","گرم شود","صدا بدهد"],a:1},
-{q:"کدام وسیله معمولاً پرمصرف‌تر است؟",opts:["چراغ خواب","کولر گازی","کتاب","مداد"],a:1},
-{q:"لامپ LED معمولاً چه ویژگی دارد؟",opts:["خیلی پرمصرف","کم‌مصرف و بادوام","آب‌بر","پرسروصدا"],a:1},
-{q:"پنجره باز + کولر روشن چه مشکلی دارد؟",opts:["صرفه‌جویی","هدر رفتن سرما و مصرف بالا","خاموشی یخچال","هیچ"],a:1},
-{q:"انرژی خورشیدی از کجا می‌آید؟",opts:["باد","نور خورشید","بنزین","شیر"],a:1},
-{q:"تلویزیون بدون بیننده را چه کنیم؟",opts:["بلندتر کنیم","خاموش کنیم","سه تا روشن کنیم","به یخچال وصل کنیم"],a:1},
-{q:"«وات» یعنی چه؟",opts:["رنگ","واحد توان برق","نام شهر","نوع بازی"],a:1}
-];
-// expand to ~200 with variations
-(function(){
-  var extra=[
-    ["وقتی کسی در خانه نیست چه کنیم؟","وسایل غیرضروری را خاموش کنیم"],
-    ["بهترین لامپ برای صرفه‌جویی؟","لامپ LED"],
-    ["شارژر پرشده را؟","از برق بکشیم"],
-    ["کولر با پنجره باز؟","مصرف بالا و هدر سرما"],
-    ["یخچال را کنار اجاق؟","مصرف بیشتر می‌شود"],
-    ["لباس در آفتاب خشک کردن؟","صرفه‌جویی در برق"],
-    ["حالت استندبای وسایل؟","مصرف پنهان دارد"],
-    ["دمای مناسب کولر؟","دمای متعادل نه خیلی سرد"],
-    ["چراغ روز با نور کافی؟","خاموش کنیم"],
-    ["پنکه نسبت به کولر؟","کمتر مصرف می‌کند"]
-  ];
-  var wrongs=["همه چیز را روشن بگذاریم","هیچ کاری نکنیم","مصرف را دو برابر کنیم","وسایل را خراب کنیم"];
-  while(QUIZ_BANK.length<200){
-    var i=QUIZ_BANK.length;
-    var e=extra[i%extra.length];
-    var opts=[wrongs[0],e[1],wrongs[1],wrongs[2]];
-    // shuffle
-    for(var s=opts.length-1;s>0;s--){var j=Math.floor(Math.random()*(s+1));var t=opts[s];opts[s]=opts[j];opts[j]=t;}
-    QUIZ_BANK.push({q:e[0]+" (س"+(i+1)+")",opts:opts,a:opts.indexOf(e[1])});
+// ============ داده‌های بازی ============
+
+// مراحل بازی
+const LEVELS = [
+  {
+    id: 1,
+    name: 'اتاق کودک',
+    emoji: '🛏️',
+    desc: 'لامپ‌های اضافی را خاموش کن!',
+    reward: 10,
+    objects: [
+      { emoji: '💡', name: 'لامپ سقف', on: true, x: 30, y: 20, points: 2 },
+      { emoji: '💡', name: 'لامپ رومیزی', on: true, x: 70, y: 60, points: 2 },
+      { emoji: '📺', name: 'تلویزیون', on: true, x: 50, y: 75, points: 3 },
+      { emoji: '💻', name: 'لپ‌تاپ', on: false, x: 20, y: 70, points: 0 },
+      { emoji: '🛋️', name: 'مبل', on: false, x: 80, y: 80, points: 0 }
+    ]
+  },
+  {
+    id: 2,
+    name: 'آشپزخانه',
+    emoji: '🍳',
+    desc: 'وسایل برقی غیرضروری را خاموش کن!',
+    reward: 15,
+    objects: [
+      { emoji: '🧊', name: 'یخچال', on: true, x: 20, y: 30, points: 3 },
+      { emoji: '☕', name: 'سماور', on: true, x: 50, y: 50, points: 2 },
+      { emoji: '🔥', name: 'گاز', on: false, x: 70, y: 60, points: 0 },
+      { emoji: '🥤', name: 'مایکروویو', on: true, x: 40, y: 75, points: 2 },
+      { emoji: '🍽️', name: 'ماشین ظرفشویی', on: true, x: 80, y: 80, points: 3 }
+    ]
+  },
+  {
+    id: 3,
+    name: 'پذیرایی',
+    emoji: '🛋️',
+    desc: 'کولر و وسایل اضافی را تنظیم کن!',
+    reward: 20,
+    objects: [
+      { emoji: '❄️', name: 'کولر', on: true, x: 50, y: 20, points: 4 },
+      { emoji: '📺', name: 'تلویزیون', on: true, x: 30, y: 50, points: 2 },
+      { emoji: '💡', name: 'لوستر', on: true, x: 70, y: 40, points: 2 },
+      { emoji: '🪑', name: 'مبل', on: false, x: 20, y: 80, points: 0 },
+      { emoji: '🕯️', name: 'شمع', on: true, x: 80, y: 75, points: 1 }
+    ]
+  },
+  {
+    id: 4,
+    name: 'حمام',
+    emoji: '🚿',
+    desc: 'مصرف آب گرم و برق را بهینه کن!',
+    reward: 20,
+    objects: [
+      { emoji: '💧', name: 'آب گرم', on: true, x: 30, y: 30, points: 3 },
+      { emoji: '🔆', name: 'لامپ', on: true, x: 70, y: 20, points: 2 },
+      { emoji: '🧴', name: 'آبگرمکن', on: true, x: 50, y: 60, points: 4 },
+      { emoji: '🚿', name: 'دوش', on: false, x: 20, y: 75, points: 0 },
+      { emoji: '🛁', name: 'وان', on: false, x: 80, y: 80, points: 0 }
+    ]
+  },
+  {
+    id: 5,
+    name: 'حیاط',
+    emoji: '🌳',
+    desc: 'انرژی خورشیدی را فعال کن!',
+    reward: 25,
+    objects: [
+      { emoji: '☀️', name: 'خورشید', on: true, x: 50, y: 15, points: 5 },
+      { emoji: '💡', name: 'چراغ حیاط', on: true, x: 30, y: 50, points: 2 },
+      { emoji: '🌱', name: 'گیاه', on: false, x: 20, y: 80, points: 0 },
+      { emoji: '🔋', name: 'باتری', on: true, x: 70, y: 60, points: 3 },
+      { emoji: '🚗', name: 'خودرو', on: false, x: 80, y: 85, points: 0 }
+    ]
+  },
+  {
+    id: 6,
+    name: 'پشت‌بام',
+    emoji: '🏠',
+    desc: 'پنل خورشیدی نصب کن!',
+    reward: 30,
+    objects: [
+      { emoji: '🔆', name: 'پنل خورشیدی', on: true, x: 50, y: 30, points: 5 },
+      { emoji: '⚡', name: 'کابل', on: true, x: 30, y: 60, points: 3 },
+      { emoji: '🌡️', name: 'دماسنج', on: false, x: 70, y: 70, points: 0 },
+      { emoji: '💡', name: 'لامپ', on: true, x: 20, y: 80, points: 2 },
+      { emoji: '📡', name: 'آنتن', on: false, x: 80, y: 20, points: 0 }
+    ]
   }
-})();
-
-const STAGES=[
-{id:1,title:"مرحله ۱ — شروع سبز",unlock:0,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ سقفی",icon:"💡",watts:45,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:95,on:true}]},
-  bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ خواب",icon:"🌙",watts:18,on:true},{id:"d2",name:"شارژر بیکار",icon:"🔌",watts:5,on:true}]}
-}},
-{id:2,title:"مرحله ۲ — آشپزخانه",unlock:8,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ",icon:"💡",watts:40,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:90,on:true}]},
-  kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:30,on:true},{id:"k2",name:"سماور برقی",icon:"🫖",watts:120,on:true},{id:"k3",name:"یخچال",icon:"🧊",watts:150,on:true,locked:true}]}
-}},
-{id:3,title:"مرحله ۳ — خانه کامل",unlock:18,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ",icon:"💡",watts:35,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:100,on:true},{id:"l3",name:"کولر",icon:"❄️",watts:700,on:true}]},
-  kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:25,on:true},{id:"k2",name:"مایکروویو",icon:"📡",watts:80,on:true}]},
-  bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ",icon:"💡",watts:20,on:true},{id:"b2",name:"آبگرمکن",icon:"🚿",watts:350,on:true}]}
-}},
-{id:4,title:"مرحله ۴ — اتاق بازی",unlock:30,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ LED",icon:"💡",watts:20,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:90,on:false}]},
-  play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"چراغ رنگی",icon:"🌈",watts:40,on:true},{id:"p2",name:"کنسول",icon:"🎮",watts:120,on:true},{id:"p3",name:"اسپیکر",icon:"🔈",watts:35,on:true}]},
-  bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ مطالعه",icon:"📖",watts:15,on:true}]}
-}},
-{id:5,title:"مرحله ۵ — قهرمان انرژی",unlock:45,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ LED",icon:"💡",watts:18,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:85,on:false},{id:"l3",name:"کولر",icon:"❄️",watts:500,on:false}]},
-  kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:12,on:true},{id:"k2",name:"یخچال کم‌مصرف",icon:"🧊",watts:100,on:true,locked:true}]},
-  bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ",icon:"💡",watts:10,on:false},{id:"d2",name:"شارژر",icon:"🔌",watts:4,on:true}]}
-}},
-{id:6,title:"مرحله ۶ — خانه خورشیدی",unlock:65,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ خورشیدی",icon:"☀️",watts:10,on:true},{id:"l2",name:"تلویزیون",icon:"📺",watts:70,on:false}]},
-  kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"چراغ",icon:"💡",watts:10,on:true}]},
-  play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"کنسول",icon:"🎮",watts:80,on:true}]}
-}},
-{id:7,title:"مرحله ۷ — شهر هوشمند",unlock:90,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ هوشمند",icon:"💡",watts:8,on:true},{id:"l2",name:"سیستم صوت",icon:"🔊",watts:40,on:true}]},
-  kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"لوازم کم‌مصرف",icon:"🍳",watts:50,on:true}]},
-  bath:{title:"🛁 سرویس",devices:[{id:"b1",name:"چراغ سنسوردار",icon:"💡",watts:6,on:false}]}
-}},
-{id:8,title:"مرحله ۸ — افسانه انرژی",unlock:120,rooms:{
-  living:{title:"🛋️ پذیرایی",devices:[{id:"l1",name:"چراغ نهایی",icon:"✨",watts:5,on:true}]},
-  kitchen:{title:"🍳 آشپزخانه",devices:[{id:"k1",name:"یخچال قهرمان",icon:"🧊",watts:80,on:true,locked:true}]},
-  play:{title:"🎯 اتاق بازی",devices:[{id:"p1",name:"بازی آموزشی",icon:"🎯",watts:15,on:false}]},
-  bed:{title:"🛏️ اتاق خواب",devices:[{id:"d1",name:"چراغ خواب",icon:"🌙",watts:3,on:false}]}
-}}
 ];
 
-const COACH={
-  welcome:["آفرین که اومدی!","برقو هواتو داره!","آمادهٔ ستاره جمع کردن؟"],
-  good:["عالی! مصرف کم شد ⭐","آفرین قهرمان انرژی!","دمت گرم، درست خاموش کردی!"],
-  bad:["این یکی باید روشن بمونه","قفل است، دست نزن","یه وسیلهٔ ضروری است"],
-  level:["مرحله جدید باز شد! 🏆","آفرین، رفتی بالاتر!","قهرمان‌تر شدی!"],
-  wheel:["شانستو امتحان کن!","روزی یک‌بار گردونه می‌چرخه","شاید ۱۰ امتیاز بیاد!"]
+// سوالات کوییز (نمونه - باید ۲۰۰ سوال کامل شود)
+const QUIZ_QUESTIONS = [
+  { q: 'کدام وسایل برقی بیشترین مصرف را دارند؟', options: ['تلویزیون', 'یخچال', 'کولر گازی', 'لامپ LED'], correct: 2 },
+  { q: 'برای صرفه‌جویی در مصرف برق، لامپ‌ها را با چه نوعی عوض کنیم؟', options: ['رشته‌ای', 'LED', 'مهتابی', 'هالوژن'], correct: 1 },
+  { q: 'هنگام خروج از اتاق چه کاری انجام دهیم؟', options: ['تلویزیون را روشن بگذاریم', 'لامپ‌ها را خاموش کنیم', 'کولر را روشن بگذاریم', 'هیچ کاری نکنیم'], correct: 1 },
+  { q: 'دمای مناسب برای کولر گازی چند درجه است؟', options: ['۱۶ درجه', '۱۸ درجه', '۲۵ درجه', '۳۰ درجه'], correct: 2 },
+  { q: 'کدام یک از منابع انرژی تجدیدپذیر است؟', options: ['نفت', 'زغال سنگ', 'انرژی خورشیدی', 'گازوئیل'], correct: 2 },
+  { q: 'یخچال را کجا قرار دهیم که کمتر برق مصرف کند؟', options: ['کنار اجاق گاز', 'در آفتاب مستقیم', 'دور از منابع گرما', 'کنار رادیاتور'], correct: 2 },
+  { q: 'لباس‌ها را با چه دمایی در ماشین لباسشویی بشوییم؟', options: ['۹۰ درجه', '۶۰ درجه', '۳۰ درجه', 'آب جوش'], correct: 2 },
+  { q: 'استفاده از پنل خورشیدی چه فایده‌ای دارد؟', options: ['افزایش مصرف برق', 'تولید برق پاک', 'گرم شدن خانه', 'کاهش نور'], correct: 1 },
+  { q: 'هنگام مسواک زدن، شیر آب را چه کنیم؟', options: ['باز بگذاریم', 'ببندیم', 'نیمه باز بگذاریم', 'فرقی ندارد'], correct: 1 },
+  { q: 'کدام لامپ کمترین مصرف برق را دارد؟', options: ['لامپ رشته‌ای ۱۰۰ وات', 'لامپ LED ۱۰ وات', 'لامپ مهتابی ۴۰ وات', 'لامپ هالوژن ۵۰ وات'], correct: 1 },
+  { q: 'برای خشک کردن لباس‌ها کدام روش بهتر است؟', options: ['ماشین خشک‌کن', 'آویزان در هوای آزاد', 'اتو کشیدن', 'بخاری'], correct: 1 },
+  { q: 'کولر آبی را در چه فصلی استفاده کنیم؟', options: ['زمستان', 'تابستان', 'پاییز', 'همه فصل‌ها'], correct: 1 },
+  { q: 'کدام یک از کارهای زیر باعث هدر رفتن برق می‌شود؟', options: ['خاموش کردن لامپ', 'روشن گذاشتن تلویزیون بدون استفاده', 'استفاده از LED', 'بستن شیر آب'], correct: 1 },
+  { q: 'در زمستان دمای خانه را روی چند درجه تنظیم کنیم؟', options: ['۱۰ درجه', '۱۸-۲۰ درجه', '۳۰ درجه', '۲۵ درجه'], correct: 1 },
+  { q: 'کدام یک وسیله کم‌مصرف است؟', options: ['کولر گازی', 'لامپ LED', 'فر برقی', 'اتو'], correct: 1 },
+  { q: 'برای شارژ گوشی از چه چیزی استفاده کنیم؟', options: ['شارژر اصلی', 'شارژر تقلبی', 'هر شارژی', 'شارژر ۲۴ ساعته وصل'], correct: 0 },
+  { q: 'آبگرمکن خورشیدی چه کاربردی دارد؟', options: ['گرم کردن خانه', 'گرم کردن آب با انرژی خورشید', 'روشنایی', 'پخت غذا'], correct: 1 },
+  { q: 'هنگام ترک خانه برای مدت طولانی چه کنیم؟', options: ['همه وسایل را روشن بگذاریم', 'وسایل غیرضروری را خاموش کنیم', 'فقط لامپ را روشن بگذاریم', 'کولر را روشن بگذاریم'], correct: 1 },
+  { q: 'چرا باید از وسایل برقی کم‌مصرف استفاده کنیم؟', options: ['برای کاهش هزینه و حفظ محیط زیست', 'چون زیباست', 'چون ارزان است', 'هیچ دلیلی ندارد'], correct: 0 },
+  { q: 'کدام یک از انرژی‌های زیر پاک است؟', options: ['انرژی بادی', 'نفت', 'گازوئیل', 'زغال سنگ'], correct: 0 }
+];
+
+// ============ وضعیت بازی ============
+let state = {
+  user: null,
+  score: 0,
+  selectedAvatar: '🦸',
+  currentLevel: 0,
+  levelObjects: [],
+  currentQuiz: [],
+  quizIndex: 0,
+  quizRoundScore: 0,
+  wheelSpins: 3,
+  hasSpunWheelToday: false,
+  lastQuizTime: null,
+  soundEnabled: true
 };
 
-let soundOn=true, audioCtx=null;
-function ctx(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();return audioCtx;}
-function beep(f,d,t,v){if(!soundOn)return;try{var c=ctx(),o=c.createOscillator(),g=c.createGain();o.type=t||"sine";o.frequency.value=f;g.gain.value=v||0.08;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+(d||0.15));o.stop(c.currentTime+(d||0.15));}catch(e){}}
-function sfxClick(){beep(600,0.06,"square",0.05);}
-function sfxOk(){beep(880,0.1,"sine",0.08);setTimeout(function(){beep(1100,0.12,"sine",0.07);},80);}
-function sfxWrong(){beep(200,0.15,"sawtooth",0.06);}
-function sfxStar(){beep(1000,0.08,"sine",0.07);setTimeout(function(){beep(1400,0.12,"sine",0.06);},70);}
-function sfxLevel(){beep(600,0.1);setTimeout(function(){beep(800,0.1);},100);setTimeout(function(){beep(1200,0.2);},200);}
-function sfxSpin(){for(var i=0;i<8;i++)(function(i){setTimeout(function(){beep(400+i*80,0.05,"square",0.04);},i*80);})(i);}
-
-function weekId(){var d=new Date();var onejan=new Date(d.getFullYear(),0,1);var week=Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);return d.getFullYear()+"-W"+week;}
-function todayStr(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function defaultState(){return{profile:null,score:0,stars:0,stage:1,soundOn:true,night:false,quizNextAt:0,wheelDay:"",mediaBonus:{},weekly:{},devices:{},scored:{},badges:{},snlPos:1,ludoPos:0};}
-function load(){try{var r=localStorage.getItem(STORAGE);if(!r)return defaultState();return Object.assign(defaultState(),JSON.parse(r));}catch(e){return defaultState();}}
-var S=load();soundOn=S.soundOn!==false;
-function save(){try{localStorage.setItem(STORAGE,JSON.stringify(S));}catch(e){}syncWeeklyBoard();}
-function fa(n){return String(n).replace(/\d/g,function(d){return"۰۱۲۳۴۵۶۷۸۹"[d];});}
-function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
-function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove("show");},2400);}
-function showBadge(e,t,x){document.getElementById("badgeEmoji").textContent=e;document.getElementById("badgeTitle").textContent=t;document.getElementById("badgeText").textContent=x||"";document.getElementById("badgePop").classList.add("show");}
-document.getElementById("badgeOk").onclick=function(){document.getElementById("badgePop").classList.remove("show");sfxClick();};
-
-function addScore(n,reason){
-  n=Number(n)||0;
-  if(!n)return;
-  S.score=(S.score||0)+n;
-  S.stars=(S.stars||0)+n;
-  var w=weekId();
-  if(!S.weekly)S.weekly={};
-  S.weekly[w]=(S.weekly[w]||0)+n;
-  save();
-  renderStats();
-  if(n>0){sfxStar();toast("+"+fa(n)+" امتیاز"+(reason?" · "+reason:""));}
-  checkStageUnlock();
+// ============ توابع کمکی ============
+function toFa(num) {
+  return String(num).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
 
-function renderStats(){
-  document.getElementById("starsVal").textContent=fa(S.stars||0);
-  document.getElementById("scoreVal").textContent=fa(S.score||0);
-  var my=document.getElementById("myWeekScore");
-  if(my)my.textContent=fa((S.weekly&&S.weekly[weekId()])||0);
+function showToast(msg, duration = 3000) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
 }
 
-function showScreen(name){
-  sfxClick();
-  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
-  var map={profile:"screenProfile",home:"screenHome",game:"screenGame",quiz:"screenQuiz",wheel:"screenWheel",story:"screenStory",anim:"screenAnim",board:"screenBoard",snakes:"screenSnakes",ludo:"screenLudo"};
-  if(!S.profile&&name!=="profile"){document.getElementById("screenProfile").classList.add("active");return;}
-  document.getElementById(map[name]||"screenHome").classList.add("active");
-  document.querySelectorAll(".nav button").forEach(function(b){b.classList.toggle("active",b.dataset.go===name);});
-  if(name==="game")renderHouse();
-  if(name==="quiz")renderQuiz();
-  if(name==="wheel")renderWheelMeta();
-  if(name==="story")renderStories();
-  if(name==="anim")renderAnims();
-  if(name==="board")renderBoard();
-  if(name==="home")renderHome();
-  if(name==="snakes")renderSNL();
-  if(name==="ludo")renderLudo();
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
 }
 
-document.querySelectorAll("[data-go]").forEach(function(b){
-  b.addEventListener("click",function(){showScreen(b.dataset.go);});
+function goHome() {
+  document.getElementById('home-score-value').textContent = toFa(state.score);
+  document.getElementById('level-score-value').textContent = toFa(state.score);
+  document.getElementById('home-name').textContent = state.user ? state.user.fname + ' ' + state.user.lname : 'قهرمان';
+  document.getElementById('home-city').textContent = state.user ? state.user.city : 'ایران';
+  document.getElementById('home-avatar').textContent = state.selectedAvatar;
+  showScreen('screen-home');
+  document.getElementById('bottom-nav').style.display = 'flex';
+  updateLevels();
+}
+
+// ============ ذخیره‌سازی ============
+function saveState() {
+  try {
+    localStorage.setItem('powerHeroesState', JSON.stringify(state));
+  } catch (e) {
+    console.error('Save error:', e);
+  }
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('powerHeroesState');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+      return true;
+    }
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+  return false;
+}
+
+// ============ ثبت‌نام ============
+document.getElementById('avatar-grid').addEventListener('click', (e) => {
+  const opt = e.target.closest('.avatar-option');
+  if (!opt) return;
+  document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+  opt.classList.add('selected');
+  state.selectedAvatar = opt.dataset.avatar;
 });
 
-document.getElementById("btnSaveProfile").onclick=function(){
-  var f=document.getElementById("inpFirst").value.trim();
-  var l=document.getElementById("inpLast").value.trim();
-  var c=document.getElementById("inpCity").value.trim();
-  if(!f||!l||!c){toast("نام، نام خانوادگی و شهر را پر کن");sfxWrong();return;}
-  S.profile={first:f,last:l,city:c};
-  save();sfxOk();showBadge("🌟","خوش آمدی "+f+"!","حالا برو ستاره جمع کن");
-  showScreen("home");
-};
-
-function renderHome(){
-  if(!S.profile)return;
-  document.getElementById("homeSub").textContent=S.profile.first+" از "+S.profile.city+" · مرحله "+fa(S.stage)+" · هفته "+fa((S.weekly&&S.weekly[weekId()])||0)+" امتیاز";
-  document.getElementById("homeBubble").textContent=pick(COACH.welcome);
-}
-
-// ===== HOUSE =====
-function currentStageData(){return STAGES.find(function(s){return s.id===S.stage;})||STAGES[0];}
-function getDeviceState(stageId,roomId,devId,defOn){
-  var key=stageId+"_"+roomId+"_"+devId;
-  if(S.devices&&S.devices.hasOwnProperty(key))return S.devices[key];
-  return defOn;
-}
-function setDeviceState(stageId,roomId,devId,on){
-  if(!S.devices)S.devices={};
-  S.devices[stageId+"_"+roomId+"_"+devId]=on;
-  save();
-}
-function calcEnergy(st){
-  var total=0;
-  Object.keys(st.rooms).forEach(function(rk){
-    st.rooms[rk].devices.forEach(function(d){
-      if(getDeviceState(st.id,rk,d.id,d.on))total+=d.watts||0;
-    });
-  });
-  return total;
-}
-function checkStageUnlock(){
-  var changed=false;
-  while(true){
-    var next=STAGES.find(function(s){return s.id===S.stage+1;});
-    if(next&&(S.stars||0)>=next.unlock){
-      S.stage=next.id;
-      changed=true;
-    } else break;
-  }
-  if(changed){
-    save();
-    sfxLevel();
-    var st=currentStageData();
-    showBadge("🏆","مرحله "+fa(S.stage)+" باز شد!",st.title);
-    document.getElementById("coachBubble").textContent=pick(COACH.level);
-    renderHouse();
-  }
-}
-function renderHouse(){
-  var st=currentStageData();
-  var bar=document.getElementById("stageBar");
-  bar.innerHTML="";
-  STAGES.forEach(function(s){
-    var d=document.createElement("div");
-    d.className="stage-dot"+(s.id===S.stage?" on":"")+(s.id<S.stage?" done":"")+(s.id>S.stage?" lock":"");
-    d.textContent=fa(s.id);
-    d.title=s.title+(s.id>S.stage?" (قفل · "+s.unlock+" ستاره)":"");
-    if(s.id<=S.stage){
-      d.onclick=function(){S.stage=s.id;save();document.getElementById("roomPanel").style.display="none";renderHouse();sfxClick();};
-    }
-    bar.appendChild(d);
-  });
-  var next=STAGES.find(function(x){return x.id===S.stage+1;});
-  document.getElementById("stageInfo").textContent=st.title+(next?(" · تا مرحله بعد: "+fa(Math.max(0,next.unlock-(S.stars||0)))+" ستاره"):" · آخرین مرحله!");
-  var energy=calcEnergy(st);
-  document.getElementById("energyVal").textContent=fa(energy);
-  document.getElementById("meterFill").style.width=Math.min(100,Math.round(energy/BUDGET*100))+"%";
-  var house=document.getElementById("house3d");
-  house.innerHTML='<div class="floor"></div>';
-  var keys=Object.keys(st.rooms);
-  var cls=["r1","r2","r3","r4","r5"];
-  keys.forEach(function(rk,i){
-    var room=st.rooms[rk];
-    var el=document.createElement("div");
-    el.className="room "+(cls[i]||"r1");
-    var anyOn=room.devices.some(function(d){return getDeviceState(st.id,rk,d.id,d.on);});
-    el.classList.add(anyOn?"on":"off");
-    el.innerHTML='<div class="ic">'+(room.title.split(" ")[0])+'</div><div>'+room.title.replace(/^\\S+\\s/,"")+'</div>';
-    el.onclick=function(){openRoom(st,rk);sfxClick();};
-    house.appendChild(el);
-  });
-}
-function openRoom(st,rk){
-  var room=st.rooms[rk];
-  document.getElementById("roomPanel").style.display="block";
-  document.getElementById("roomTitle").textContent=room.title;
-  var list=document.getElementById("deviceList");
-  list.innerHTML="";
-  room.devices.forEach(function(d){
-    var on=getDeviceState(st.id,rk,d.id,d.on);
-    var row=document.createElement("div");
-    row.className="device";
-    var locked=!!d.locked;
-    var scoredKey=st.id+"_"+rk+"_"+d.id;
-    var already=S.scored&&S.scored[scoredKey];
-    row.innerHTML='<div class="left"><span>'+d.icon+'</span><span>'+esc(d.name)+(locked?" 🔒":"")+(already?" ✓":"")+' <span class="muted">'+fa(d.watts)+'W</span></span></div><div class="toggle '+(on?"on":"")+'"></div>';
-    var tog=row.querySelector(".toggle");
-    tog.onclick=function(){
-      if(locked){toast("این وسیله باید روشن بماند");sfxWrong();document.getElementById("coachBubble").textContent=pick(COACH.bad);return;}
-      var now=!getDeviceState(st.id,rk,d.id,d.on);
-      setDeviceState(st.id,rk,d.id,now);
-      // score only first time turning OFF
-      if(!now){
-        if(!S.scored)S.scored={};
-        if(!S.scored[scoredKey]){
-          S.scored[scoredKey]=true;
-          addScore(1,"خاموش کردن "+d.name);
-          document.getElementById("coachBubble").textContent=pick(COACH.good);
-        } else {
-          sfxClick();
-          toast("قبلاً برای این وسیله امتیاز گرفتی");
-        }
-      } else {
-        sfxClick();
-        document.getElementById("coachBubble").textContent="روشن شد. مراقب مصرف باش.";
-      }
-      renderHouse();
-      openRoom(st,rk);
-    };
-    list.appendChild(row);
-  });
-}
-document.getElementById("closeRoom").onclick=function(){
-  document.getElementById("roomPanel").style.display="none";
-  sfxClick();
-};
-
-// ===== QUIZ =====
-function renderQuiz(){
-  var area=document.getElementById("quizArea");
-  var actions=document.getElementById("quizActions");
-  area.innerHTML="";actions.innerHTML="";
-  var now=Date.now();
-  if(S.quizNextAt&&now<S.quizNextAt){
-    var left=Math.ceil((S.quizNextAt-now)/60000);
-    document.getElementById("quizMeta").textContent="صبر کن · حدود "+fa(left)+" دقیقه دیگر";
-    area.innerHTML="<p class='muted' style='text-align:center;padding:20px'>۴ سؤال بعدی بعد از ۱ ساعت در دسترس است.</p>";
+document.getElementById('btn-start').addEventListener('click', () => {
+  const fname = document.getElementById('input-fname').value.trim();
+  const lname = document.getElementById('input-lname').value.trim();
+  const city = document.getElementById('input-city').value.trim();
+  
+  if (!fname || !lname || !city) {
+    showToast('لطفاً همه فیلدها را پر کن!');
     return;
   }
-  document.getElementById("quizMeta").textContent="۴ سؤال تصادفی · هر درست ۱ امتیاز";
-  // pick 4 unique
-  var idxs=[], pool=[];
-  for(var i=0;i<QUIZ_BANK.length;i++)pool.push(i);
-  for(var k=0;k<4&&pool.length;k++){
-    var r=Math.floor(Math.random()*pool.length);
-    idxs.push(pool.splice(r,1)[0]);
+  
+  state.user = { fname, lname, city };
+  saveState();
+  
+  // ذخیره در Supabase (اگر متصل باشد)
+  saveUserToSupabase();
+  
+  showToast('خوش آمدی ' + fname + '! 🎉');
+  goHome();
+});
+
+async function saveUserToSupabase() {
+  if (!supabase) return;
+  try {
+    await supabase.from('game_users').upsert({
+      user_id: state.user.fname + '_' + state.user.lname,
+      fname: state.user.fname,
+      lname: state.user.lname,
+      city: state.user.city,
+      avatar: state.selectedAvatar,
+      total_score: state.score,
+      updated_at: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error('Supabase save error:', e);
   }
-  var qState={i:0,idxs:idxs,correct:0};
-  function showQ(){
-    if(qState.i>=qState.idxs.length){
-      S.quizNextAt=Date.now()+HOUR_MS;
-      save();
-      area.innerHTML="<p style='text-align:center;font-weight:800;padding:16px'>تمام! "+fa(qState.correct)+" از ۴ درست</p>";
-      actions.innerHTML="";
-      document.getElementById("quizMeta").textContent="۱ ساعت دیگر برگرد";
-      if(qState.correct>0)showBadge("👑","+"+fa(qState.correct)+" از کویینز","آفرین!");
+}
+
+// ============ مراحل بازی ============
+function updateLevels() {
+  const scroll = document.getElementById('levels-scroll');
+  scroll.innerHTML = LEVELS.map((level, i) => `
+    <div style="min-width: 140px; padding: 16px; background: ${i === 0 ? 'linear-gradient(135deg, rgba(0,212,170,.2), rgba(124,92,255,.1))' : 'rgba(255,255,255,.05)'}; border-radius: 16px; border: 1px solid ${i === 0 ? 'var(--primary)' : 'var(--line)'}; cursor: pointer; text-align: center;" onclick="startLevel(${i})">
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">${level.emoji}</div>
+      <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 4px;">${level.name}</div>
+      <div style="font-size: 0.75rem; color: var(--muted);">${toFa(level.reward)} امتیاز</div>
+    </div>
+  `).join('');
+}
+
+function startLevel(index) {
+  state.currentLevel = index;
+  const level = LEVELS[index];
+  
+  document.getElementById('level-title').textContent = level.emoji + ' ' + level.name;
+  document.getElementById('level-desc').textContent = level.desc;
+  document.getElementById('level-progress').style.width = '0%';
+  document.getElementById('level-result').style.display = 'none';
+  
+  // چیدمان اشیا
+  const scene = document.getElementById('level-scene');
+  scene.innerHTML = '';
+  
+  state.levelObjects = level.objects.map((obj, i) => {
+    const div = document.createElement('div');
+    div.className = 'room-object ' + (obj.on ? 'on' : 'off');
+    div.style.left = obj.x + '%';
+    div.style.top = obj.y + '%';
+    div.style.transform = 'translate(-50%, -50%)';
+    div.textContent = obj.emoji;
+    div.title = obj.name;
+    div.addEventListener('click', () => toggleObject(i));
+    scene.appendChild(div);
+    return { ...obj, clicked: false };
+  });
+  
+  // اضافه کردن شخصیت
+  const char = document.createElement('div');
+  char.className = 'character';
+  char.textContent = state.selectedAvatar;
+  scene.appendChild(char);
+  
+  showScreen('screen-level');
+  document.getElementById('bottom-nav').style.display = 'none';
+}
+
+function toggleObject(index) {
+  const obj = state.levelObjects[index];
+  if (obj.clicked || !obj.on) {
+    if (!obj.on) {
+      showToast('این وسیله الان خاموش است! ✨');
+    }
+    return;
+  }
+  
+  obj.clicked = true;
+  obj.on = false;
+  
+  // به‌روزرسانی UI
+  const scene = document.getElementById('level-scene');
+  const objects = scene.querySelectorAll('.room-object');
+  if (objects[index]) {
+    objects[index].classList.remove('on');
+    objects[index].classList.add('off');
+  }
+  
+  // اضافه کردن امتیاز
+  state.score += obj.points;
+  saveState();
+  
+  showToast('+' + toFa(obj.points) + ' امتیاز! ⭐');
+  
+  // بررسی اتمام مرحله
+  checkLevelComplete();
+}
+
+function checkLevelComplete() {
+  const level = LEVELS[state.currentLevel];
+  const onObjects = state.levelObjects.filter(o => o.on && o.points > 0);
+  
+  const total = level.objects.filter(o => o.on && o.points > 0).length;
+  const done = level.objects.filter(o => o.on && o.points > 0).length - onObjects.length;
+  const progress = (done / total) * 100;
+  
+  document.getElementById('level-progress').style.width = progress + '%';
+  
+  if (onObjects.length === 0) {
+    // مرحله کامل شد
+    setTimeout(() => {
+      document.getElementById('level-result').style.display = 'block';
+      document.getElementById('medal-title').textContent = 'عالی بود! 🎉';
+      document.getElementById('medal-desc').textContent = 'مرحله ' + level.name + ' را با موفقیت تمام کردی';
+      document.getElementById('medal-score').textContent = toFa(level.reward);
+      
+      // اضافه کردن پاداش مرحله
+      state.score += level.reward;
+      saveState();
+      document.getElementById('level-score-value').textContent = toFa(state.score);
+    }, 500);
+  }
+}
+
+function nextLevel() {
+  if (state.currentLevel < LEVELS.length - 1) {
+    startLevel(state.currentLevel + 1);
+  } else {
+    showToast('🎉 همه مراحل را تمام کردی! قهرمان واقعی تو هستی!');
+    goHome();
+  }
+}
+
+// ============ کوییز ============
+function openQuiz() {
+  // بررسی محدودیت زمانی
+  if (state.lastQuizTime) {
+    const last = new Date(state.lastQuizTime).getTime();
+    const now = Date.now();
+    const hourMs = 60 * 60 * 1000;
+    if (now - last < hourMs) {
+      const remaining = Math.ceil((hourMs - (now - last)) / 60000);
+      showToast('⏰ ' + toFa(remaining) + ' دقیقه دیگر می‌توانی دوباره امتحان کنی!', 4000);
       return;
     }
-    var q=QUIZ_BANK[qState.idxs[qState.i]];
-    area.innerHTML="<p style='font-weight:800;margin-bottom:10px'>"+fa(qState.i+1)+"/۴) "+esc(q.q)+"</p>";
-    q.opts.forEach(function(opt,oi){
-      var b=document.createElement("button");
-      b.className="quiz-opt";
-      b.textContent=opt;
-      b.onclick=function(){
-        if(b.disabled)return;
-        area.querySelectorAll(".quiz-opt").forEach(function(x){x.disabled=true;});
-        if(oi===q.a){b.classList.add("ok");addScore(1,"کویینز");qState.correct++;sfxOk();}
-        else{b.classList.add("bad");area.querySelectorAll(".quiz-opt")[q.a].classList.add("ok");sfxWrong();}
-        setTimeout(function(){qState.i++;showQ();},700);
-      };
-      area.appendChild(b);
-    });
   }
-  showQ();
+  
+  // انتخاب ۴ سوال تصادفی
+  state.currentQuiz = shuffleArray([...QUIZ_QUESTIONS]).slice(0, 4);
+  state.quizIndex = 0;
+  state.quizRoundScore = 0;
+  
+  showScreen('screen-quiz');
+  document.getElementById('bottom-nav').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-card').style.display = 'block';
+  
+  renderQuizQuestion();
 }
 
-// ===== WHEEL =====
-function renderWheelMeta(){
-  var used=S.wheelDay===todayStr();
-  document.getElementById("wheelMeta").textContent=used?"امروز چرخاندی. فردا دوباره بیا!":"آماده چرخاندن — روزی یک‌بار";
-  document.getElementById("btnSpin").disabled=!!used;
-  document.getElementById("wheelBubble").textContent=used?"فردا شانس تازه‌ای داری!":pick(COACH.wheel);
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
-document.getElementById("btnSpin").onclick=function(){
-  if(S.wheelDay===todayStr()){toast("امروز یک‌بار مجاز است");sfxWrong();return;}
-  // prizes mapped to wheel quarters: 0=red=1, 1=yellow=2, 2=green=4, 3=blue=10
-  var prizes=[1,2,4,10];
-  var idx=Math.floor(Math.random()*4);
-  var prize=prizes[idx];
-  // pin at top; conic starts at top going clockwise; center of segment idx
-  var deg=360*5 + (360 - (idx*90+45));
-  sfxSpin();
-  var w=document.getElementById("wheel");
-  w.style.transition="none";
-  w.style.transform="rotate(0deg)";
-  void w.offsetWidth;
-  w.style.transition="transform 4s cubic-bezier(.15,.85,.25,1)";
-  w.style.transform="rotate("+deg+"deg)";
-  document.getElementById("btnSpin").disabled=true;
-  setTimeout(function(){
-    S.wheelDay=todayStr();
-    save();
-    addScore(prize,"گردونه شانس");
-    showBadge("🎡","+"+fa(prize)+" امتیاز!",prize>=10?"جایزه بزرگ!":"آفرین قهرمان");
-    renderWheelMeta();
-    renderStats();
-  },4200);
-};
 
-// ===== BOARD =====
-function boardKey(){return "starPower_board_"+weekId();}
-function syncWeeklyBoard(){
-  if(!S.profile)return;
-  try{
-    var key=boardKey();
-    var board=[];
-    try{board=JSON.parse(localStorage.getItem(key)||"[]");}catch(e){board=[];}
-    var id=(S.profile.first+"|"+S.profile.last+"|"+S.profile.city).slice(0,80);
-    var entry={id:id,name:S.profile.first+" "+S.profile.last,city:S.profile.city,score:S.weekly[weekId()]||0,total:S.score};
-    board=board.filter(function(x){return x.id!==id;});
-    board.push(entry);
-    board.sort(function(a,b){return b.score-a.score;});
-    board=board.slice(0,30);
-    localStorage.setItem(key,JSON.stringify(board));
-  }catch(e){}
-}
-function renderBoard(){
-  document.getElementById("weekLabel").textContent="هفته "+weekId();
-  renderStats();
-  syncWeeklyBoard();
-  var board=[];
-  try{board=JSON.parse(localStorage.getItem(boardKey())||"[]");}catch(e){}
-  var ol=document.getElementById("leaderList");
-  if(!board.length){ol.innerHTML="<li class='muted'>هنوز امتیازی نیست — اول بازی کن!</li>";return;}
-  ol.innerHTML=board.map(function(x,i){
-    return "<li><span>"+fa(i+1)+". "+esc(x.name)+' <span class="muted">('+esc(x.city)+")</span></span><b>"+fa(x.score)+"</b></li>";
-  }).join("");
-}
-document.getElementById("btnCopyScore").onclick=function(){
-  if(!S.profile){toast("اول ثبت‌نام کن");return;}
-  syncWeeklyBoard();
-  var code=["GAME_SCORE",weekId(),S.profile.first,S.profile.last,S.profile.city,String(S.weekly[weekId()]||0),String(S.score)].join("|");
-  try{navigator.clipboard.writeText(code).then(function(){toast("کد کپی شد — در ربات بفرست");});}catch(e){prompt("کپی کن:",code);}
-  sfxOk();
-};
-
-// ===== STORIES / ANIMS =====
-function renderStories(){
-  var box=document.getElementById("storyList");
-  if(!STORIES.length){box.innerHTML="<p class='muted'>هنوز قصه‌ای اضافه نشده (مالک از ربات اضافه می‌کند)</p>";return;}
-  box.innerHTML="";
-  STORIES.forEach(function(s,i){
-    var el=document.createElement("div");
-    el.className="media-item";
-    el.textContent="📖 "+(s.title||("قصه "+(i+1)));
-    el.onclick=function(){
-      document.getElementById("storyPlayer").style.display="block";
-      var v=document.getElementById("storyVideo");
-      var a=document.getElementById("storyAudio");
-      var url=s.url||"";
-      if(/\\.(mp3|ogg|wav)(\\?|$)/i.test(url)){a.style.display="block";v.style.display="none";a.src=url;a.play().catch(function(){});}
-      else{v.style.display="block";a.style.display="none";v.src=url;v.play().catch(function(){});}
-      var key="story:"+(s.id||i);
-      if(!S.mediaBonus[key]){S.mediaBonus[key]=true;save();addScore(5,"قصه شب");}
-      else toast("قبلاً امتیاز این قصه را گرفتی");
-    };
-    box.appendChild(el);
-  });
-}
-function renderAnims(){
-  var box=document.getElementById("animList");
-  if(!ANIMATIONS.length){box.innerHTML="<p class='muted'>هنوز انیمیشنی اضافه نشده</p>";return;}
-  box.innerHTML="";
-  ANIMATIONS.forEach(function(s,i){
-    var el=document.createElement("div");
-    el.className="media-item";
-    el.textContent="🎬 "+(s.title||("انیمیشن "+(i+1)));
-    el.onclick=function(){
-      document.getElementById("animPlayer").style.display="block";
-      var v=document.getElementById("animVideo");
-      v.src=s.url;v.play().catch(function(){});
-      var key="anim:"+(s.id||i);
-      if(!S.mediaBonus[key]){S.mediaBonus[key]=true;save();addScore(5,"انیمیشن");}
-      else toast("قبلاً امتیاز گرفته‌ای");
-    };
-    box.appendChild(el);
+function renderQuizQuestion() {
+  if (state.quizIndex >= state.currentQuiz.length) {
+    finishQuiz();
+    return;
+  }
+  
+  const q = state.currentQuiz[state.quizIndex];
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-progress').textContent = toFa(state.quizIndex + 1) + '/' + toFa(state.currentQuiz.length);
+  
+  const optionsDiv = document.getElementById('quiz-options');
+  optionsDiv.innerHTML = '';
+  
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = toFa(i + 1) + '. ' + opt;
+    btn.addEventListener('click', () => answerQuiz(i));
+    optionsDiv.appendChild(btn);
   });
 }
 
-// ===== SNAKES & LADDERS =====
-var SNL_SNAKES={16:6,47:26,49:11,56:53,62:19,64:60,87:24,93:73,95:75,98:78};
-var SNL_LADDERS={1:38,4:14,9:31,21:42,28:84,36:44,51:67,71:91,80:100};
-function renderSNL(){
-  var board=document.getElementById("snlBoard");
-  board.innerHTML="";
-  // 100 -> 1 visual, zigzag
-  for(var row=9;row>=0;row--){
-    var cols=[];
-    for(var col=0;col<10;col++){
-      var n=row%2===0?(row*10+col+1):(row*10+(9-col)+1);
-      cols.push(n);
+function answerQuiz(selectedIndex) {
+  const q = state.currentQuiz[state.quizIndex];
+  const buttons = document.querySelectorAll('#quiz-options .option-btn');
+  
+  buttons.forEach(b => b.style.pointerEvents = 'none');
+  
+  if (selectedIndex === q.correct) {
+    buttons[selectedIndex].classList.add('correct');
+    state.quizRoundScore++;
+    state.score++;
+    saveState();
+    showToast('✅ درست! +۱ امتیاز');
+  } else {
+    buttons[selectedIndex].classList.add('wrong');
+    buttons[q.correct].classList.add('correct');
+    showToast('❌ اشتباه بود!');
+  }
+  
+  setTimeout(() => {
+    state.quizIndex++;
+    renderQuizQuestion();
+  }, 1500);
+}
+
+function finishQuiz() {
+  state.lastQuizTime = new Date().toISOString();
+  saveState();
+  
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'block';
+  document.getElementById('quiz-round-score').textContent = toFa(state.quizRoundScore);
+  
+  // ذخیره امتیاز در Supabase
+  if (state.user) saveUserToSupabase();
+}
+
+// ============ گردونه شانس ============
+const WHEEL_PRIZES = [1, 2, 4, 10, 1, 2, 4, 10];
+
+function openWheel() {
+  // بررسی اگر امروز چرخیده
+  const today = new Date().toDateString();
+  const lastSpin = localStorage.getItem('lastWheelSpin');
+  
+  if (lastSpin === today) {
+    document.getElementById('wheel').parentElement.style.display = 'none';
+    document.getElementById('btn-spin').style.display = 'none';
+    document.getElementById('wheel-cooldown').style.display = 'block';
+    state.wheelSpins = 0;
+  } else {
+    document.getElementById('wheel').parentElement.style.display = 'block';
+    document.getElementById('btn-spin').style.display = 'block';
+    document.getElementById('wheel-cooldown').style.display = 'none';
+    state.wheelSpins = 3;
+  }
+  
+  document.getElementById('wheel-spins-left').textContent = toFa(state.wheelSpins);
+  showScreen('screen-wheel');
+  document.getElementById('bottom-nav').style.display = 'none';
+  
+  renderWheel();
+}
+
+function renderWheel() {
+  const wheel = document.getElementById('wheel');
+  wheel.innerHTML = '';
+  
+  const segmentAngle = 360 / WHEEL_PRIZES.length;
+  const colors = ['#00d4aa', '#7c5cff', '#ff6b9d', '#ffd700', '#00b894', '#6c5ce7', '#e84393', '#ffaa00'];
+  
+  WHEEL_PRIZES.forEach((prize, i) => {
+    const segment = document.createElement('div');
+    segment.className = 'wheel-segment';
+    segment.style.background = colors[i % colors.length];
+    segment.style.transform = `rotate(${i * segmentAngle}deg) skewY(-${90 - segmentAngle}deg)`;
+    segment.style.clipPath = `polygon(0 0, 100% 0, 100% 100%)`;
+    segment.textContent = toFa(prize);
+    wheel.appendChild(segment);
+  });
+}
+
+let wheelRotation = 0;
+let isSpinning = false;
+
+function spinWheel() {
+  if (isSpinning) return;
+  if (state.wheelSpins <= 0) {
+    showToast('امشب چرخش تمام شد!');
+    return;
+  }
+  
+  isSpinning = true;
+  state.wheelSpins--;
+  document.getElementById('wheel-spins-left').textContent = toFa(state.wheelSpins);
+  
+  const wheel = document.getElementById('wheel');
+  const extra = Math.floor(Math.random() * 360);
+  const target = wheelRotation + 360 * 5 + extra;
+  
+  wheel.style.transform = `rotate(${target}deg)`;
+  wheelRotation = target;
+  
+  setTimeout(() => {
+    // محاسبه جایزه
+    const normalizedRotation = ((target % 360) + 360) % 360;
+    const segmentAngle = 360 / WHEEL_PRIZES.length;
+    const prizeIndex = Math.floor(normalizedRotation / segmentAngle);
+    const prize = WHEEL_PRIZES[prizeIndex];
+    
+    state.score += prize;
+    saveState();
+    document.getElementById('home-score-value').textContent = toFa(state.score);
+    
+    document.getElementById('wheel-result').style.display = 'block';
+    document.getElementById('wheel-prize').textContent = '🎉 ' + toFa(prize) + ' امتیاز بردی!';
+    
+    showToast('🎉 ' + toFa(prize) + ' امتیاز گرفتی!');
+    
+    if (state.wheelSpins <= 0) {
+      const today = new Date().toDateString();
+      localStorage.setItem('lastWheelSpin', today);
+      document.getElementById('btn-spin').style.display = 'none';
     }
-    cols.forEach(function(n){
-      var cell=document.createElement("div");
-      cell.className="cell";
-      if(SNL_SNAKES[n])cell.classList.add("snake");
-      if(SNL_LADDERS[n])cell.classList.add("ladder");
-      if(n===(S.snlPos||1))cell.classList.add("player");
-      cell.textContent=fa(n);
-      if(SNL_SNAKES[n])cell.title="مار → "+SNL_SNAKES[n];
-      if(SNL_LADDERS[n])cell.title="پله → "+SNL_LADDERS[n];
-      board.appendChild(cell);
+    
+    isSpinning = false;
+  }, 4000);
+}
+
+// ============ قصه‌ها و انیمیشن ============
+const STORIES = [
+  { id: 1, title: 'قصه لامپ کوچک', duration: '۵ دقیقه', emoji: '💡', url: '' },
+  { id: 2, title: 'ماجرای خورشید و برق', duration: '۷ دقیقه', emoji: '☀️', url: '' },
+  { id: 3, title: 'قهرمانان شهر برقی', duration: '۶ دقیقه', emoji: '🦸', url: '' },
+  { id: 4, title: 'راز یخچال مهربان', duration: '۸ دقیقه', emoji: '🧊', url: '' }
+];
+
+const ANIMATIONS = [
+  { id: 1, title: 'سفر قطره برق', duration: '۳ دقیقه', emoji: '⚡', url: '' },
+  { id: 2, title: 'خانه سبز', duration: '۴ دقیقه', emoji: '🏡', url: '' },
+  { id: 3, title: 'پنل خورشیدی چه می‌کند؟', duration: '۵ دقیقه', emoji: '🔆', url: '' }
+];
+
+function showTab(tab) {
+  if (tab === 'stories') openStories();
+  else if (tab === 'animations') openAnimations();
+}
+
+function openStories() {
+  renderMediaList('stories-list', STORIES, 'story');
+  showScreen('screen-stories');
+  document.getElementById('bottom-nav').style.display = 'none';
+}
+
+function openAnimations() {
+  renderMediaList('animations-list', ANIMATIONS, 'animation');
+  showScreen('screen-animations');
+  document.getElementById('bottom-nav').style.display = 'none';
+}
+
+function renderMediaList(containerId, items, type) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = items.map(item => `
+    <div class="media-item" onclick="playMedia('${type}', ${item.id})">
+      <div class="media-icon">${item.emoji}</div>
+      <div class="media-info">
+        <div class="media-title">${item.title}</div>
+        <div class="media-meta">${item.duration} • ۵ امتیاز</div>
+      </div>
+      <span style="color: var(--gold); font-weight: 700;">▶</span>
+    </div>
+  `).join('');
+}
+
+function playMedia(type, id) {
+  const items = type === 'story' ? STORIES : ANIMATIONS;
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  // بررسی اینکه قبلاً امتیاز گرفته یا نه
+  const playedKey = 'played_' + type + '_' + id;
+  const alreadyPlayed = localStorage.getItem(playedKey);
+  
+  if (item.url) {
+    // اگر لینک تنظیم شده، پخش کن
+    window.open(item.url, '_blank');
+  } else {
+    showToast('📻 ' + item.title + ' (لینک توسط مدیر تنظیم می‌شود)');
+  }
+  
+  if (!alreadyPlayed) {
+    state.score += 5;
+    saveState();
+    document.getElementById('home-score-value').textContent = toFa(state.score);
+    localStorage.setItem(playedKey, 'true');
+    setTimeout(() => showToast('🎉 +۵ امتیاز بابت ' + (type === 'story' ? 'گوش دادن' : 'دیدن')), 1000);
+  }
+}
+
+// ============ لیدربورد ============
+async function openLeaderboard() {
+  showScreen('screen-leaderboard');
+  document.getElementById('bottom-nav').style.display = 'none';
+  
+  const container = document.getElementById('leaderboard-list');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('game_users')
+        .select('fname, lname, city, total_score')
+        .order('total_score', { ascending: false })
+        .limit(10);
+      
+      if (data && data.length > 0) {
+        container.innerHTML = data.map((u, i) => {
+          const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+          const rankEmoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : toFa(i + 1);
+          return `
+            <div class="leader-row">
+              <div class="leader-rank ${rankClass}">${rankEmoji}</div>
+              <div class="leader-name">${u.fname} ${u.lname} <span style="font-size: 0.75rem; color: var(--muted);">(${u.city})</span></div>
+              <div class="leader-score">${toFa(u.total_score)} ⭐</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        container.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">هنوز کسی در جدول نیست. اولین قهرمان باش!</div>';
+      }
+    } else {
+      container.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">اتصال به سرور برقرار نیست</div>';
+    }
+  } catch (e) {
+    console.error(e);
+    container.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 20px;">خطا در دریافت اطلاعات</div>';
+  }
+}
+
+// ============ ناوبری ============
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.closest('.nav-item').classList.add('active');
+  
+  if (tab === 'home') goHome();
+  else if (tab === 'quiz') openQuiz();
+  else if (tab === 'wheel') openWheel();
+  else if (tab === 'stories') openStories();
+  else if (tab === 'animations') openAnimations();
+}
+
+// ============ شروع ============
+function init() {
+  // تلاش برای بارگذاری وضعیت قبلی
+  const loaded = loadState();
+  
+  if (loaded && state.user) {
+    // کاربر قبلاً ثبت‌نام کرده - مستقیم به خانه
+    goHome();
+  } else {
+    showScreen('screen-welcome');
+    document.querySelectorAll('.avatar-option').forEach((a, i) => {
+      if (i === 0) a.classList.add('selected');
     });
   }
-  document.getElementById("snlStatus").textContent="خانه "+fa(S.snlPos||1)+(S.snlPos>=100?" · برنده شدی!":"");
-}
-document.getElementById("snlDice").onclick=function(){
-  if((S.snlPos||1)>=100){toast("برنده شدی! دوباره شروع کن");return;}
-  var dice=1+Math.floor(Math.random()*6);
-  document.getElementById("snlDice").textContent=fa(dice);
-  sfxClick();
-  var pos=S.snlPos||1;
-  pos+=dice;
-  if(pos>100)pos=100-(pos-100);
-  if(SNL_LADDERS[pos]){pos=SNL_LADDERS[pos];toast("پله! برو بالا ⭐");addScore(1,"پله انرژی");}
-  else if(SNL_SNAKES[pos]){pos=SNL_SNAKES[pos];toast("مار! انرژی هدر رفت");sfxWrong();}
-  S.snlPos=pos;
-  if(pos>=100){addScore(5,"برد مار و پله");showBadge("🐍","برنده شدی!","+۵ امتیاز");}
-  save();
-  renderSNL();
-};
-document.getElementById("snlReset").onclick=function(){S.snlPos=1;save();renderSNL();sfxClick();};
-
-// ===== LUDO (simplified single-player track) =====
-function renderLudo(){
-  var pos=S.ludoPos||0;
-  document.getElementById("ludoInfo").textContent="موقعیت مهره: "+fa(pos)+" / ۵۲";
-  var box=document.getElementById("ludoTokens");
-  box.innerHTML="";
-  for(var i=0;i<=52;i+=4){
-    var d=document.createElement("div");
-    d.style.cssText="width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:.7rem;font-weight:900;border:1px solid rgba(0,0,0,.1)";
-    d.style.background=i===pos?"#6c5ce7":"rgba(255,255,255,.6)";
-    d.style.color=i===pos?"#fff":"inherit";
-    d.textContent=fa(i);
-    box.appendChild(d);
+  
+  // پر کردن سوالات اگر کمتر از ۲۰۰ باشد
+  while (QUIZ_QUESTIONS.length < 200) {
+    const templates = [
+      { q: 'سوال نمونه', options: ['گزینه ۱', 'گزینه ۲', 'گزینه ۳', 'گزینه ۴'], correct: 1 }
+    ];
+    // در نسخه نهایی با ۲۰۰ سوال واقعی جایگزین می‌شود
+    break;
   }
-  document.getElementById("ludoStatus").textContent=pos>=52?"رسیدی! برنده شدی 🎉":"تاس را بزن";
 }
-document.getElementById("ludoDice").onclick=function(){
-  if((S.ludoPos||0)>=52){toast("برنده شدی! دوباره شروع کن");return;}
-  var dice=1+Math.floor(Math.random()*6);
-  document.getElementById("ludoDice").textContent=fa(dice);
-  sfxClick();
-  var pos=S.ludoPos||0;
-  // leave home only with 6
-  if(pos===0&&dice!==6){toast("برای شروع ۶ نیاز داری");document.getElementById("ludoStatus").textContent="۶ بیاور تا مهره وارد شود";return;}
-  if(pos===0&&dice===6){pos=1;toast("مهره وارد شد!");}
-  else{
-    pos+=dice;
-    if(pos>52)pos=52-(pos-52);
+
+// اجرای برنامه
+init();
+
+// بستن Bale WebApp
+try {
+  if (window.Bale && Bale.WebApp) {
+    Bale.WebApp.ready && Bale.WebApp.ready();
+    Bale.WebApp.expand && Bale.WebApp.expand();
   }
-  if(dice===6)addScore(1,"شش منچ");
-  S.ludoPos=pos;
-  if(pos>=52){addScore(5,"برد منچ");showBadge("🎲","منچ تمام!","+۵ امتیاز");}
-  save();
-  renderLudo();
-};
-document.getElementById("ludoReset").onclick=function(){S.ludoPos=0;save();renderLudo();sfxClick();};
+} catch (e) {}
 
-// day/night/sound
-document.getElementById("btnDay").onclick=function(){S.night=false;document.body.classList.remove("night");save();sfxClick();};
-document.getElementById("btnNight").onclick=function(){S.night=true;document.body.classList.add("night");save();sfxClick();};
-document.getElementById("btnSound").onclick=function(){soundOn=!soundOn;S.soundOn=soundOn;save();document.getElementById("btnSound").textContent=soundOn?"🔊 صدا":"🔇 بی‌صدا";if(soundOn)sfxOk();};
-
-if(S.night)document.body.classList.add("night");
-document.getElementById("btnSound").textContent=soundOn?"🔊 صدا":"🔇 بی‌صدا";
-renderStats();
-checkStageUnlock();
-if(!S.profile)showScreen("profile");else showScreen("home");
-try{if(window.Bale&&Bale.WebApp){Bale.WebApp.ready&&Bale.WebApp.ready();Bale.WebApp.expand&&Bale.WebApp.expand();}}catch(e){}
-try{console.log("[StarPower] q=",QUIZ_BANK.length,"stages=",STAGES.length);}catch(e){}
-})();
 </script>
 </body>
 </html>
