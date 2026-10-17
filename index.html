@@ -95,50 +95,13 @@
     .tv-title{font-weight:700;font-size:1.05rem;margin-bottom:8px}
     .tv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
     .chip{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:8px 12px;font-size:.82rem;cursor:pointer}
-    .chip.active{background:linear-gradient(135deg,#8b7cff,#6c5ce7);border-color:transparent}
-    .chip.rec{background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4)}
-    .chip.rec.on{background:#e74c3c;border-color:#e74c3c;color:#fff;animation:pulse 1.2s infinite}
-    @keyframes pulse{50%{opacity:.75}}
-    .quality-wrap{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;align-items:center}
+    .chip.active{background:linear-gradient(135deg,#8b7cff,#6c5ce7);border-color:transparent}}
     .quality-wrap .lab{color:var(--muted);font-size:.78rem;margin-left:4px}
-    .qbtn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:999px;padding:6px 10px;font-size:.75rem;cursor:pointer}
-    .qbtn.active{background:linear-gradient(135deg,#00cec9,#6c5ce7);border-color:transparent}
   
     .tv-stage{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#000;margin-bottom:12px;aspect-ratio:16/9;position:relative}
     .tv-stage video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
     .tv-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-size:.95rem;pointer-events:none;z-index:2}
     .tv-overlay.hide{display:none}
-    .tv-hud{
-      position:absolute; top:10px; left:10px; z-index:5;
-      display:flex; gap:8px; flex-direction:row;
-    }
-    .hud-btn{
-      width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;
-      background:rgba(0,0,0,.55);color:#fff;font-size:1.15rem;
-      backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
-      box-shadow:0 4px 14px rgba(0,0,0,.35);
-    }
-    .hud-btn.rec-on{background:#e74c3c;animation:pulse 1.2s infinite}
-    .sheet-mask{
-      display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
-      align-items:flex-end;justify-content:center;
-    }
-    .sheet-mask.open{display:flex}
-    .sheet{
-      width:100%;max-width:480px;background:#12121c;border-radius:18px 18px 0 0;
-      padding:8px 0 18px;color:#fff;max-height:70vh;overflow:auto;
-      border:1px solid rgba(255,255,255,.08);
-    }
-    .sheet-handle{width:42px;height:4px;border-radius:99px;background:rgba(255,255,255,.25);margin:6px auto 10px}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;padding:4px 18px 12px;font-weight:700;font-size:1.05rem}
-    .sheet-close{background:transparent;border:none;color:#fff;font-size:1.2rem;cursor:pointer}
-    .sheet-item{
-      width:100%;display:flex;justify-content:space-between;align-items:center;
-      padding:14px 18px;background:transparent;border:none;border-top:1px solid rgba(255,255,255,.08);
-      color:#fff;font-size:.95rem;cursor:pointer;text-align:right;
-    }
-    .sheet-item .check{opacity:0;color:#6c5ce7;font-weight:700}
-    .sheet-item.active .check{opacity:1}
 
   </style>
 </head>
@@ -202,31 +165,13 @@
       <div class="tv-stage" id="tvStage">
         <video id="tvVideo" playsinline controls preload="auto" referrerpolicy="no-referrer"></video>
         <div class="tv-overlay" id="tvOverlay">یک کانال از لیست زیر انتخاب کنید</div>
-        <div class="tv-hud">
-          <button type="button" class="hud-btn" id="tvRecord" title="ضبط">⏺</button>
-          <button type="button" class="hud-btn" id="tvQualityBtn" title="کیفیت">⚙</button>
-          <button type="button" class="hud-btn" id="tvFullscreen" title="تمام‌صفحه">⛶</button>
-        </div>
       </div>
       <div class="tv-actions">
+        <button class="chip" id="tvFullscreen">⛶ تمام‌صفحه</button>
         <button class="chip" id="tvStop">⏹ توقف</button>
       </div>
       <div class="list"><h2>کانال‌ها</h2><div id="tvChannels"></div></div>
       <div class="status" id="tvStatus"></div>
-
-      <!-- شیت کیفیت -->
-      <div class="sheet-mask" id="qualitySheet">
-        <div class="sheet">
-          <div class="sheet-handle"></div>
-          <div class="sheet-head">
-            <span>کیفیت</span>
-            <button type="button" class="sheet-close" id="qualityClose">→</button>
-          </div>
-          <div class="sheet-body" id="qualityList">
-            <button type="button" class="sheet-item active" data-q="-1"><span>خودکار</span><span class="check">✓</span></button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -351,170 +296,11 @@
     const tvStatus=document.getElementById("tvStatus");
     const tvChannelsEl=document.getElementById("tvChannels");
     let hls=null, tvIndex=-1;
-    let mediaRecorder=null, recordedChunks=[], isRecording=false;
 
     function tvMsg(msg,err){tvStatus.textContent=msg||"";tvStatus.className="status"+(err?" error":"")}
     function destroyHls(){if(hls){try{hls.destroy()}catch(e){} hls=null}}
-    function stopRecordingSilent(){
-      try{
-        if(mediaRecorder && mediaRecorder.state!=="inactive"){ mediaRecorder.stop(); }
-      }catch(e){}
-      mediaRecorder=null; recordedChunks=[]; isRecording=false;
-      const btn=document.getElementById("tvRecord");
-      if(btn){ btn.textContent="⏺"; btn.classList.remove("rec-on"); }
-    }
-    function qualityLabel(lv, idx){
-      if(!lv) return "کیفیت "+((idx||0)+1);
-      const h = lv.height || 0;
-      const w = lv.width || 0;
-      const br = lv.bitrate ? Math.round(lv.bitrate/1000) : 0;
-      if(h>=1080) return "وضوح بالا (Full HD) — "+h+"p";
-      if(h>=720) return "وضوح متوسط (HD) — "+h+"p";
-      if(h>=480) return "اقتصادی (۴۸۰p)";
-      if(h>=360) return "وضوح کم (۳۶۰p)";
-      if(h>=240) return "وضوح کم (۲۴۰p)";
-      if(h>0) return h+"p"+(br?(" / "+br+"kbps"):"");
-      if(br>=1800) return "بالا (~"+br+"kbps)";
-      if(br>=800) return "متوسط (~"+br+"kbps)";
-      if(br>=400) return "اقتصادی (~"+br+"kbps)";
-      if(br>0) return "کم (~"+br+"kbps)";
-      if(w&&h) return w+"×"+h;
-      return "لایه "+((idx||0)+1);
-    }
-    function renderQualityLevels(){
-      const list=document.getElementById("qualityList");
-      if(!list) return;
-      const levels = (hls && hls.levels) ? hls.levels : [];
-      const cur = (hls && typeof hls.currentLevel==="number") ? hls.currentLevel : -1;
-      let out = "";
-      if(!levels.length){
-        out = '<button type="button" class="sheet-item active" data-q="-1"><span>فقط یک کیفیت (یا هنوز بارگذاری نشده)</span><span class="check">✓</span></button>';
-        list.innerHTML = out;
-        return;
-      }
-      out += '<button type="button" class="sheet-item '+(cur===-1?"active":"")+'" data-q="-1"><span>خودکار</span><span class="check">✓</span></button>';
-      levels.forEach(function(lv,i){
-        out += '<button type="button" class="sheet-item '+(cur===i?"active":"")+'" data-q="'+i+'"><span>'+qualityLabel(lv,i)+'</span><span class="check">✓</span></button>';
-      });
-      list.innerHTML = out;
-      list.querySelectorAll(".sheet-item").forEach(function(btn){
-        btn.addEventListener("click", function(){
-          if(!hls){ tvMsg("این استریم کنترل کیفیت ندارد.", true); closeQualitySheet(); return; }
-          var q = parseInt(btn.getAttribute("data-q"),10);
-          try{
-            hls.currentLevel = q;
-            if(q===-1){ hls.loadLevel=-1; hls.nextLevel=-1; }
-            else { hls.loadLevel=q; hls.nextLevel=q; }
-            tvMsg(q===-1 ? "کیفیت: خودکار" : ("کیفیت: "+qualityLabel(hls.levels[q]||{}, q)));
-          }catch(e){ tvMsg("تغییر کیفیت ناموفق", true); }
-          renderQualityLevels();
-          closeQualitySheet();
-        });
-      });
-    }
-    function openQualitySheet(){
-      if(!hls){
-        tvMsg("برای کنترل کیفیت، کانالی با چند لایه پخش کنید (مثلاً پرس‌تی‌وی، میهن، تپش).", true);
-      }
-      renderQualityLevels();
-      var m=document.getElementById("qualitySheet");
-      if(m) m.classList.add("open");
-    }
-    function closeQualitySheet(){
-      var m=document.getElementById("qualitySheet");
-      if(m) m.classList.remove("open");
-    }
-    function startRecording(){
-      if(isRecording) return;
-      if(!window.MediaRecorder){
-        tvMsg("ضبط در این دستگاه پشتیبانی نمی‌شود.", true);
-        return;
-      }
-      if(tvVideo.paused || tvVideo.ended){
-        tvMsg("اول کانال را پخش کنید، بعد ضبط را بزنید.", true);
-        return;
-      }
-      var stream = null;
-      try{
-        if(tvVideo.captureStream) stream = tvVideo.captureStream();
-        else if(tvVideo.mozCaptureStream) stream = tvVideo.mozCaptureStream();
-      }catch(e){
-        tvMsg("دسترسی به تصویر برای ضبط ممکن نشد.", true);
-        return;
-      }
-      if(!stream){
-        tvMsg("ضبط در این مینی‌اپ پشتیبانی نمی‌شود.", true);
-        return;
-      }
-      var vtracks = stream.getVideoTracks ? stream.getVideoTracks() : [];
-      var atracks = stream.getAudioTracks ? stream.getAudioTracks() : [];
-      if(!vtracks.length && !atracks.length){
-        tvMsg("به‌خاطر محدودیت CORS، ترک ویدئو خالی است. کانال‌هایی مثل پرس‌تی‌وی را امتحان کنید.", true);
-        return;
-      }
-      recordedChunks = [];
-      var candidates = ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"];
-      var mime = "";
-      for(var ci=0; ci<candidates.length; ci++){
-        try{ if(MediaRecorder.isTypeSupported(candidates[ci])){ mime=candidates[ci]; break; } }catch(e){}
-      }
-      try{
-        mediaRecorder = mime ? new MediaRecorder(stream, {mimeType:mime}) : new MediaRecorder(stream);
-      }catch(e){
-        tvMsg("شروع ضبط ناموفق بود.", true);
-        return;
-      }
-      mediaRecorder.ondataavailable = function(e){ if(e.data && e.data.size>0) recordedChunks.push(e.data); };
-      mediaRecorder.onerror = function(){
-        isRecording=false;
-        var btn=document.getElementById("tvRecord");
-        if(btn){ btn.textContent="⏺"; btn.classList.remove("rec-on"); }
-        tvMsg("خطا هنگام ضبط.", true);
-      };
-      mediaRecorder.onstop = function(){
-        isRecording=false;
-        var btn=document.getElementById("tvRecord");
-        if(btn){ btn.textContent="⏺"; btn.classList.remove("rec-on"); }
-        if(!recordedChunks.length){ tvMsg("فایلی ضبط نشد.", true); return; }
-        var type = (recordedChunks[0] && recordedChunks[0].type) || mime || "video/webm";
-        var blob = new Blob(recordedChunks, {type:type});
-        if(blob.size < 1000){ tvMsg("فایل خیلی کوچک است؛ استریم اجازه ضبط نمی‌دهد.", true); return; }
-        var fname = "tv-record-"+Date.now()+(type.indexOf("mp4")>=0?".mp4":".webm");
-        try{
-          var a=document.createElement("a");
-          a.href=URL.createObjectURL(blob);
-          a.download=fname;
-          a.style.display="none";
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(function(){ try{ URL.revokeObjectURL(a.href); a.remove(); }catch(e){} }, 3000);
-        }catch(e){}
-        try{
-          if(navigator.share && navigator.canShare){
-            var file = new File([blob], fname, {type:type});
-            if(navigator.canShare({files:[file]})){
-              navigator.share({files:[file], title:"ضبط تلویزیون"}).catch(function(){});
-            }
-          }
-        }catch(e){}
-        tvMsg("ضبط آماده شد ("+Math.round(blob.size/1024)+" KB).");
-      };
-      try{ mediaRecorder.start(1000); }catch(e){ tvMsg("شروع ضبط ناموفق.", true); return; }
-      isRecording=true;
-      var btn=document.getElementById("tvRecord");
-      if(btn){ btn.textContent="⏹"; btn.classList.add("rec-on"); }
-      tvMsg("در حال ضبط... دوباره بزنید تا ذخیره شود.");
-    }
-    function toggleRecording(){
-      if(isRecording){
-        try{ if(mediaRecorder && mediaRecorder.state!=="inactive") mediaRecorder.stop(); }catch(e){}
-      } else {
-        startRecording();
-      }
-    }
+
     function stopTv(){
-      try{closeQualitySheet()}catch(e){}
-      stopRecordingSilent();
       destroyHls();
       try{tvVideo.pause()}catch(e){}
       tvVideo.removeAttribute("src");
@@ -522,6 +308,7 @@
       tvOverlay.classList.remove("hide");
       tvOverlay.textContent="پخش متوقف شد — کانال را انتخاب کنید";
     }
+
     function playTv(i){
       if(!TV_CHANNELS.length)return;
       tvIndex=((i%TV_CHANNELS.length)+TV_CHANNELS.length)%TV_CHANNELS.length;
@@ -531,8 +318,6 @@
       tvOverlay.textContent="در حال اتصال...";
       tvMsg("");
       renderTvChannels();
-      try{closeQualitySheet()}catch(e){}
-      stopRecordingSilent();
       destroyHls();
       try{tvVideo.pause()}catch(e){}
       try{tvVideo.removeAttribute("src"); tvVideo.load()}catch(e){}
@@ -544,11 +329,10 @@
         return;
       }
 
-      // برای ضبط روی استریم‌های CORS-دار
       try{
         tvVideo.setAttribute("referrerpolicy","no-referrer");
         tvVideo.referrerPolicy="no-referrer";
-        tvVideo.crossOrigin="anonymous";
+        tvVideo.removeAttribute("crossorigin");
       }catch(e){}
 
       const isHls=/\.m3u8(\?|$)/i.test(url) || url.toLowerCase().indexOf("m3u8")!==-1;
@@ -561,30 +345,22 @@
         tvOverlay.classList.remove("hide");
       }
 
-      // اولویت hls.js برای کنترل واقعی کیفیت
       if(isHls && window.Hls && Hls.isSupported()){
         hls=new Hls({
           enableWorker:true,
           lowLatencyMode:false,
           maxBufferLength:40,
-          startLevel:-1,
           xhrSetup:function(xhr){ try{ xhr.withCredentials=false; }catch(e){} }
         });
         hls.loadSource(url);
         hls.attachMedia(tvVideo);
         hls.on(Hls.Events.MANIFEST_PARSED, function(){
-          try{ renderQualityLevels(); }catch(e){}
-          var n = (hls.levels && hls.levels.length) ? hls.levels.length : 0;
-          if(n>1) tvMsg(n+" لایه کیفیت در دسترس است — از ⚙ انتخاب کنید");
           var p=tvVideo.play();
           if(p&&p.then){ p.then(onPlaying).catch(onNeedTap); } else onPlaying();
         });
-        hls.on(Hls.Events.LEVEL_SWITCHED, function(){ try{ renderQualityLevels(); }catch(e){} });
         hls.on(Hls.Events.ERROR, function(_, data){
           if(!data||!data.fatal) return;
           try{ destroyHls(); }catch(e){}
-          // fallback native بدون crossOrigin اگر CORS مشکل ساز بود
-          try{ tvVideo.removeAttribute("crossorigin"); }catch(e){}
           tvVideo.src=url;
           tvVideo.play().then(onPlaying).catch(function(){
             var detail="خطا در استریم";
@@ -596,7 +372,6 @@
       }
 
       if(isHls && tvVideo.canPlayType && (tvVideo.canPlayType("application/vnd.apple.mpegurl")||tvVideo.canPlayType("application/x-mpegURL"))){
-        try{ tvVideo.removeAttribute("crossorigin"); }catch(e){}
         tvVideo.src=url;
         var p=tvVideo.play();
         if(p&&p.then){ p.then(onPlaying).catch(onNeedTap); } else onPlaying();
@@ -608,6 +383,7 @@
       if(p2&&p2.then){ p2.then(onPlaying).catch(onNeedTap); } else onPlaying();
       tvVideo.onerror=function(){ fail("خطا در بارگذاری ویدئو"); };
     }
+
     function renderTvChannels(){
       if(!TV_CHANNELS.length){tvChannelsEl.innerHTML='<div class="empty">هنوز کانالی اضافه نشده است</div>';return}
       tvChannelsEl.innerHTML=TV_CHANNELS.map((c,i)=>`<div class="channel ${i===tvIndex?"active":""}" data-i="${i}">
@@ -621,14 +397,7 @@
       else if(el.webkitEnterFullscreen) el.webkitEnterFullscreen();
     });
     document.getElementById("tvStop").addEventListener("click", stopTv);
-    document.getElementById("tvRecord").addEventListener("click", toggleRecording);
-    document.getElementById("tvQualityBtn").addEventListener("click", openQualitySheet);
-    document.getElementById("qualityClose").addEventListener("click", closeQualitySheet);
-    document.getElementById("qualitySheet").addEventListener("click",function(e){
-      if(e.target===this) closeQualitySheet();
-    });
 
-    // nav
     document.getElementById("goRadio").addEventListener("click",()=>{
       stopTv(); renderStations(); show("screenRadioStations");
     });
