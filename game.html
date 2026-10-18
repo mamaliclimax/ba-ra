@@ -60,14 +60,14 @@
   kbd{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
     border-radius:6px;padding:2px 7px;font-family:inherit;font-size:.9em}
 
-  #touch{display:none;z-index:20}
-  #stick{position:fixed;bottom:max(88px,calc(env(safe-area-inset-bottom) + 72px));
+  #touch{display:block;z-index:20;pointer-events:none}
+  #stick{pointer-events:auto;position:fixed;bottom:max(88px,calc(env(safe-area-inset-bottom) + 72px));
     right:max(16px,env(safe-area-inset-right));width:130px;height:130px;border-radius:50%;
-    background:rgba(15,25,40,.42);border:2px solid rgba(255,255,255,.24);touch-action:none}
+    background:rgba(15,25,40,.55);border:2px solid rgba(255,255,255,.35);touch-action:none;z-index:25}
   #knob{position:absolute;left:50%;top:50%;width:54px;height:54px;border-radius:50%;
     background:rgba(255,255,255,.78);transform:translate(-50%,-50%);
     box-shadow:0 4px 14px rgba(0,0,0,.35);pointer-events:none}
-  .tbtn{position:fixed;width:70px;height:70px;border-radius:50%;
+  .tbtn{pointer-events:auto;position:fixed;width:70px;height:70px;border-radius:50%;
     background:rgba(15,25,40,.58);border:2px solid rgba(255,255,255,.28);
     color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;
     justify-content:center;touch-action:manipulation;user-select:none;
@@ -714,21 +714,19 @@ addEventListener('wheel',e=>{
 },{passive:true});
 
 const startOverlay=document.getElementById('start');
-const isTouch=matchMedia('(pointer: coarse)').matches
-  || matchMedia('(hover: none)').matches
-  || (('ontouchstart' in window)&&(navigator.maxTouchPoints||0)>0)
-  || Math.min(innerWidth,innerHeight)<700
-  || /Android|iPhone|iPad|iPod|Mobile|Bale|Telegram/i.test(navigator.userAgent||'');
+// در مینی‌اپ بله تقریباً همیشه لمسی است — کنترل‌ها را نشان بده
+const isTouch = true;
 
 let gameStarted=false;
 function startGame(){
   if(gameStarted) return;
   gameStarted=true;
   startOverlay.style.display='none';
-  if(isTouch){
-    const t=document.getElementById('touch');
-    if(t) t.style.display='block';
-  }else{
+  const t=document.getElementById('touch');
+  if(t){ t.style.display='block'; t.style.pointerEvents='none'; }
+  // pointer lock فقط روی دسکتاپ واقعی
+  const coarse = matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window);
+  if(!coarse){
     try{
       const p=canvas.requestPointerLock&&canvas.requestPointerLock();
       if(p&&p.catch) p.catch(()=>{});
@@ -760,8 +758,8 @@ document.addEventListener('mousemove',e=>{
   player.pitch=Math.max(-1.54,Math.min(1.54,player.pitch));
 });
 
-/* کنترل لمسی — پرش با نگه‌داشتن و بافر */
-if(isTouch){
+/* کنترل لمسی — همیشه فعال در مینی‌اپ */
+if(true){
   const stick=document.getElementById('stick');
   const knob=document.getElementById('knob');
   let stickId=null;
