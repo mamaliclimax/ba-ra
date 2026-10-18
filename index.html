@@ -249,17 +249,18 @@
     let radioHls=null;
     let urlAttempt=0;
     let currentUrlList=[];
-    let stallTimer=null;
     let watchdogTimer=null;
     let bgKeepAliveTimer=null;
     let lastProgressAt=0;
+    let lastMediaTime=-1;
+    let sessionStartedAt=0;
     let reconnectTries=0;
     let userPaused=false;
-    const MAX_RECONNECT=12;
+    let isLiveTrack=false;
+    const MAX_RECONNECT=8;
 
     function destroyRadioHls(){if(radioHls){try{radioHls.destroy()}catch(e){} radioHls=null}}
     function clearRadioTimers(){
-      if(stallTimer){clearTimeout(stallTimer);stallTimer=null}
       if(watchdogTimer){clearInterval(watchdogTimer);watchdogTimer=null}
       if(bgKeepAliveTimer){clearInterval(bgKeepAliveTimer);bgKeepAliveTimer=null}
     }
@@ -278,7 +279,17 @@
       if(!list.length && track.url) list.push(String(track.url).trim());
       return list;
     }
-    function markProgress(){ lastProgressAt=Date.now(); }
+    function trackIsLive(track){
+      if(!track) return false;
+      const all=[track.url].concat(track.urls||[]);
+      return all.some(u=>/\.m3u8/i.test(String(u||"")));
+    }
+    function markProgress(){
+      lastProgressAt=Date.now();
+      try{
+        if(isFinite(audio.currentTime)) lastMediaTime=audio.currentTime;
+      }catch(e){}
+    }
     function updateMediaSession(){
       try{
         if(!("mediaSession" in navigator)) return;
@@ -287,16 +298,13 @@
         navigator.mediaSession.metadata=new MediaMetadata({
           title: track.title||"رادیو",
           artist: (st.emoji?st.emoji+" ":"")+(st.title||"رادیو زنده"),
-          album: "پخش زنده",
-          artwork: [
-            {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect fill='%231b7a4e' width='96' height='96' rx='20'/%3E%3Ctext x='48' y='62' font-size='40' text-anchor='middle'%3E%F0%9F%93%BB%3C/text%3E%3C/svg%3E", sizes:"96x96", type:"image/svg+xml"}
-          ]
+          album: "پخش زنده"
         });
         navigator.mediaSession.playbackState = (running && !audio.paused) ? "playing" : "paused";
         try{
           navigator.mediaSession.setActionHandler("play", function(){
             userPaused=false; running=true;
-            audio.play().then(function(){ updateMediaSession(); startWatchdog(); startBgKeepAlive(); }).catch(function(){ softReconnect("ms-play"); });
+            audio.play().then(function(){ updateMediaSession(); startWatchdog(); startBgKeepAlive(); }).catch(function(){});
           });
           navigator.mediaSession.setActionHandler("pause", function(){
             userPaused=true; running=false; clearRadioTimers();
@@ -306,13 +314,6 @@
           });
           navigator.mediaSession.setActionHandler("previoustrack", function(){ userPaused=false; running=true; busy=false; reconnectTries=0; prev(); });
           navigator.mediaSession.setActionHandler("nexttrack", function(){ userPaused=false; running=true; busy=false; reconnectTries=0; next(); });
-          navigator.mediaSession.setActionHandler("stop", function(){
-            userPaused=true; running=false; clearRadioTimers();
-            try{audio.pause()}catch(e){}
-            destroyRadioHls();
-            btnPlay.textContent="▶"; disc.classList.remove("spin");
-            updateMediaSession();
-          });
         }catch(e){}
       }catch(e){}
     }
@@ -321,16 +322,31 @@
       if(audio.paused){
         const p=audio.play();
         if(p&&p.then){
-          p.then(function(){ updateMediaSession(); markProgress(); })
-           .catch(function(){ softReconnect("ensure"); });
+          p.then(function(){ updateMediaSession(); markProgress(); }).catch(function(){});
         }
-      } else {
-        updateMediaSession();
+      } else updateMediaSession();
+    }
+    // فقط وقتی واقعاً گیر کرده (زمان رسانه جلو نرفته) وصل مجدد کن
+    function isActuallyStuck(){
+      if(!running || userPaused) return false;
+      if(busy) return false;
+      const now=Date.now();
+      // حداقل ۳۰ ثانیه از آخرین پیشرفت واقعی بگذرد
+      if(now-lastProgressAt < 30000) return false;
+      // اگر در حال پخش است و readyState خوب است، گیر نیست
+      if(!audio.paused && audio.readyState>=3){
+        markProgress();
+        return false;
       }
+      return true;
     }
     function softReconnect(reason){
       if(!running || userPaused || !playlist.length) return;
       if(busy) return;
+      // جلوگیری از ریست شدن هر ۱۵ ثانیه: فقط اگر واقعاً stuck
+      if(reason!=="manual" && reason!=="fatal" && reason!=="ended" && reason!=="audio-error" && reason!=="urls"){
+        if(!isActuallyStuck()) return;
+      }
       reconnectTries++;
       if(reconnectTries>MAX_RECONNECT){
         status("اتصال قطع شد. ▶ را بزنید.", true);
@@ -341,7 +357,7 @@
         updateMediaSession();
         return;
       }
-      status("وصل مجدد"+(reason?(" · "+reason):"")+"… "+fa(reconnectTries), true);
+      status("وصل مجدد"+(reason?(" · "+reason):"")+"…", true);
       const track=playlist[index];
       currentUrlList=trackUrlList(track);
       urlAttempt=0;
@@ -356,30 +372,26 @@
       lastProgressAt=Date.now();
       watchdogTimer=setInterval(function(){
         if(!running || userPaused) return;
-        const gap=Date.now()-lastProgressAt;
-        // در پس‌زمینه timeupdate کمتر می‌آید؛ آستانه را بالاتر ببر
-        const limit = (document.visibilityState==="hidden") ? 45000 : 28000;
-        if(gap>limit){
-          if(!audio.paused && audio.readyState>=2){ markProgress(); return; }
+        // نمایش زمان جلسه برای زنده
+        if(isLiveTrack && sessionStartedAt){
+          const elapsed=(Date.now()-sessionStartedAt)/1000;
+          curEl.textContent=fmt(elapsed);
+          durEl.textContent="زنده";
+          barEl.style.width="100%";
+        }
+        if(isActuallyStuck()){
           softReconnect("watchdog");
         } else if(audio.paused){
           ensurePlaying();
         }
-      }, 4000);
+      }, 5000);
     }
-    // نگه داشتن پخش در بک‌گراند: هر چند ثانیه play() را تکرار کن
     function startBgKeepAlive(){
       if(bgKeepAliveTimer) clearInterval(bgKeepAliveTimer);
       bgKeepAliveTimer=setInterval(function(){
         if(!running || userPaused) return;
         ensurePlaying();
-        // اگر HLS گیر کرد، سطح را دوباره load کن
-        try{
-          if(radioHls && audio.readyState<2){
-            radioHls.startLoad();
-          }
-        }catch(e){}
-      }, 8000);
+      }, 12000);
     }
     function playUrl(my, url, isLast){
       destroyRadioHls();
@@ -388,18 +400,20 @@
       if(location.protocol==="https:" && url.indexOf("http://")===0){
         status("لینک HTTP روی HTTPS مسدود است؛ لینک بعدی...", true);
         if(!isLast){ setTimeout(()=>{if(my===gen) tryNextUrl(my)}, 400); }
-        else { status("همه لینک‌ها HTTP هستند و روی مینی‌اپ HTTPS کار نمی‌کنند.", true); busy=false; running=false; btnPlay.textContent="▶"; disc.classList.remove("spin"); }
+        else { status("لینک HTTPS لازم است.", true); busy=false; running=false; btnPlay.textContent="▶"; disc.classList.remove("spin"); }
         return;
       }
       const isHls=/\.m3u8(\?|$)/i.test(url) || url.toLowerCase().indexOf("m3u8")!==-1;
+      isLiveTrack=isHls;
       status("در حال اتصال"+(currentUrlList.length>1?(" ("+fa(urlAttempt+1)+"/"+fa(currentUrlList.length)+")"):"")+"...");
 
       const onOk=()=>{
         if(my!==gen)return;
         btnPlay.textContent="⏸";
         disc.classList.add("spin");
-        status(isHls?"● پخش زنده · بک‌گراند فعال":"");
+        status(isHls?"● پخش زنده":"");
         busy=false;
+        if(!sessionStartedAt) sessionStartedAt=Date.now();
         markProgress();
         reconnectTries=0;
         startWatchdog();
@@ -411,20 +425,19 @@
         destroyRadioHls();
         if(!isLast){
           status((reason||"ناموفق")+" — لینک بعدی...", true);
-          setTimeout(()=>{if(my===gen) tryNextUrl(my)}, 500);
+          setTimeout(()=>{if(my===gen) tryNextUrl(my)}, 400);
           return;
         }
         if(running && !userPaused && reconnectTries<MAX_RECONNECT){
-          status("قطع شد؛ وصل مجدد…", true);
           busy=false;
-          setTimeout(()=>{ if(my===gen && running && !userPaused) softReconnect("retry"); }, 2500);
+          // fatal واقعی: بعد از ۳ ثانیه یک‌بار دیگر
+          setTimeout(()=>{ if(my===gen && running && !userPaused) softReconnect("fatal"); }, 3000);
           return;
         }
         status("استریم قطع شد. ▶ را بزنید.", true);
         disc.classList.remove("spin");
         btnPlay.textContent="▶";
-        running=false;
-        busy=false;
+        running=false; busy=false;
         clearRadioTimers();
         updateMediaSession();
       };
@@ -435,90 +448,94 @@
         else onOk();
       };
 
-      if(isHls && audio.canPlayType && (audio.canPlayType("application/vnd.apple.mpegurl")||audio.canPlayType("application/x-mpegURL"))){
-        try{ audio.removeAttribute("crossorigin"); }catch(e){}
-        audio.src=url; audio.load();
-        audio.addEventListener("canplay", tryPlayNative, {once:true});
-        audio.addEventListener("error", function onErr(){
-          audio.removeEventListener("error", onErr);
-          if(my!==gen)return;
-          tryHlsJs();
-        }, {once:true});
-        setTimeout(()=>{ if(my===gen && audio.readyState<2 && running) tryPlayNative(); }, 2500);
-        return;
-      }
-
       function tryHlsJs(){
         if(!(isHls && window.Hls && Hls.isSupported())){
           try{ audio.removeAttribute("crossorigin"); }catch(e){}
           audio.src=url; audio.load();
           audio.addEventListener("canplay", tryPlayNative, {once:true});
           audio.addEventListener("error", ()=>onFail("load"), {once:true});
-          setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 10000);
+          setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 12000);
           return;
         }
         radioHls=new Hls({
           enableWorker:true,
           lowLatencyMode:false,
-          maxBufferLength:90,
-          maxMaxBufferLength:180,
-          maxBufferSize: 90*1000*1000,
-          maxBufferHole:1.0,
-          highBufferWatchdogPeriod:2,
+          // بافر مناسب زنده — نه خیلی کوتاه که هر ۱۵ثانیه ته بکشد
+          maxBufferLength:40,
+          maxMaxBufferLength:80,
+          maxBufferSize: 40*1000*1000,
+          maxBufferHole:1.5,
+          highBufferWatchdogPeriod:4,
+          nudgeOnVideoHole:true,
           nudgeMaxRetry:10,
-          manifestLoadingTimeOut:30000,
-          manifestLoadingMaxRetry:8,
-          manifestLoadingRetryDelay:1200,
-          levelLoadingTimeOut:30000,
-          levelLoadingMaxRetry:8,
-          levelLoadingRetryDelay:1200,
-          fragLoadingTimeOut:35000,
-          fragLoadingMaxRetry:10,
-          fragLoadingRetryDelay:800,
-          startFragPrefetch:true,
-          liveSyncDurationCount:3,
-          liveMaxLatencyDurationCount:12,
+          // زنده: عقب‌تر از لبه زنده بمان تا قطع/ریست کمتر شود
+          liveSyncDurationCount:5,
+          liveMaxLatencyDurationCount:15,
           liveDurationInfinity:true,
-          enableStashBuffer:true,
+          manifestLoadingTimeOut:20000,
+          manifestLoadingMaxRetry:4,
+          levelLoadingTimeOut:20000,
+          levelLoadingMaxRetry:4,
+          fragLoadingTimeOut:25000,
+          fragLoadingMaxRetry:6,
+          fragLoadingRetryDelay:1000,
+          startFragPrefetch:true,
+          // مهم: با هر refresh پلی‌لیست، پخش را از اول پنجره نپر
+          // (رفتار پیش‌فرض HLS.js برای live مناسب است اگر recover افراطی نکنیم)
           xhrSetup:function(xhr){ try{ xhr.withCredentials=false; }catch(e){} }
         });
         radioHls.loadSource(url);
         radioHls.attachMedia(audio);
         radioHls.on(Hls.Events.MANIFEST_PARSED, function(){ if(my===gen) tryPlayNative(); });
         radioHls.on(Hls.Events.FRAG_LOADED, function(){ markProgress(); });
+        radioHls.on(Hls.Events.FRAG_BUFFERED, function(){ markProgress(); });
         radioHls.on(Hls.Events.ERROR, function(_, data){
           if(!data||my!==gen) return;
+          // خطاهای غیرکشنده: فقط بازیابی ملایم — reconnect کامل نکن
           if(!data.fatal){
             try{
-              if(data.type===Hls.ErrorTypes.NETWORK_ERROR) radioHls.startLoad();
-              else if(data.type===Hls.ErrorTypes.MEDIA_ERROR) radioHls.recoverMediaError();
+              if(data.type===Hls.ErrorTypes.MEDIA_ERROR){
+                radioHls.recoverMediaError();
+              }
+              // NETWORK_ERROR غیرکشنده را معمولاً HLS.js خودش retry می‌کند
             }catch(e){}
-            markProgress();
             return;
+          }
+          // fatal
+          if(data.type===Hls.ErrorTypes.MEDIA_ERROR){
+            try{ radioHls.recoverMediaError(); markProgress(); return; }catch(e){}
           }
           if(data.type===Hls.ErrorTypes.NETWORK_ERROR){
             try{ radioHls.startLoad(); markProgress(); return; }catch(e){}
-          }
-          if(data.type===Hls.ErrorTypes.MEDIA_ERROR){
-            try{ radioHls.recoverMediaError(); markProgress(); return; }catch(e){}
           }
           onFail(data.details||"HLS");
         });
       }
 
+      if(isHls && audio.canPlayType && (audio.canPlayType("application/vnd.apple.mpegurl")||audio.canPlayType("application/x-mpegURL"))){
+        try{ audio.removeAttribute("crossorigin"); }catch(e){}
+        audio.src=url; audio.load();
+        audio.addEventListener("canplay", tryPlayNative, {once:true});
+        audio.addEventListener("error", function onErr(){
+          audio.removeEventListener("error", onErr);
+          if(my===gen) tryHlsJs();
+        }, {once:true});
+        setTimeout(()=>{ if(my===gen && audio.readyState<2 && running) tryPlayNative(); }, 2000);
+        return;
+      }
       if(isHls && window.Hls && Hls.isSupported()){ tryHlsJs(); return; }
       try{ audio.removeAttribute("crossorigin"); }catch(e){}
       audio.src=url; audio.load();
       audio.addEventListener("canplay", tryPlayNative, {once:true});
       audio.addEventListener("error", ()=>onFail("load"), {once:true});
-      setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 10000);
+      setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 12000);
     }
     function tryNextUrl(my){
       urlAttempt++;
       if(urlAttempt>=currentUrlList.length){
         if(running && !userPaused && reconnectTries<MAX_RECONNECT){
           busy=false;
-          setTimeout(()=>{ if(my===gen && running) softReconnect("urls"); }, 2000);
+          setTimeout(()=>{ if(my===gen && running) softReconnect("urls"); }, 2500);
           return;
         }
         status("لینک‌ها ناموفق. ▶ را بزنید.", true);
@@ -533,9 +550,12 @@
       userPaused=false;
       busy=true; gen++; const my=gen;
       reconnectTries=0;
+      sessionStartedAt=0;
+      lastMediaTime=-1;
       clearRadioTimers();
       index=((i%playlist.length)+playlist.length)%playlist.length;
       const track=playlist[index];
+      isLiveTrack=trackIsLive(track);
       titleEl.textContent=track.title||("آهنگ "+(index+1));
       metaEl.textContent=(currentStation?(currentStation.emoji+" "+currentStation.title+" · "):"")+fa((index+1)+" از "+playlist.length);
       renderTracks();
@@ -556,103 +576,85 @@
 
     audio.addEventListener("ended",()=>{
       if(!running||userPaused) return;
-      if(playlist[index] && (/\.m3u8/i.test(String(playlist[index].url||"")) || (playlist[index].urls||[]).some(u=>/\.m3u8/i.test(String(u||""))))){
-        softReconnect("ended"); return;
-      }
+      if(isLiveTrack){ softReconnect("ended"); return; }
       busy=false; next();
     });
     audio.addEventListener("error",()=>{
       if(!running||userPaused)return;
+      // فقط خطای واقعی element
       softReconnect("audio-error");
     });
+    // waiting/stalled در استریم زنده طبیعی است — دیگر باعث ریست ۱۵ثانیه‌ای نشو
     audio.addEventListener("waiting",()=>{
       if(!running||userPaused) return;
-      markProgress();
-      if(stallTimer) clearTimeout(stallTimer);
-      stallTimer=setTimeout(function(){
-        if(!running||userPaused) return;
-        if(audio.paused || audio.readyState<3) softReconnect("waiting");
-      }, 15000);
-    });
-    audio.addEventListener("stalled",()=>{
-      if(!running||userPaused) return;
-      if(stallTimer) clearTimeout(stallTimer);
-      stallTimer=setTimeout(function(){ if(running&&!userPaused) softReconnect("stalled"); }, 12000);
-    });
-    audio.addEventListener("timeupdate",()=>{
-      markProgress();
-      const d=audio.duration,c=audio.currentTime;
-      if(d&&isFinite(d)&&d>0){ barEl.style.width=((c/d)*100)+"%"; durEl.textContent=fmt(d); }
-      else { barEl.style.width="100%"; durEl.textContent="زنده"; }
-      curEl.textContent=fmt(c);
+      // فقط وضعیت را نشان بده؛ reconnect نکن
+      if(isLiveTrack) status("● در حال بافر…");
     });
     audio.addEventListener("playing",()=>{
       btnPlay.textContent="⏸"; disc.classList.add("spin");
-      status("● پخش زنده · بک‌گراند فعال");
-      busy=false; markProgress(); reconnectTries=0;
+      status(isLiveTrack?"● پخش زنده":"");
+      busy=false; markProgress();
+      if(!sessionStartedAt) sessionStartedAt=Date.now();
+      reconnectTries=0;
       startWatchdog(); startBgKeepAlive(); updateMediaSession();
     });
-    // اگر سیستم pause کرد (بک‌گراند) ولی کاربر stop نزده → دوباره play
+    audio.addEventListener("timeupdate",()=>{
+      // اگر currentTime جلو رفته، پیشرفت واقعی است
+      try{
+        if(isFinite(audio.currentTime) && audio.currentTime > lastMediaTime + 0.2){
+          markProgress();
+        } else if(!isLiveTrack){
+          markProgress();
+        }
+      }catch(e){ markProgress(); }
+      if(isLiveTrack){
+        // تایمر جلسه — نه currentTime که با هر segment ممکن است بپرد
+        if(!sessionStartedAt) sessionStartedAt=Date.now();
+        const elapsed=(Date.now()-sessionStartedAt)/1000;
+        curEl.textContent=fmt(elapsed);
+        durEl.textContent="زنده";
+        barEl.style.width="100%";
+      } else {
+        const d=audio.duration,c=audio.currentTime;
+        if(d&&isFinite(d)&&d>0){ barEl.style.width=((c/d)*100)+"%"; durEl.textContent=fmt(d); }
+        else { barEl.style.width="0%"; durEl.textContent="۰:۰۰"; }
+        curEl.textContent=fmt(c);
+      }
+    });
     audio.addEventListener("pause",()=>{
-      if(!running || userPaused) { updateMediaSession(); return; }
-      // تلاش فوری + چند تلاش بعدی برای دور زدن محدودیت وب‌ویو
-      let tries=0;
-      const bump=function(){
+      if(!running || userPaused){ updateMediaSession(); return; }
+      // فقط یک تلاش ملایم برای ادامه؛ ریست کامل نکن
+      setTimeout(function(){
         if(!running||userPaused) return;
-        if(!audio.paused){ updateMediaSession(); return; }
-        tries++;
-        const p=audio.play();
-        if(p&&p.then){
-          p.then(function(){ updateMediaSession(); markProgress(); })
-           .catch(function(){
-             if(tries<5) setTimeout(bump, 600*tries);
-             else softReconnect("bg-pause");
-           });
-        } else if(tries<5) setTimeout(bump, 600*tries);
-      };
-      setTimeout(bump, 200);
+        if(audio.paused){
+          const p=audio.play();
+          if(p&&p.catch) p.catch(function(){});
+        }
+        updateMediaSession();
+      }, 400);
     });
 
-    // هنگام رفتن به پس‌زمینه: عمداً stop نکن؛ فقط play را نگه دار
     document.addEventListener("visibilitychange", function(){
       if(document.visibilityState==="hidden"){
-        if(running && !userPaused){
-          ensurePlaying();
-          // در بک‌گراند بازه keep-alive را کوتاه‌تر کن
-          if(bgKeepAliveTimer) clearInterval(bgKeepAliveTimer);
-          bgKeepAliveTimer=setInterval(function(){
-            if(running && !userPaused) ensurePlaying();
-          }, 4000);
-        }
+        if(running && !userPaused) ensurePlaying();
         return;
       }
-      // برگشت به پیش‌زمینه
       if(!running||userPaused||!playlist.length) return;
       setTimeout(function(){
         if(!running||userPaused) return;
         ensurePlaying();
         startWatchdog();
         startBgKeepAlive();
-        if(audio.paused || audio.readyState<2) softReconnect("foreground");
-      }, 250);
+        // فقط اگر واقعاً گیر کرده باشد
+        if(isActuallyStuck()) softReconnect("foreground");
+      }, 300);
     });
     window.addEventListener("pageshow", function(){
-      if(running && !userPaused) setTimeout(function(){ ensurePlaying(); }, 200);
+      if(running && !userPaused) setTimeout(ensurePlaying, 200);
     });
     window.addEventListener("focus", function(){
-      if(running && !userPaused) setTimeout(function(){ ensurePlaying(); }, 150);
+      if(running && !userPaused) setTimeout(ensurePlaying, 150);
     });
-    try{
-      document.addEventListener("resume", function(){
-        if(running && !userPaused) softReconnect("cordova-resume");
-      });
-      document.addEventListener("freeze", function(){
-        // قبل از freeze یک play بزن
-        if(running && !userPaused) try{ audio.play(); }catch(e){}
-      });
-    }catch(e){}
-
-    // Bale / Telegram WebApp: تا حد ممکن باز نگه دار
     try{
       const wa=(window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp);
       if(wa){
@@ -665,12 +667,12 @@
     btnPlay.addEventListener("click",()=>{
       if(!playlist.length){status("لیست خالی است",true);return}
       if(!running || userPaused){
-        userPaused=false; running=true; reconnectTries=0;
+        userPaused=false; running=true; reconnectTries=0; sessionStartedAt=0;
         if(!audio.src && !radioHls) goTo(index);
         else {
           const p=audio.play();
           if(p&&p.then){
-            p.then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin");status("● پخش زنده · بک‌گراند فعال");startWatchdog();startBgKeepAlive();updateMediaSession();})
+            p.then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin");status(isLiveTrack?"● پخش زنده":"");startWatchdog();startBgKeepAlive();updateMediaSession();})
              .catch(()=>goTo(index));
           } else goTo(index);
         }
@@ -679,10 +681,9 @@
         const p=audio.play();
         if(p&&p.then){
           p.then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin");startWatchdog();startBgKeepAlive();updateMediaSession();})
-           .catch(()=>softReconnect("unpause"));
+           .catch(()=>{});
         }
       } else {
-        // توقف عمدی کاربر
         userPaused=true; running=false; clearRadioTimers();
         try{audio.pause()}catch(e){}
         btnPlay.textContent="▶"; disc.classList.remove("spin");
@@ -693,6 +694,7 @@
     document.getElementById("btnNext").addEventListener("click",()=>{userPaused=false;running=true;busy=false;reconnectTries=0;next()});
     document.getElementById("btnPrev").addEventListener("click",()=>{userPaused=false;running=true;busy=false;reconnectTries=0;prev()});
     document.getElementById("progress").addEventListener("click",(e)=>{
+      if(isLiveTrack) return; // زنده قابل اسکرول نیست
       if(!audio.duration||!isFinite(audio.duration))return;
       const r=e.currentTarget.getBoundingClientRect();
       audio.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*audio.duration;
