@@ -249,22 +249,73 @@
     let radioHls=null;
     let urlAttempt=0;
     let currentUrlList=[];
+    let stallTimer=null;
+    let watchdogTimer=null;
+    let lastProgressAt=0;
+    let reconnectTries=0;
+    const MAX_RECONNECT=8;
+
     function destroyRadioHls(){if(radioHls){try{radioHls.destroy()}catch(e){} radioHls=null}}
+    function clearRadioTimers(){
+      if(stallTimer){clearTimeout(stallTimer);stallTimer=null}
+      if(watchdogTimer){clearInterval(watchdogTimer);watchdogTimer=null}
+    }
     function trackUrlList(track){
       const list=[];
       const seen={};
       const add=(u)=>{
         u=String(u||"").trim();
         if(!u) return;
-        if(location.protocol==="https:" && u.indexOf("http://")===0) return; // بلاک mixed content
+        if(location.protocol==="https:" && u.indexOf("http://")===0) return;
         if(seen[u]) return;
         seen[u]=1; list.push(u);
       };
       if(Array.isArray(track.urls)) track.urls.forEach(add);
       add(track.url);
-      // اگر همه HTTP بودند و صفحه HTTPS است، حداقل یکی را نگه دار تا پیام واضح بدهیم
       if(!list.length && track.url) list.push(String(track.url).trim());
       return list;
+    }
+    function markProgress(){
+      lastProgressAt=Date.now();
+      reconnectTries=0;
+    }
+    function softReconnect(reason){
+      if(!running||!playlist.length) return;
+      if(busy) return;
+      reconnectTries++;
+      if(reconnectTries>MAX_RECONNECT){
+        status("اتصال چندبار قطع شد. ▶ را بزنید.", true);
+        disc.classList.remove("spin");
+        btnPlay.textContent="▶";
+        running=false;
+        clearRadioTimers();
+        return;
+      }
+      status("در حال اتصال مجدد"+(reason?(" ("+reason+")"):"")+"… "+fa(reconnectTries)+"/"+fa(MAX_RECONNECT), true);
+      // برای استریم زنده: همان آهنگ، از لیست URL دوباره
+      const track=playlist[index];
+      currentUrlList=trackUrlList(track);
+      urlAttempt=0;
+      busy=true;
+      gen++;
+      const my=gen;
+      if(!currentUrlList.length){ busy=false; return; }
+      playUrl(my, currentUrlList[0], currentUrlList.length===1);
+    }
+    function startWatchdog(){
+      clearRadioTimers();
+      lastProgressAt=Date.now();
+      watchdogTimer=setInterval(function(){
+        if(!running) return;
+        // اگر بیش از ۲۵ ثانیه پیشرفت/داده نبود، وصل مجدد
+        if(Date.now()-lastProgressAt>25000){
+          if(audio && !audio.paused && audio.readyState>=2){
+            markProgress();
+            return;
+          }
+          softReconnect("قطع موقت");
+        }
+      }, 5000);
     }
     function playUrl(my, url, isLast){
       destroyRadioHls();
@@ -285,6 +336,8 @@
         disc.classList.add("spin");
         status(isHls?"● پخش زنده":"");
         busy=false;
+        markProgress();
+        startWatchdog();
       };
       const onFail=(reason)=>{
         if(my!==gen)return;
@@ -294,11 +347,19 @@
           setTimeout(()=>{if(my===gen) tryNextUrl(my)}, 500);
           return;
         }
-        status("استریم در دسترس نیست. شبکه/فیلتر/منطقه را بررسی کنید یا ایستگاه دیگری را بزنید.", true);
+        // آخرین لینک هم fail شد؛ اگر هنوز running، چند ثانیه بعد reconnect
+        if(running && reconnectTries<MAX_RECONNECT){
+          status("قطع شد؛ چند ثانیه بعد وصل مجدد…", true);
+          busy=false;
+          setTimeout(()=>{ if(my===gen && running) softReconnect("retry"); }, 3000);
+          return;
+        }
+        status("استریم در دسترس نیست. ▶ را برای تلاش دوباره بزنید.", true);
         disc.classList.remove("spin");
         btnPlay.textContent="▶";
         running=false;
         busy=false;
+        clearRadioTimers();
       };
       const tryPlayNative=()=>{
         if(my!==gen||!running){busy=false;return}
@@ -308,7 +369,6 @@
         } else onOk();
       };
 
-      // ۱) native HLS (سافاری / بعضی وب‌ویوها) — بدون نیاز به CORS مثل XHR
       if(isHls && audio.canPlayType && (audio.canPlayType("application/vnd.apple.mpegurl")||audio.canPlayType("application/x-mpegURL"))){
         try{ audio.removeAttribute("crossorigin"); }catch(e){}
         audio.src=url; audio.load();
@@ -316,7 +376,6 @@
         audio.addEventListener("error", function onErr(){
           audio.removeEventListener("error", onErr);
           if(my!==gen)return;
-          // برو سراغ HLS.js یا لینک بعدی
           tryHlsJs();
         }, {once:true});
         setTimeout(()=>{ if(my===gen && audio.readyState<2 && running) tryPlayNative(); }, 2500);
@@ -325,26 +384,36 @@
 
       function tryHlsJs(){
         if(!(isHls && window.Hls && Hls.isSupported())){
-          // آخرین شانس: src مستقیم
           try{ audio.removeAttribute("crossorigin"); }catch(e){}
           audio.src=url; audio.load();
           audio.addEventListener("canplay", tryPlayNative, {once:true});
           audio.addEventListener("error", ()=>onFail("خطای بارگذاری"), {once:true});
-          setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 8000);
+          setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 10000);
           return;
         }
         radioHls=new Hls({
           enableWorker:true,
           lowLatencyMode:false,
-          maxBufferLength:30,
-          maxMaxBufferLength:60,
-          manifestLoadingTimeOut:20000,
-          manifestLoadingMaxRetry:3,
-          levelLoadingTimeOut:20000,
-          levelLoadingMaxRetry:3,
-          fragLoadingTimeOut:25000,
-          fragLoadingMaxRetry:4,
-          startLevel:-1,
+          // بافر بزرگ‌تر برای استریم زنده تا کمتر قطع شود
+          maxBufferLength:60,
+          maxMaxBufferLength:120,
+          maxBufferSize: 60*1000*1000,
+          maxBufferHole:0.8,
+          highBufferWatchdogPeriod:3,
+          nudgeMaxRetry:8,
+          manifestLoadingTimeOut:25000,
+          manifestLoadingMaxRetry:6,
+          manifestLoadingRetryDelay:1500,
+          levelLoadingTimeOut:25000,
+          levelLoadingMaxRetry:6,
+          levelLoadingRetryDelay:1500,
+          fragLoadingTimeOut:30000,
+          fragLoadingMaxRetry:8,
+          fragLoadingRetryDelay:1000,
+          startFragPrefetch:true,
+          liveSyncDurationCount:3,
+          liveMaxLatencyDurationCount:10,
+          liveDurationInfinity:true,
           xhrSetup:function(xhr){
             try{ xhr.withCredentials=false; }catch(e){}
           }
@@ -352,6 +421,7 @@
         radioHls.loadSource(url);
         radioHls.attachMedia(audio);
         radioHls.on(Hls.Events.MANIFEST_PARSED, function(){ if(my===gen) tryPlayNative(); });
+        radioHls.on(Hls.Events.FRAG_LOADED, function(){ markProgress(); });
         radioHls.on(Hls.Events.ERROR, function(_, data){
           if(!data||my!==gen) return;
           if(!data.fatal){
@@ -359,9 +429,16 @@
               if(data.type===Hls.ErrorTypes.NETWORK_ERROR) radioHls.startLoad();
               else if(data.type===Hls.ErrorTypes.MEDIA_ERROR) radioHls.recoverMediaError();
             }catch(e){}
+            markProgress();
             return;
           }
-          // fatal → لینک بعدی
+          // fatal network: یک‌بار recover، بعد لینک بعدی/وصل مجدد
+          if(data.type===Hls.ErrorTypes.NETWORK_ERROR){
+            try{ radioHls.startLoad(); markProgress(); return; }catch(e){}
+          }
+          if(data.type===Hls.ErrorTypes.MEDIA_ERROR){
+            try{ radioHls.recoverMediaError(); markProgress(); return; }catch(e){}
+          }
           onFail(data.details||"HLS fatal");
         });
       }
@@ -370,21 +447,26 @@
         tryHlsJs();
         return;
       }
-      // غیر HLS یا بدون Hls.js
       try{ audio.removeAttribute("crossorigin"); }catch(e){}
       audio.src=url; audio.load();
       audio.addEventListener("canplay", tryPlayNative, {once:true});
       audio.addEventListener("error", ()=>onFail("خطای بارگذاری"), {once:true});
-      setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 8000);
+      setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 10000);
     }
     function tryNextUrl(my){
       urlAttempt++;
       if(urlAttempt>=currentUrlList.length){
-        status("همه لینک‌های این ایستگاه ناموفق بود. ایستگاه دیگری را امتحان کنید.", true);
+        if(running && reconnectTries<MAX_RECONNECT){
+          busy=false;
+          setTimeout(()=>{ if(my===gen && running) softReconnect("urls exhausted"); }, 2500);
+          return;
+        }
+        status("همه لینک‌های این ایستگاه ناموفق بود. ▶ را بزنید.", true);
         disc.classList.remove("spin");
         btnPlay.textContent="▶";
         running=false;
         busy=false;
+        clearRadioTimers();
         return;
       }
       playUrl(my, currentUrlList[urlAttempt], urlAttempt===currentUrlList.length-1);
@@ -392,6 +474,8 @@
     function goTo(i){
       if(!playlist.length)return;
       busy=true; gen++; const my=gen;
+      reconnectTries=0;
+      clearRadioTimers();
       index=((i%playlist.length)+playlist.length)%playlist.length;
       const track=playlist[index];
       titleEl.textContent=track.title||("آهنگ "+(index+1));
@@ -408,24 +492,137 @@
       if(!running) running=true;
       playUrl(my, currentUrlList[0], currentUrlList.length===1);
     }
-function next(){if(!busy)goTo(index+1)}
+    function next(){if(!busy)goTo(index+1)}
     function prev(){if(!busy)goTo(index-1)}
-    audio.addEventListener("ended",()=>{if(running){busy=false;next()}});
-    audio.addEventListener("error",()=>{if(!running)return;status("خطا؛ بعدی...",true);disc.classList.remove("spin");setTimeout(()=>{busy=false;next()},700)});
-    audio.addEventListener("timeupdate",()=>{
-      const d=audio.duration,c=audio.currentTime;
-      barEl.style.width=(d&&isFinite(d)?(c/d)*100:0)+"%";
-      curEl.textContent=fmt(c); durEl.textContent=fmt(d);
+
+    // استریم زنده: ended را مثل قطع شدن موقت بگیر و وصل مجدد کن (نه پرش به آهنگ بعد)
+    audio.addEventListener("ended",()=>{
+      if(!running) return;
+      if(currentStation && (currentStation.id==="national" || (playlist[index]&&/\.m3u8/i.test(String((playlist[index].url||"")))))){
+        softReconnect("ended");
+        return;
+      }
+      busy=false; next();
     });
-    audio.addEventListener("playing",()=>{btnPlay.textContent="⏸";disc.classList.add("spin");status("");busy=false});
+    audio.addEventListener("error",()=>{
+      if(!running)return;
+      // برای زنده: reconnect به‌جای پرش سریع
+      if(playlist[index] && /\.m3u8/i.test(String((playlist[index].url||"")+(Array.isArray(playlist[index].urls)?playlist[index].urls.join(""):"")))){
+        softReconnect("audio error");
+        return;
+      }
+      status("خطا؛ بعدی...",true); disc.classList.remove("spin");
+      setTimeout(()=>{busy=false;next()},700);
+    });
+    audio.addEventListener("waiting",()=>{
+      if(!running) return;
+      markProgress();
+      if(stallTimer) clearTimeout(stallTimer);
+      stallTimer=setTimeout(function(){
+        if(!running) return;
+        if(audio.paused || audio.readyState<3){
+          softReconnect("stall");
+        }
+      }, 12000);
+    });
+    audio.addEventListener("stalled",()=>{
+      if(!running) return;
+      if(stallTimer) clearTimeout(stallTimer);
+      stallTimer=setTimeout(function(){
+        if(running) softReconnect("stalled");
+      }, 10000);
+    });
+    audio.addEventListener("timeupdate",()=>{
+      markProgress();
+      const d=audio.duration,c=audio.currentTime;
+      // برای زنده duration اغلب Infinity است
+      if(d&&isFinite(d)&&d>0){
+        barEl.style.width=((c/d)*100)+"%";
+        durEl.textContent=fmt(d);
+      } else {
+        barEl.style.width="100%";
+        durEl.textContent="زنده";
+      }
+      curEl.textContent=fmt(c);
+    });
+    audio.addEventListener("playing",()=>{
+      btnPlay.textContent="⏸";
+      disc.classList.add("spin");
+      status("● پخش زنده");
+      busy=false;
+      markProgress();
+      startWatchdog();
+    });
+    audio.addEventListener("pause",()=>{
+      // اگر کاربر عمداً pause کرده running=false است؛ اگر سیستم pause کرده، تلاش برای ادامه
+      if(running && !busy){
+        setTimeout(function(){
+          if(!running) return;
+          if(audio.paused){
+            const p=audio.play();
+            if(p&&p.catch) p.catch(function(){ softReconnect("resume fail"); });
+          }
+        }, 800);
+      }
+    });
+
+    // برگشت از پس‌زمینه / سوئیچ اپ: پخش را از سر بگیر
+    document.addEventListener("visibilitychange", function(){
+      if(document.visibilityState!=="visible") return;
+      if(!running||!playlist.length) return;
+      setTimeout(function(){
+        if(!running) return;
+        if(audio.paused || audio.readyState<2){
+          softReconnect("بازگشت به برنامه");
+        } else {
+          const p=audio.play();
+          if(p&&p.catch) p.catch(function(){ softReconnect("play after visible"); });
+        }
+      }, 400);
+    });
+    window.addEventListener("pageshow", function(){
+      if(!running||!playlist.length) return;
+      setTimeout(function(){
+        if(running && (audio.paused||audio.readyState<2)) softReconnect("pageshow");
+      }, 300);
+    });
+    // بعضی وب‌ویوها با freeze/resume
+    try{
+      document.addEventListener("resume", function(){
+        if(running) softReconnect("resume");
+      });
+    }catch(e){}
+
     btnPlay.addEventListener("click",()=>{
       if(!playlist.length){status("لیست خالی است",true);return}
-      if(!running){running=true;if(!audio.src)goTo(index);else audio.play().then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin")}).catch(()=>goTo(index))}
-      else if(audio.paused){audio.play().then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin")}).catch(()=>{})}
-      else{audio.pause();running=false;btnPlay.textContent="▶";disc.classList.remove("spin")}
+      if(!running){
+        running=true; reconnectTries=0;
+        if(!audio.src && !radioHls) goTo(index);
+        else {
+          const p=audio.play();
+          if(p&&p.then){
+            p.then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin");status("● پخش زنده");startWatchdog()})
+             .catch(()=>goTo(index));
+          } else goTo(index);
+        }
+      } else if(audio.paused){
+        const p=audio.play();
+        if(p&&p.then){
+          p.then(()=>{btnPlay.textContent="⏸";disc.classList.add("spin");startWatchdog()})
+           .catch(()=>softReconnect("unpause"));
+        }
+      } else {
+        // توقف عمدی کاربر
+        running=false;
+        clearRadioTimers();
+        try{audio.pause()}catch(e){}
+        btnPlay.textContent="▶";
+        disc.classList.remove("spin");
+        status("متوقف شد");
+      }
     });
-    document.getElementById("btnNext").addEventListener("click",()=>{running=true;busy=false;next()});
-    document.getElementById("btnPrev").addEventListener("click",()=>{running=true;busy=false;prev()});
+    document.getElementById("btnNext").addEventListener("click",()=>{running=true;busy=false;reconnectTries=0;next()});
+    document.getElementById("btnPrev").addEventListener("click",()=>{running=true;busy=false;reconnectTries=0;prev()});
     document.getElementById("progress").addEventListener("click",(e)=>{
       if(!audio.duration||!isFinite(audio.duration))return;
       const r=e.currentTarget.getBoundingClientRect();
