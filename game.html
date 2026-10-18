@@ -9,10 +9,10 @@
 <title>مکعب‌لند — بازی سه‌بعدی</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;
+  html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#5eb3e8;
     font-family:system-ui,"Segoe UI",Tahoma,sans-serif;user-select:none;
-    touch-action:none}
-  canvas{display:block;touch-action:none;width:100%;height:100%}
+    touch-action:none;position:fixed;inset:0;margin:0}
+  canvas{display:block;touch-action:none;position:fixed;inset:0;width:100%!important;height:100%!important;z-index:1}
 
   #hud{position:fixed;inset:0;pointer-events:none;z-index:10}
 
@@ -296,7 +296,8 @@ function ensureChunk(cx,cz){
   return ch;
 }
 
-const chunkMaterial=new THREE.MeshLambertMaterial({vertexColors:true});
+const chunkMaterial=new THREE.MeshLambertMaterial({vertexColors:true, side:THREE.FrontSide});
+chunkMaterial.vertexColors=true;
 function makeLocalGetter(ch){
   const b=ch.blocks,ox=ch.cx*CHUNK,oz=ch.cz*CHUNK;
   return (lx,ly,lz)=>{
@@ -385,13 +386,13 @@ try{
   document.getElementById('start').innerHTML='<h1>WebGL لازم است</h1><p>مرورگر از گرافیک سه‌بعدی پشتیبانی نمی‌کند.</p>';
   throw e;
 }
-renderer.setSize(innerWidth,innerHeight,false);
+renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=false;
 document.body.appendChild(renderer.domElement);
 
-const hemi=new THREE.HemisphereLight(0xffffff,0x6b8f4f,1.05); scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xfff2d0,1.15); sun.position.set(60,100,40); scene.add(sun);
-const ambient=new THREE.AmbientLight(0xffffff,0.22); scene.add(ambient);
+const hemi=new THREE.HemisphereLight(0xffffff,0x7a9e5a,1.25); scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff5e0,1.4); sun.position.set(60,100,40); scene.add(sun);
+const ambient=new THREE.AmbientLight(0xffffff,0.45); scene.add(ambient);
 
 const highlight=new THREE.LineSegments(
   new THREE.EdgesGeometry(new THREE.BoxGeometry(1.01,1.01,1.01)),
@@ -438,7 +439,7 @@ document.getElementById('btnFs').addEventListener('click', e=>{e.stopPropagation
 const player={
   pos:new THREE.Vector3(0.5,20,0.5),
   vel:new THREE.Vector3(0,0,0),
-  yaw:0, pitch:0,
+  yaw:0, pitch:-0.35,
   height:1.7, eye:1.55, radius:0.32,
   onGround:false,
 };
@@ -844,7 +845,8 @@ function loop(now){
   fpsAcc+=dt; fpsCount++; fpsTimer+=dt;
   if(fpsTimer>0.5){
     const fps=Math.round(fpsCount/fpsAcc);
-    statsEl.textContent=`${fps} FPS · ${chunks.size} chunks`;
+    let mc=0; for(const ch of chunks.values()) if(ch.mesh) mc++;
+    statsEl.textContent=`${fps} FPS · ${mc}/${chunks.size} mesh`;
     fpsAcc=0; fpsCount=0; fpsTimer=0;
   }
 }
@@ -861,20 +863,79 @@ function onResize(){
   const w=innerWidth, h=innerHeight;
   camera.aspect=w/h;
   camera.updateProjectionMatrix();
-  renderer.setSize(w,h,false);
+  renderer.setSize(w,h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, preset.pixelRatio));
 }
 addEventListener('resize', onResize);
 addEventListener('orientationchange', ()=>setTimeout(onResize, 200));
 
 applyPreset('balanced');
-for(let dx=-2;dx<=2;dx++)
-  for(let dz=-2;dz<=2;dz++)
-    ensureChunk(dx,dz);
-respawn();
-for(const ch of chunks.values()) if(ch.dirty) rebuildChunkMesh(ch);
-meshBudget=1;
+
+function buildSpawnWorld(){
+  // شعاع بیشتر برای اسپان
+  for(let dx=-3;dx<=3;dx++)
+    for(let dz=-3;dz<=3;dz++)
+      ensureChunk(dx,dz);
+  respawn();
+  // همه چانک‌های کثیف را همین الان بساز (نه بودجه‌دار)
+  const list=[...chunks.values()].filter(c=>c.dirty);
+  for(const ch of list){
+    try{ rebuildChunkMesh(ch); }catch(e){ console.error('mesh', ch.cx, ch.cz, e); }
+  }
+  // اگر هنوز مشی ساخته نشد دوباره تلاش کن
+  let meshes=0;
+  for(const ch of chunks.values()) if(ch.mesh) meshes++;
+  return meshes;
+}
+
+let spawnMeshes = buildSpawnWorld();
+meshBudget=2;
+
+function forceResize(){
+  const w=Math.max(1, window.innerWidth||document.documentElement.clientWidth||320);
+  const h=Math.max(1, window.innerHeight||document.documentElement.clientHeight||480);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, preset.pixelRatio));
+  const c=renderer.domElement;
+  c.style.width='100%';
+  c.style.height='100%';
+  c.style.position='fixed';
+  c.style.inset='0';
+  c.style.zIndex='1';
+}
+
+forceResize();
+
+// بعد از شروع بازی دوباره resize + در صورت نیاز بازسازی
+const _prevStart = window.__startGame;
+window.__startGame = function(){
+  if(_prevStart) _prevStart();
+  forceResize();
+  if(spawnMeshes<3){
+    spawnMeshes = buildSpawnWorld();
+  }
+  // یک فریم رندر فوری
+  try{
+    updateHighlight();
+    streamChunks();
+    renderer.render(scene,camera);
+  }catch(e){ console.error(e); }
+};
+
 requestAnimationFrame(loop);
+// چند فریم اول حتماً دنیا را بسازد
+let bootFrames=0;
+const bootId=setInterval(function(){
+  bootFrames++;
+  forceResize();
+  streamChunks();
+  try{ renderer.render(scene,camera); }catch(e){}
+  let meshes=0;
+  for(const ch of chunks.values()) if(ch.mesh) meshes++;
+  if(meshes>=5 || bootFrames>30) clearInterval(bootId);
+}, 100);
 </script>
 </body>
 </html>
