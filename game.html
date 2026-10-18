@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>مکعب‌لند — بازی سه‌بعدی بهینه</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;
+    font-family:system-ui,"Segoe UI",Tahoma,sans-serif;user-select:none}
+  canvas{display:block;touch-action:none}
+
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:10}
+
+  /* نشانگر مرکز صفحه */
+  #cross{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:.85}
+  #cross::before,#cross::after{content:"";position:absolute;background:#fff;
+    box-shadow:0 0 3px rgba(0,0,0,.8);border-radius:2px}
+  #cross::before{left:50%;top:0;width:2px;height:100%;margin-left:-1px}
+  #cross::after{top:50%;left:0;height:2px;width:100%;margin-top:-1px}
+
+  /* نوار بالا */
+  #topbar{position:absolute;top:10px;right:10px;left:10px;display:flex;gap:8px;
+    align-items:center;flex-wrap:wrap;pointer-events:none}
+  .pill{pointer-events:auto;background:rgba(15,25,40,.62);backdrop-filter:blur(8px);
+    color:#eaf4ff;border:1px solid rgba(255,255,255,.16);border-radius:12px;
+    padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .pill:hover{background:rgba(30,60,100,.8)}
+  .pill.on{background:linear-gradient(135deg,#31c46b,#1f9e52);border-color:#7bffb0;color:#03220f}
+  #stats{margin-inline-start:auto;font-size:12px;color:#dff0ff;opacity:.85;
+    background:rgba(15,25,40,.55);padding:6px 12px;border-radius:12px;direction:ltr}
+
+  /* نوار انتخاب بلوک */
+  #hotbar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+    display:flex;gap:6px;pointer-events:auto;background:rgba(15,25,40,.5);
+    padding:7px;border-radius:16px;backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.13)}
+  .slot{width:46px;height:46px;border-radius:11px;border:2px solid rgba(255,255,255,.22);
+    cursor:pointer;display:flex;align-items:flex-end;justify-content:center;
+    position:relative;transition:.12s;overflow:hidden}
+  .slot span{font-size:9px;color:#fff;text-shadow:0 1px 3px #000;padding-bottom:2px;
+    font-weight:700;pointer-events:none}
+  .slot.on{border-color:#fff;transform:translateY(-5px) scale(1.07);
+    box-shadow:0 6px 18px rgba(0,0,0,.45)}
+
+  /* صفحه شروع */
+  #start{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;text-align:center;
+    background:radial-gradient(circle at 50% 35%,#3aa0e8,#0b2b4a 75%);
+    color:#fff;padding:24px;cursor:pointer}
+  #start h1{font-size:clamp(26px,6vw,46px);letter-spacing:-1px;
+    text-shadow:0 4px 22px rgba(0,0,0,.5)}
+  #start p{max-width:520px;line-height:2;font-size:clamp(13px,3.4vw,16px);opacity:.92}
+  #start .go{margin-top:6px;background:linear-gradient(135deg,#45d47c,#1f9e52);
+    color:#03220f;font-weight:800;padding:14px 42px;border-radius:14px;font-size:18px;
+    box-shadow:0 10px 32px rgba(70,220,130,.4)}
+  kbd{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+    border-radius:6px;padding:2px 7px;font-family:inherit;font-size:.9em}
+
+  /* کنترل لمسی */
+  #touch{display:none}
+  #stick{position:fixed;bottom:96px;right:18px;width:140px;height:140px;border-radius:50%;
+    background:rgba(15,25,40,.42);border:2px solid rgba(255,255,255,.24);
+    z-index:20;touch-action:none}
+  #knob{position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;
+    background:rgba(255,255,255,.75);transform:translate(-50%,-50%);
+    box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  .tbtn{position:fixed;width:72px;height:72px;border-radius:50%;z-index:20;
+    background:rgba(15,25,40,.55);border:2px solid rgba(255,255,255,.24);
+    color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;
+    justify-content:center;touch-action:none}
+  #btnJump{bottom:110px;left:26px}
+  #btnBreak{bottom:196px;left:26px;width:58px;height:58px;font-size:22px}
+  #btnPlace{bottom:196px;left:104px;width:58px;height:58px;font-size:22px}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div id="cross"></div>
+  <div id="topbar">
+    <button class="pill" data-q="battery">🔋 باتری</button>
+    <button class="pill on" data-q="balanced">⚖️ متعادل</button>
+    <button class="pill" data-q="ultra">✨ کیفیت بالا</button>
+    <div id="stats">-- FPS</div>
+  </div>
+  <div id="hotbar"></div>
+</div>
+
+<div id="touch">
+  <div id="stick"><div id="knob"></div></div>
+  <div class="tbtn" id="btnJump">پرش</div>
+  <div class="tbtn" id="btnBreak">⛏</div>
+  <div class="tbtn" id="btnPlace">🧱</div>
+</div>
+
+<div id="start">
+  <h1>🌍 مکعب‌لند</h1>
+  <p>
+    <b>حرکت:</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> —
+    <b>پرش:</b> <kbd>Space</kbd> — <b>دویدن:</b> <kbd>Shift</kbd><br>
+    <b>شکستن بلوک:</b> کلیک چپ — <b>گذاشتن بلوک:</b> کلیک راست<br>
+    <b>انتخاب بلوک:</b> کلیدهای <kbd>1</kbd> تا <kbd>8</kbd> یا کلیک روی نوار پایین
+  </p>
+  <div class="go">شروع بازی</div>
+</div>
+
+<script type="module">
+/* لودر چند CDN برای three — اگر unpkg قطع بود از jsdelivr استفاده می‌شود */
+const THREE_URLS = [
+  "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "https://esm.sh/three@0.160.0",
+];
+let THREE = null;
+let loadErr = null;
+for (const u of THREE_URLS) {
+  try {
+    THREE = await import(u);
+    if (THREE && (THREE.WebGLRenderer || THREE.default?.WebGLRenderer)) {
+      if (THREE.default && !THREE.WebGLRenderer) THREE = THREE.default;
+      break;
+    }
+  } catch (e) {
+    loadErr = e;
+    THREE = null;
+  }
+}
+if (!THREE) {
+  document.getElementById("start").innerHTML =
+    "<h1>خطا</h1><p>بارگذاری موتور سه‌بعدی ممکن نشد. اینترنت را چک کنید و صفحه را دوباره باز کنید.</p>";
+  throw loadErr || new Error("three.js failed");
+}
+
+/* رنگ‌ها را دست‌نخورده نگه می‌داریم تا پالت کودکانه دقیقاً همان چیزی باشد که می‌خواهیم */
+THREE.ColorManagement.enabled = false;
+
+/* ============================================================
+   ۱) ثابت‌های دنیا و بلوک‌ها
+   ============================================================ */
+const CHUNK  = 16;     // عرض/عمق هر چانک
+const HEIGHT = 48;     // ارتفاع ستون دنیا
+const AIR = 0;
+
+const GRASS=1, DIRT=2, STONE=3, SAND=4, LOG=5, LEAVES=6, BRICK=7, GLOW=8;
+
+/* هر بلوک سه رنگ دارد: رویه، پهلو، زیره — همین باعث می‌شود چمن «چمن» دیده شود */
+const BLOCKS = {
+  [GRASS ]: { top:0x8ddb4f, side:0x6fb03c, bottom:0x7a5230, label:'چمن',  css:'#8ddb4f' },
+  [DIRT  ]: { top:0x8a5c34, side:0x7a5230, bottom:0x6b4729, label:'خاک',  css:'#7a5230' },
+  [STONE ]: { top:0xa2a2a2, side:0x8d8d8d, bottom:0x7d7d7d, label:'سنگ',  css:'#8d8d8d' },
+  [SAND  ]: { top:0xf5e6ad, side:0xe9d79a, bottom:0xdcc98c, label:'شن',   css:'#e9d79a' },
+  [LOG   ]: { top:0xc09a5e, side:0x6b4a2b, bottom:0xc09a5e, label:'چوب',  css:'#6b4a2b' },
+  [LEAVES]: { top:0x54b34a, side:0x43993e, bottom:0x3a8a37, label:'برگ',  css:'#43993e' },
+  [BRICK ]: { top:0xd25a44, side:0xb84a38, bottom:0xa04232, label:'آجر',  css:'#c05040' },
+  [GLOW  ]: { top:0xfff3a8, side:0xffe27a, bottom:0xffd86a, label:'نور',  css:'#ffe27a' },
+};
+
+/* شش وجه مکعب با نرمال و ۴ گوشه به ترتیب پادساعتگرد (برای نرمال رو به بیرون) */
+const FACES = [
+  { n:[ 1,0,0], v:[[1,0,0],[1,1,0],[1,1,1],[1,0,1]], k:'side'   },
+  { n:[-1,0,0], v:[[0,0,1],[0,1,1],[0,1,0],[0,0,0]], k:'side'   },
+  { n:[0, 1,0], v:[[0,1,0],[0,1,1],[1,1,1],[1,1,0]], k:'top'    },
+  { n:[0,-1,0], v:[[0,0,1],[0,0,0],[1,0,0],[1,0,1]], k:'bottom' },
+  { n:[0,0, 1], v:[[0,0,1],[1,0,1],[1,1,1],[0,1,1]], k:'side'   },
+  { n:[0,0,-1], v:[[1,0,0],[0,0,0],[0,1,0],[1,1,0]], k:'side'   },
+];
+
+/* ============================================================
+   ۲) نویز قطعی (بدون کتابخانه) برای تولید زمین
+   ============================================================ */
+function hash2(x, y, seed = 1337){
+  let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(seed, 1442695041);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+}
+function valueNoise(x, y){
+  const x0 = Math.floor(x), y0 = Math.floor(y);
+  const fx = x - x0, fy = y - y0;
+  const sx = fx*fx*(3-2*fx), sy = fy*fy*(3-2*fy);
+  const n00 = hash2(x0, y0),     n10 = hash2(x0+1, y0);
+  const n01 = hash2(x0, y0+1),   n11 = hash2(x0+1, y0+1);
+  const a = n00 + (n10 - n00) * sx;
+  const b = n01 + (n11 - n01) * sx;
+  return a + (b - a) * sy;
+}
+function fbm(x, y){
+  let v = 0, amp = 0.5, f = 1;
+  for (let i = 0; i < 4; i++){ v += valueNoise(x*f, y*f) * amp; f *= 2; amp *= 0.5; }
+  return v;
+}
+function terrainHeight(wx, wz){
+  const a = fbm(wx * 0.030, wz * 0.030);          // تپه‌های ریز
+  const b = fbm(wx * 0.008 + 100, wz * 0.008 + 100); // کوه‌های بزرگ
+  return Math.floor(5 + a * 10 + b * 21);          // ~ ۵ تا ۳۶
+}
+
+/* ============================================================
+   ۳) ذخیره‌سازی چانک‌ها
+   ============================================================ */
+const chunks = new Map();                 // "cx,cz" -> { cx, cz, blocks, mesh, dirty }
+const ckey   = (cx, cz) => cx + ',' + cz;
+const idx    = (x, y, z) => x + CHUNK * (z + CHUNK * y);
+
+function getBlock(wx, wy, wz){
+  if (wy < 0) return STONE;               // کف دنیا
+  if (wy >= HEIGHT) return AIR;
+  const cx = Math.floor(wx / CHUNK), cz = Math.floor(wz / CHUNK);
+  const ch = chunks.get(ckey(cx, cz));
+  if (!ch) return AIR;
+  return ch.blocks[idx(wx - cx*CHUNK, wy, wz - cz*CHUNK)];
+}
+function setBlock(wx, wy, wz, val){
+  if (wy < 0 || wy >= HEIGHT) return false;
+  const cx = Math.floor(wx / CHUNK), cz = Math.floor(wz / CHUNK);
+  const ch = chunks.get(ckey(cx, cz));
+  if (!ch) return false;
+  ch.blocks[idx(wx - cx*CHUNK, wy, wz - cz*CHUNK)] = val;
+  ch.dirty = true;
+  /* اگر بلوک روی مرز بود، چانک مجاور هم باید بازسازی شود */
+  const lx = wx - cx*CHUNK, lz = wz - cz*CHUNK;
+  const mark = (dx, dz) => { const n = chunks.get(ckey(cx+dx, cz+dz)); if (n) n.dirty = true; };
+  if (lx === 0)      mark(-1, 0);
+  if (lx === CHUNK-1) mark( 1, 0);
+  if (lz === 0)      mark(0, -1);
+  if (lz === CHUNK-1) mark(0,  1);
+  return true;
+}
+
+/* ============================================================
+   ۴) تولید زمین
+   ============================================================ */
+function generateChunk(cx, cz){
+  const blocks = new Uint8Array(CHUNK * CHUNK * HEIGHT);
+
+  for (let lx = 0; lx < CHUNK; lx++){
+    for (let lz = 0; lz < CHUNK; lz++){
+      const wx = cx*CHUNK + lx, wz = cz*CHUNK + lz;
+      const h  = Math.min(HEIGHT - 10, terrainHeight(wx, wz));
+      for (let y = 0; y <= h; y++){
+        let t = STONE;
+        if (y === h)          t = h <= 9 ? SAND : (h >= 28 ? GLOW : GRASS);
+        else if (y > h - 4)   t = h <= 9 ? SAND : DIRT;
+        blocks[idx(lx, y, lz)] = t;
+      }
+    }
+  }
+
+  /* درخت‌ها — فقط کامل داخل چانک (تا از مرز بیرون نزنند) */
+  for (let lx = 2; lx < CHUNK - 2; lx++){
+    for (let lz = 2; lz < CHUNK - 2; lz++){
+      const wx = cx*CHUNK + lx, wz = cz*CHUNK + lz;
+      const h  = terrainHeight(wx, wz);
+      if (h <= 9 || h >= 28) continue;
+      if (hash2(wx * 7 + 3, wz * 13 + 5) < 0.988) continue;
+
+      const trunk = 4 + Math.floor(hash2(wx + 11, wz + 11) * 3);
+      const top   = h + trunk;
+      if (top + 2 >= HEIGHT) continue;
+
+      for (let i = 1; i <= trunk; i++) blocks[idx(lx, h + i, lz)] = LOG;
+
+      for (let dy = -1; dy <= 2; dy++){
+        const r = dy <= 0 ? 2 : 1;
+        for (let dx = -r; dx <= r; dx++){
+          for (let dz = -r; dz <= r; dz++){
+            if (Math.abs(dx) === r && Math.abs(dz) === r && dy > 0) continue;
+            const bx = lx+dx, by = top+dy, bz = lz+dz;
+            if (bx < 0 || bx >= CHUNK || bz < 0 || bz >= CHUNK || by < 0 || by >= HEIGHT) continue;
+            if (blocks[idx(bx, by, bz)] === AIR) blocks[idx(bx, by, bz)] = LEAVES;
+          }
+        }
+      }
+    }
+  }
+
+  return { cx, cz, blocks, mesh: null, dirty: true };
+}
+
+function ensureChunk(cx, cz){
+  const k = ckey(cx, cz);
+  let ch = chunks.get(k);
+  if (!ch){ ch = generateChunk(cx, cz); chunks.set(k, ch); }
+  return ch;
+}
+
+/* ============================================================
+   ۵) ساخت مش چانک با «AO ساختگی» (سایه‌ی گوشه‌ها) — کلید زیبایی
+   ============================================================ */
+const chunkMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+
+function makeLocalGetter(ch){
+  const b = ch.blocks, ox = ch.cx * CHUNK, oz = ch.cz * CHUNK;
+  return (lx, ly, lz) => {
+    if (ly < 0) return STONE;
+    if (ly >= HEIGHT) return AIR;
+    if (lx >= 0 && lx < CHUNK && lz >= 0 && lz < CHUNK) return b[idx(lx, ly, lz)];
+    return getBlock(ox + lx, ly, oz + lz);
+  };
+}
+
+const AO_LEVELS = [1.0, 0.86, 0.73, 0.60];
+
+function buildChunkGeometry(ch){
+  const pos = [], nor = [], col = [], ind = [];
+  const get = makeLocalGetter(ch);
+  let vi = 0;
+
+  for (let y = 0; y < HEIGHT; y++){
+    for (let z = 0; z < CHUNK; z++){
+      for (let x = 0; x < CHUNK; x++){
+        const type = ch.blocks[idx(x, y, z)];
+        if (type === AIR) continue;
+        const def = BLOCKS[type];
+
+        for (let fi = 0; fi < 6; fi++){
+          const f = FACES[fi];
+          const n = f.n;
+          /* فقط وجه‌هایی که رو به هوا هستند ساخته می‌شوند = حذف ~۹۰٪ مثلث‌های پنهان */
+          if (get(x + n[0], y + n[1], z + n[2]) !== AIR) continue;
+
+          const hex = def[f.k];
+          const r = ((hex >> 16) & 255) / 255;
+          const g = ((hex >>  8) & 255) / 255;
+          const b = ( hex        & 255) / 255;
+
+          const na = n[0] !== 0 ? 0 : (n[1] !== 0 ? 1 : 2);
+          const t1 = na === 0 ? 1 : 0;
+          const t2 = na === 2 ? 1 : 2;
+          const n0 = n[0], n1 = n[1], n2 = n[2];
+
+          for (let k = 0; k < 4; k++){
+            const v  = f.v[k];
+            const d1 = v[t1] * 2 - 1;
+            const d2 = v[t2] * 2 - 1;
+
+            /* سه همسایه‌ی گوشه‌ای که می‌توانند این رأس را تاریک کنند */
+            const ax1 = n0 + (t1 === 0 ? d1 : 0), ay1 = n1 + (t1 === 1 ? d1 : 0), az1 = n2 + (t1 === 2 ? d1 : 0);
+            const ax2 = n0 + (t2 === 0 ? d2 : 0), ay2 = n1 + (t2 === 1 ? d2 : 0), az2 = n2 + (t2 === 2 ? d2 : 0);
+            const ax3 = n0 + (t1 === 0 ? d1 : 0) + (t2 === 0 ? d2 : 0),
+                  ay3 = n1 + (t1 === 1 ? d1 : 0) + (t2 === 1 ? d2 : 0),
+                  az3 = n2 + (t1 === 2 ? d1 : 0) + (t2 === 2 ? d2 : 0);
+
+            const s1 = get(x+ax1, y+ay1, z+az1) !== AIR ? 1 : 0;
+            const s2 = get(x+ax2, y+ay2, z+az2) !== AIR ? 1 : 0;
+            const s3 = get(x+ax3, y+ay3, z+az3) !== AIR ? 1 : 0;
+            const ao = (s1 && s2) ? 3 : (s1 + s2 + s3);
+            const br = AO_LEVELS[ao];
+
+            pos.push(x + v[0], y + v[1], z + v[2]);
+            nor.push(n0, n1, n2);
+            col.push(r * br, g * br, b * br);
+          }
+          ind.push(vi, vi+1, vi+2, vi, vi+2, vi+3);
+          vi += 4;
+        }
+      }
+    }
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal',   new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute('color',    new THREE.Float32BufferAttribute(col, 3));
+  geo.setIndex(ind);
+  geo.computeBoundingSphere();
+  return geo;
+}
+
+function rebuildChunkMesh(ch){
+  /* قبل از مش‌سازی مطمئن می‌شویم داده‌ی ۴ همسایه وجود دارد تا وجه‌های مرزی درست حذف شوند */
+  ensureChunk(ch.cx+1, ch.cz); ensureChunk(ch.cx-1, ch.cz);
+  ensureChunk(ch.cx, ch.cz+1); ensureChunk(ch.cx, ch.cz-1);
+
+  const geo = buildChunkGeometry(ch);
+  if (ch.mesh){
+    ch.mesh.geometry.dispose();
+    ch.mesh.geometry = geo;
+  } else {
+    ch.mesh = new THREE.Mesh(geo, chunkMaterial);
+    ch.mesh.position.set(ch.cx * CHUNK, 0, ch.cz * CHUNK);
+    ch.mesh.castShadow    = false;
+    ch.mesh.receiveShadow = false;
+    scene.add(ch.mesh);
+  }
+  ch.dirty = false;
+}
+
+/* ============================================================
+   ۶) صحنه، دوربین، رندرر
+   ============================================================ */
+const scene = new THREE.Scene();
+const SKY = 0x8fd3ff;
+scene.background = new THREE.Color(SKY);
+scene.fog = new THREE.Fog(SKY, 40, 90);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 400);
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: 'default',   // اجازه می‌دهد سیستم کارت کم‌مصرف را انتخاب کند
+  stencil: false,
+  depth: true,
+});
+} catch (e) {
+  document.getElementById('start').style.display = 'flex';
+  document.getElementById('start').innerHTML = '<h1>WebGL لازم است</h1><p>این دستگاه یا مرورگر از گرافیک سه‌بعدی پشتیبانی نمی‌کند. از Chrome یا مرورگر به‌روز گوشی استفاده کنید.</p>';
+  throw e;
+}
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = false;
+document.body.appendChild(renderer.domElement);
+
+/* نورپردازی ارزان: یک半球 + یک جهت‌دار (بدون سایه در حالت پیش‌فرض) */
+const hemi = new THREE.HemisphereLight(0xffffff, 0x6b8f4f, 1.05);
+scene.add(hemi);
+
+const sun = new THREE.DirectionalLight(0xfff2d0, 1.15);
+sun.position.set(60, 100, 40);
+scene.add(sun);
+
+const ambient = new THREE.AmbientLight(0xffffff, 0.22);
+scene.add(ambient);
+
+/* باکس هایلایت بلوکی که نشانه گرفته‌ایم */
+const highlight = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.002, 1.002, 1.002)),
+  new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 })
+);
+highlight.visible = false;
+scene.add(highlight);
+
+/* ============================================================
+   ۷) پروفایل‌های کیفیت / مصرف باتری
+   ============================================================ */
+const PRESETS = {
+  battery:  { pixelRatio: 0.85, radius: 3, maxFPS: 30, shadows: false, fogFar: 56  },
+  balanced: { pixelRatio: 1.25, radius: 4, maxFPS: 60, shadows: false, fogFar: 76  },
+  ultra:    { pixelRatio: 2.00, radius: 5, maxFPS: 60, shadows: true,  fogFar: 100 },
+};
+let presetName = 'balanced';
+let preset = PRESETS[presetName];
+
+function applyPreset(name){
+  presetName = name;
+  preset = PRESETS[name];
+
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, preset.pixelRatio));
+
+  scene.fog.near = preset.radius * CHUNK * 0.55;
+  scene.fog.far  = preset.fogFar;
+  camera.far     = preset.fogFar + 40;
+  camera.updateProjectionMatrix();
+
+  renderer.shadowMap.enabled = preset.shadows;
+  sun.castShadow = preset.shadows;
+  if (preset.shadows){
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.left = -45; sun.shadow.camera.right = 45;
+    sun.shadow.camera.top  =  45; sun.shadow.camera.bottom = -45;
+    sun.shadow.camera.far = 220;
+    sun.shadow.bias = -0.0008;
+    sun.shadow.camera.updateProjectionMatrix();
+  }
+
+  /* اجبار به بازسازی چانک‌ها با شعاع جدید */
+  for (const ch of chunks.values()) ch.dirty = true;
+
+  document.querySelectorAll('[data-q]').forEach(b =>
+    b.classList.toggle('on', b.dataset.q === name));
+}
+
+document.querySelectorAll('[data-q]').forEach(btn => {
+  btn.addEventListener('click', e => { e.stopPropagation(); applyPreset(btn.dataset.q); });
+});
+
+/* ============================================================
+   ۸) بازیکن و فیزیک
+   ============================================================ */
+const player = {
+  pos: new THREE.Vector3(0, 40, 0),
+  vel: new THREE.Vector3(),
+  yaw: 0,
+  pitch: 0,
+  onGround: false,
+  radius: 0.32,
+  height: 1.72,
+  eye: 1.58,
+};
+
+function collides(x, y, z){
+  const r = player.radius;
+  const minX = Math.floor(x - r), maxX = Math.floor(x + r);
+  const minY = Math.floor(y),     maxY = Math.floor(y + player.height - 1e-4);
+  const minZ = Math.floor(z - r), maxZ = Math.floor(z + r);
+  for (let bx = minX; bx <= maxX; bx++)
+    for (let by = minY; by <= maxY; by++)
+      for (let bz = minZ; bz <= maxZ; bz++)
+        if (getBlock(bx, by, bz) !== AIR) return true;
+  return false;
+}
+
+const keys = Object.create(null);
+let touchMoveX = 0, touchMoveY = 0;
+let wantJump = false;
+
+function updatePlayer(dt){
+  /* --- ورودی جهت --- */
+  let fwd = 0, side = 0;
+  if (keys['KeyW'] || keys['ArrowUp'])    fwd += 1;
+  if (keys['KeyS'] || keys['ArrowDown'])  fwd -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) side += 1;
+  if (keys['KeyA'] || keys['ArrowLeft'])  side -= 1;
+
+  fwd  -= touchMoveY;
+  side += touchMoveX;
+
+  const len = Math.hypot(fwd, side);
+  if (len > 1){ fwd /= len; side /= len; }
+
+  const sprint = (keys['ShiftLeft'] || keys['ShiftRight']) ? 1.75 : 1;
+  const speed  = 4.6 * sprint;
+
+  const sinY = Math.sin(player.yaw), cosY = Math.cos(player.yaw);
+  /* جهت جلو در صفحه XZ بر اساس yaw دوربین */
+  const wishX = (-sinY * fwd) + (cosY * side);
+  const wishZ = (-cosY * fwd) - (sinY * side);
+
+  /* شتاب/اصطکاک نرم برای حس خوب */
+  const accel = player.onGround ? 14 : 5;
+  player.vel.x += (wishX * speed - player.vel.x) * Math.min(1, accel * dt);
+  player.vel.z += (wishZ * speed - player.vel.z) * Math.min(1, accel * dt);
+
+  /* --- پرش --- */
+  if ((keys['Space'] || wantJump) && player.onGround){
+    player.vel.y = 8.6;
+    player.onGround = false;
+  }
+  wantJump = false;
+
+  /* --- گرانش --- */
+  player.vel.y -= 27 * dt;
+  if (player.vel.y < -50) player.vel.y = -50;
+
+  /* --- حرکت محور به محور + برخورد --- */
+  const p = player.pos;
+
+  p.x += player.vel.x * dt;
+  if (collides(p.x, p.y, p.z)){ p.x -= player.vel.x * dt; player.vel.x = 0; }
+
+  p.z += player.vel.z * dt;
+  if (collides(p.x, p.y, p.z)){ p.z -= player.vel.z * dt; player.vel.z = 0; }
+
+  p.y += player.vel.y * dt;
+  if (collides(p.x, p.y, p.z)){
+    p.y -= player.vel.y * dt;
+    player.onGround = player.vel.y < 0;
+    player.vel.y = 0;
+  } else {
+    player.onGround = false;
+  }
+
+  /* اگر به‌خاطر باگ از دنیا افتاد، برگردان */
+  if (p.y < -8) respawn();
+
+  /* --- دوربین --- */
+  camera.position.set(p.x, p.y + player.eye, p.z);
+  camera.rotation.set(0, 0, 0);
+  camera.rotateY(player.yaw);
+  camera.rotateX(player.pitch);
+
+  /* نور خورشید را دنبال بازیکن نگه دار تا سایه‌ها همیشه معتبر باشند */
+  sun.position.set(p.x + 55, p.y + 95, p.z + 40);
+  sun.target.position.set(p.x, p.y, p.z);
+  sun.target.updateMatrixWorld();
+}
+
+function respawn(){
+  const h = terrainHeight(0, 0);
+  player.pos.set(0.5, h + 2.2, 0.5);
+  player.vel.set(0, 0, 0);
+}
+
+/* ============================================================
+   ۹) ری‌کست ووکسل (DDA) برای انتخاب بلوک
+   ============================================================ */
+const _dir = new THREE.Vector3();
+function raycastVoxel(maxDist = 6.5){
+  camera.getWorldDirection(_dir);
+  const o = camera.position;
+
+  let x = Math.floor(o.x), y = Math.floor(o.y), z = Math.floor(o.z);
+  const stepX = Math.sign(_dir.x), stepY = Math.sign(_dir.y), stepZ = Math.sign(_dir.z);
+
+  const tDeltaX = stepX !== 0 ? Math.abs(1 / _dir.x) : Infinity;
+  const tDeltaY = stepY !== 0 ? Math.abs(1 / _dir.y) : Infinity;
+  const tDeltaZ = stepZ !== 0 ? Math.abs(1 / _dir.z) : Infinity;
+
+  let tMaxX = stepX !== 0 ? ((stepX > 0 ? Math.floor(o.x) + 1 - o.x : Math.floor(o.x) - o.x) / _dir.x) : Infinity;
+  let tMaxY = stepY !== 0 ? ((stepY > 0 ? Math.floor(o.y) + 1 - o.y : Math.floor(o.y) - o.y) / _dir.y) : Infinity;
+  let tMaxZ = stepZ !== 0 ? ((stepZ > 0 ? Math.floor(o.z) + 1 - o.z : Math.floor(o.z) - o.z) / _dir.z) : Infinity;
+
+  let nx = 0, ny = 0, nz = 0, t = 0;
+
+  for (let i = 0; i < 64; i++){
+    if (getBlock(x, y, z) !== AIR && getBlock(x, y, z) !== 0){
+      return { x, y, z, nx, ny, nz };
+    }
+    if (tMaxX < tMaxY && tMaxX < tMaxZ){
+      t = tMaxX; x += stepX; tMaxX += tDeltaX; nx = -stepX; ny = 0; nz = 0;
+    } else if (tMaxY < tMaxZ){
+      t = tMaxY; y += stepY; tMaxY += tDeltaY; nx = 0; ny = -stepY; nz = 0;
+    } else {
+      t = tMaxZ; z += stepZ; tMaxZ += tDeltaZ; nx = 0; ny = 0; nz = -stepZ;
+    }
+    if (t > maxDist) break;
+  }
+  return null;
+}
+
+function updateHighlight(){
+  const hit = raycastVoxel();
+  if (hit){
+    highlight.visible = true;
+    highlight.position.set(hit.x + 0.5, hit.y + 0.5, hit.z + 0.5);
+    return hit;
+  }
+  highlight.visible = false;
+  return null;
+}
+
+/* ============================================================
+   ۱۰) شکستن / گذاشتن بلوک + انتخاب بلوک
+   ============================================================ */
+let selectedType = GRASS;
+
+function breakBlock(){
+  const hit = updateHighlight();
+  if (!hit) return;
+  if (hit.y <= 0) return;                    // کف دنیا را نشکن
+  setBlock(hit.x, hit.y, hit.z, AIR);
+  sfxPop(320);
+}
+
+function placeBlock(){
+  const hit = updateHighlight();
+  if (!hit) return;
+  const px = hit.x + hit.nx, py = hit.y + hit.ny, pz = hit.z + hit.nz;
+
+  /* نباید داخل بدن بازیکن قرار بگیرد */
+  const r = player.radius + 0.02;
+  const pminX = player.pos.x - r, pmaxX = player.pos.x + r;
+  const pminY = player.pos.y,     pmaxY = player.pos.y + player.height;
+  const pminZ = player.pos.z - r, pmaxZ = player.pos.z + r;
+  if (px + 1 > pminX && px < pmaxX &&
+      py + 1 > pminY && py < pmaxY &&
+      pz + 1 > pminZ && pz < pmaxZ) return;
+
+  setBlock(px, py, pz, selectedType);
+  sfxPop(520);
+}
+
+/* --- صدای کوچک رویه‌ای (بدون فایل صوتی) --- */
+let actx = null;
+function sfxPop(freq = 400){
+  try{
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(freq, actx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(freq * 0.6, actx.currentTime + 0.09);
+    g.gain.setValueAtTime(0.06, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.11);
+    o.connect(g).connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.12);
+  } catch(_){ /* صدا اختیاری است */ }
+}
+
+/* --- نوار انتخاب بلوک --- */
+const hotbar = document.getElementById('hotbar');
+const TYPE_LIST = [GRASS, DIRT, STONE, SAND, LOG, LEAVES, BRICK, GLOW];
+TYPE_LIST.forEach((t, i) => {
+  const def = BLOCKS[t];
+  const el = document.createElement('div');
+  el.className = 'slot' + (i === 0 ? ' on' : '');
+  el.style.background = `linear-gradient(160deg, ${def.css}, ${shade(def.css, -30)})`;
+  el.innerHTML = `<span>${def.label}</span>`;
+  el.addEventListener('click', () => selectType(t));
+  el.dataset.type = t;
+  hotbar.appendChild(el);
+});
+function shade(hex, amt){
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, Math.min(255, (n >> 16) + amt));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amt));
+  const b = Math.max(0, Math.min(255, (n & 255) + amt));
+  return `rgb(${r},${g},${b})`;
+}
+function selectType(t){
+  selectedType = t;
+  document.querySelectorAll('.slot').forEach(s =>
+    s.classList.toggle('on', +s.dataset.type === t));
+}
+
+/* ============================================================
+   ۱۱) مدیریت چانک‌ها در حلقه‌ی بازی
+   ============================================================ */
+let meshBudget = 2;
+
+function streamChunks(){
+  const pcx = Math.floor(player.pos.x / CHUNK);
+  const pcz = Math.floor(player.pos.z / CHUNK);
+  const R = preset.radius;
+
+  /* --- ۱) اطمینان از وجود داده‌ی چانک‌های نزدیک --- */
+  for (let dx = -R; dx <= R; dx++){
+    for (let dz = -R; dz <= R; dz++){
+      if (dx*dx + dz*dz > (R + 0.5) * (R + 0.5)) continue;
+      ensureChunk(pcx + dx, pcz + dz);
+    }
+  }
+
+  /* --- ۲) آزادسازی چانک‌های دور --- */
+  for (const [k, ch] of chunks){
+    if (Math.abs(ch.cx - pcx) > R + 1 || Math.abs(ch.cz - pcz) > R + 1){
+      if (ch.mesh){
+        scene.remove(ch.mesh);
+        ch.mesh.geometry.dispose();     // آزادسازی حافظه‌ی GPU — مهم برای موبایل
+        ch.mesh = null;
+      }
+      chunks.delete(k);
+    }
+  }
+
+  /* --- ۳) ساخت/بازسازی مش‌ها با بودجه‌ی محدود در هر فریم --- */
+  const queue = [];
+  for (const ch of chunks.values()){
+    if (!ch.dirty) continue;
+    const dx = ch.cx - pcx, dz = ch.cz - pcz;
+    if (dx*dx + dz*dz > (R + 0.5) * (R + 0.5)) continue;
+    queue.push([dx*dx + dz*dz, ch]);
+  }
+  if (!queue.length) return;
+  queue.sort((a, b) => a[0] - b[0]);
+
+  let built = 0;
+  for (const [, ch] of queue){
+    if (built >= meshBudget) break;
+    rebuildChunkMesh(ch);
+    built++;
+  }
+}
+
+/* ============================================================
+   ۱۲) ورودی‌ها
+   ============================================================ */
+const canvas = renderer.domElement;
+
+/* --- صفحه‌کلید --- */
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'Space') e.preventDefault();
+  if (e.code >= 'Digit1' && e.code <= 'Digit8'){
+    const t = TYPE_LIST[+e.code.slice(5) - 1];
+    if (t) selectType(t);
+  }
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+
+/* --- ماوس --- */
+canvas.addEventListener('mousedown', e => {
+  if (document.pointerLockElement !== canvas) return;
+  if (e.button === 0) breakBlock();
+  if (e.button === 2) placeBlock();
+});
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+/* --- چرخ ماوس = تغییر بلوک --- */
+addEventListener('wheel', e => {
+  const i = TYPE_LIST.indexOf(selectedType);
+  const n = (i + (e.deltaY > 0 ? 1 : -1) + TYPE_LIST.length) % TYPE_LIST.length;
+  selectType(TYPE_LIST[n]);
+}, { passive: true });
+
+/* --- قفل اشاره‌گر --- */
+const startOverlay = document.getElementById('start');
+const isTouch = matchMedia('(pointer: coarse)').matches
+  || matchMedia('(hover: none)').matches
+  || (('ontouchstart' in window) && (navigator.maxTouchPoints || 0) > 0)
+  || Math.min(innerWidth, innerHeight) < 700;
+
+startOverlay.addEventListener('click', () => {
+  startOverlay.style.display = 'none';
+  if (isTouch){
+    document.getElementById('touch').style.display = 'block';
+  } else {
+    try {
+      const p = canvas.requestPointerLock && canvas.requestPointerLock();
+      if (p && p.catch) p.catch(() => {});
+    } catch (_) {}
+  }
+  // فوکوس canvas برای کیبورد
+  try { canvas.focus(); } catch (_) {}
+});
+
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement === canvas){
+    startOverlay.style.display = 'none';
+  } else if (!isTouch){
+    startOverlay.style.display = 'flex';
+    for (const k in keys) keys[k] = false;
+  }
+});
+
+document.addEventListener('mousemove', e => {
+  if (document.pointerLockElement !== canvas) return;
+  player.yaw   -= e.movementX * 0.0024;
+  player.pitch -= e.movementY * 0.0024;
+  player.pitch = Math.max(-1.54, Math.min(1.54, player.pitch));
+});
+
+/* ============================================================
+   ۱۳) کنترل لمسی
+   ============================================================ */
+if (isTouch){
+  const stick = document.getElementById('stick');
+  const knob  = document.getElementById('knob');
+  let stickId = null;
+
+  const setKnob = (dx, dy) => {
+    knob.style.transform = `translate(calc(-50% + ${dx * 38}px), calc(-50% + ${dy * 38}px))`;
+  };
+  const readStick = e => {
+    const r = stick.getBoundingClientRect();
+    let dx = (e.clientX - r.left - r.width / 2) / (r.width / 2);
+    let dy = (e.clientY - r.top - r.height / 2) / (r.height / 2);
+    const l = Math.hypot(dx, dy);
+    if (l > 1){ dx /= l; dy /= l; }
+    touchMoveX = dx;
+    touchMoveY = dy;
+    setKnob(dx, dy);
+  };
+
+  stick.addEventListener('pointerdown', e => {
+    stickId = e.pointerId;
+    stick.setPointerCapture(e.pointerId);
+    readStick(e);
+  });
+  stick.addEventListener('pointermove', e => {
+    if (e.pointerId === stickId) readStick(e);
+  });
+  const endStick = e => {
+    if (e.pointerId !== stickId) return;
+    stickId = null;
+    touchMoveX = touchMoveY = 0;
+    setKnob(0, 0);
+  };
+  stick.addEventListener('pointerup', endStick);
+  stick.addEventListener('pointercancel', endStick);
+
+  /* کشیدن روی صفحه = چرخش دوربین */
+  let lookId = null, lastX = 0, lastY = 0;
+  canvas.addEventListener('pointerdown', e => {
+    if (lookId !== null) return;
+    lookId = e.pointerId; lastX = e.clientX; lastY = e.clientY;
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (e.pointerId !== lookId) return;
+    player.yaw   -= (e.clientX - lastX) * 0.006;
+    player.pitch -= (e.clientY - lastY) * 0.006;
+    player.pitch = Math.max(-1.54, Math.min(1.54, player.pitch));
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  const endLook = e => { if (e.pointerId === lookId) lookId = null; };
+  canvas.addEventListener('pointerup', endLook);
+  canvas.addEventListener('pointercancel', endLook);
+
+  document.getElementById('btnJump').addEventListener('pointerdown', e => {
+    e.preventDefault(); wantJump = true;
+  });
+  document.getElementById('btnBreak').addEventListener('pointerdown', e => {
+    e.preventDefault(); breakBlock();
+  });
+  document.getElementById('btnPlace').addEventListener('pointerdown', e => {
+    e.preventDefault(); placeBlock();
+  });
+}
+
+/* ============================================================
+   ۱۴) حلقه‌ی اصلی + محدودکننده‌ی FPS (صرفه‌جویی باتری)
+   ============================================================ */
+const statsEl = document.getElementById('stats');
+let lastTime = performance.now();
+let lastRender = 0;
+let running = true;
+let fpsAcc = 0, fpsCount = 0, fpsTimer = 0;
+
+function loop(now){
+  if (!running) return;
+  requestAnimationFrame(loop);
+
+  const rawDt = Math.min(0.1, (now - lastTime) / 1000);
+  lastTime = now;
+
+  /* فیزیک با dt واقعی و ارزان */
+  updatePlayer(rawDt);
+
+  /* رندر محدودشده — اگر از سقف FPS گذشتیم، فریم را رد می‌کنیم */
+  const frameBudget = 1000 / preset.maxFPS;
+  if (now - lastRender < frameBudget - 1) return;
+  const dt = (now - lastRender) / 1000;
+  lastRender = now;
+
+  updateHighlight();
+  streamChunks();
+  renderer.render(scene, camera);
+
+  /* نمایش FPS */
+  fpsAcc += dt; fpsCount++;
+  fpsTimer += dt;
+  if (fpsTimer > 0.5){
+    const fps = Math.round(fpsCount / fpsAcc);
+    statsEl.textContent = `${fps} FPS · ${chunks.size} chunks`;
+    fpsAcc = 0; fpsCount = 0; fpsTimer = 0;
+  }
+}
+
+/* توقف کامل وقتی تب پنهان است = بزرگ‌ترین صرفه‌جویی باتری */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){
+    running = false;
+  } else if (!running){
+    running = true;
+    lastTime = performance.now();
+    lastRender = 0;
+    requestAnimationFrame(loop);
+  }
+});
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, preset.pixelRatio));
+});
+
+/* ============================================================
+   ۱۵) راه‌اندازی
+   ============================================================ */
+applyPreset('balanced');
+
+/* چانک‌های اطراف نقطه‌ی تولد را از قبل بساز تا بازیکن در هوا نیفتد */
+for (let dx = -2; dx <= 2; dx++)
+  for (let dz = -2; dz <= 2; dz++)
+    ensureChunk(dx, dz);
+
+respawn();
+/* یک‌بار همه‌چیز را در جای خود قرار بده */
+for (const ch of chunks.values()) if (ch.dirty) rebuildChunkMesh(ch);
+meshBudget = 1;
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
