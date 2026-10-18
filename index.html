@@ -96,6 +96,8 @@
     .tv-title{font-weight:700;font-size:1.05rem;margin-bottom:8px}
     .tv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
     .chip{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:8px 12px;font-size:.82rem;cursor:pointer}
+    .btn-bg{width:100%;margin-top:12px;border:1px solid rgba(0,206,201,.35);background:linear-gradient(135deg,rgba(0,206,201,.18),rgba(139,124,255,.18));color:var(--text);border-radius:14px;padding:12px 14px;font-size:.9rem;font-weight:700;cursor:pointer}
+    .btn-bg small{display:block;font-weight:500;opacity:.75;margin-top:4px;font-size:.72rem}
     .chip.active{background:linear-gradient(135deg,#8b7cff,#6c5ce7);border-color:transparent}}
     .quality-wrap .lab{color:var(--muted);font-size:.78rem;margin-left:4px}
   
@@ -153,7 +155,10 @@
             <button class="btn" id="btnNext">⏭</button>
           </div>
           <div class="status" id="status"></div>
-          <div class="status" id="playerVer" style="opacity:.55;font-size:.7rem;margin-top:4px">پلیر رادیو v4</div>
+          <button type="button" class="btn-bg" id="btnBgPlay">📲 پخش پایدار در مرورگر گوشی
+            <small>برای بک‌گراند و نوتیفیکیشن — مینی‌اپ بله صدا را قطع می‌کند</small>
+          </button>
+          <div class="status" id="playerVer" style="opacity:.55;font-size:.7rem;margin-top:4px">پلیر رادیو v5</div>
         </div>
       </div>
       <div class="list"><h2>لیست این ایستگاه</h2><div id="tracks"></div></div>
@@ -260,7 +265,7 @@
     let isLiveTrack=false;
     let currentPlayUrl="";
     const MAX_RECONNECT=6;
-    const PLAYER_VER="v4";
+    const PLAYER_VER="v5";
 
     function destroyRadioHls(){if(radioHls){try{radioHls.destroy()}catch(e){} radioHls=null}}
     function clearRadioTimers(){
@@ -670,6 +675,104 @@
       const r=e.currentTarget.getBoundingClientRect();
       audio.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*audio.duration;
     });
+
+
+    
+    // پخش پایدار: باز کردن همین صفحه در مرورگر سیستم (Chrome/Safari)
+    // WebView بله با خروج از مینی‌اپ صدا را می‌کشد؛ مرورگر سیستم مثل رادیوی گوشی در بک‌گراند می‌ماند.
+    function openSystemBrowserPlayer(){
+      try{
+        const track=playlist[index]||{};
+        const st=currentStation||{};
+        const params=new URLSearchParams();
+        params.set("mode","radio");
+        params.set("bg","1");
+        params.set("autostart","1");
+        if(st.id) params.set("station", st.id);
+        if(track.url) params.set("src", track.url);
+        if(track.title) params.set("title", track.title);
+        const base=location.href.split("#")[0].split("?")[0];
+        const target=base+"?"+params.toString();
+        const wa=(window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp);
+        if(wa && wa.openLink){
+          wa.openLink(target);
+          setStatus("در مرورگر باز شد — آنجا پخش کنید تا در بک‌گراند بماند");
+          return;
+        }
+        const w=window.open(target, "_blank");
+        if(!w){
+          // کپی لینک
+          try{
+            if(navigator.clipboard && navigator.clipboard.writeText){
+              navigator.clipboard.writeText(target);
+              setStatus("لینک کپی شد؛ در Chrome/Safari باز کنید", true);
+            } else {
+              setStatus("این لینک را در مرورگر باز کنید:\\n"+target, true);
+            }
+          }catch(e){
+            setStatus("مرورگر را دستی باز کنید: "+target, true);
+          }
+        } else {
+          setStatus("در مرورگر باز شد — پخش را آنجا شروع کنید");
+        }
+      }catch(e){
+        setStatus("باز کردن مرورگر ممکن نشد", true);
+      }
+    }
+    const btnBg=document.getElementById("btnBgPlay");
+    if(btnBg) btnBg.addEventListener("click", openSystemBrowserPlayer);
+
+    // اگر با ?bg=1&autostart=1 از مرورگر سیستم آمده
+    (function bootBgMode(){
+      try{
+        const q=new URLSearchParams(location.search||"");
+        if(q.get("bg")!=="1") return;
+        // UI ساده‌تر برای حالت مرورگر
+        try{
+          const ver=document.getElementById("playerVer");
+          if(ver) ver.textContent="پلیر پایدار v5 · مرورگر سیستم";
+        }catch(e){}
+        const stId=q.get("station")||"";
+        const src=q.get("src")||"";
+        const title=q.get("title")||"";
+        if(stId && typeof openStation==="function"){
+          // کمی صبر تا STATIONS لود شده باشد
+          setTimeout(function(){
+            try{ openStation(stId); }catch(e){}
+            if(q.get("autostart")==="1"){
+              setTimeout(function(){
+                running=true; userPaused=false;
+                if(src){
+                  // پخش مستقیم همان src
+                  const fake={title:title||"رادیو", url:src, urls:[src]};
+                  // اگر در پلی‌لیست بود index را پیدا کن
+                  let found=-1;
+                  for(let i=0;i<playlist.length;i++){
+                    if(playlist[i].url===src || (playlist[i].urls||[]).indexOf(src)>=0) found=i;
+                  }
+                  if(found>=0) goTo(found);
+                  else {
+                    playlist=playlist.length?playlist:[fake];
+                    if(!playlist.some(t=>t.url===src)) playlist.unshift(fake);
+                    goTo(0);
+                  }
+                } else if(playlist.length){
+                  goTo(0);
+                }
+              }, 500);
+            }
+          }, 300);
+        } else if(src){
+          setTimeout(function(){
+            running=true; userPaused=false;
+            playlist=[{title:title||"رادیو زنده", url:src, urls:[src]}];
+            currentStation={id:"national", title:"رادیو", emoji:"🇮🇷"};
+            show("screenRadioPlayer");
+            goTo(0);
+          }, 400);
+        }
+      }catch(e){}
+    })();
 
 
     // ---- TV ----
