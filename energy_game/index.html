@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>برقی و خانهٔ هوشمند</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
-<script src="https://tapi.bale.ai/miniapp.js" defer onerror="console.warn('bale miniapp.js failed')"></script>
+<script src="https://tapi.bale.ai/miniapp.js" onerror="console.warn('bale miniapp.js failed')"></script>
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;min-height:100%;min-height:100dvh;scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -104,44 +104,100 @@ if(!S||typeof S!=='object')S={};
 S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1},S);
 if(!S.lv||typeof S.lv!=='object')S.lv={};if(!Array.isArray(S.seen))S.seen=[];
 if(S.wk!=wkey()){S.wk=wkey();S.wp=0}
-const W=(window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null;
-function _expandWA(){try{if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}refreshUid()}catch(e){}}
-_expandWA();setTimeout(_expandWA,300);setTimeout(_expandWA,1000);
+function getWA(){
+  try{
+    if(window.Bale&&Bale.WebApp) return Bale.WebApp;
+  }catch(e){}
+  try{
+    if(window.Telegram&&Telegram.WebApp) return Telegram.WebApp;
+  }catch(e){}
+  return null;
+}
+let W=getWA();
+function _expandWA(){
+  try{
+    W=getWA();
+    if(W){
+      try{W.ready&&W.ready()}catch(e){}
+      try{W.expand&&W.expand()}catch(e){}
+      try{if(W.setHeaderColor)W.setHeaderColor('#1c1550')}catch(e){}
+      try{if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}catch(e){}
+    }
+    refreshUid();
+  }catch(e){}
+}
 let uid=0;
+function _uidFromObj(u){
+  if(!u) return 0;
+  const id=u.id!=null?u.id:(u.user_id!=null?u.user_id:0);
+  const n=Number(id);
+  return (n&&n>0)?n:0;
+}
+function _uidFromInitData(raw){
+  if(!raw||typeof raw!=='string') return 0;
+  try{
+    // user={"id":123,...}  یا URL-encoded
+    let m=raw.match(/(?:^|&)user=([^&]+)/);
+    if(m){
+      let js=m[1];
+      try{js=decodeURIComponent(js)}catch(e){}
+      try{
+        const u=JSON.parse(js);
+        const id=_uidFromObj(u);
+        if(id) return id;
+      }catch(e){}
+    }
+    m=raw.match(/"id"\s*:\s*(\d{3,20})/);
+    if(m) return Number(m[1])||0;
+  }catch(e){}
+  return 0;
+}
+function _uidFromLocation(){
+  try{
+    const h=String(location.hash||'')+String(location.search||'');
+    // tgWebAppData=... یا Bale معادل
+    let m=h.match(/(?:tgWebAppData|baleWebAppData)=([^&]+)/i);
+    if(m){
+      let raw='';
+      try{raw=decodeURIComponent(m[1])}catch(e){raw=m[1]}
+      const id=_uidFromInitData(raw);
+      if(id) return id;
+    }
+    m=h.match(/"id"\s*:\s*(\d{3,20})/);
+    if(m) return Number(m[1])||0;
+  }catch(e){}
+  return 0;
+}
 function refreshUid(){
   try{
-    const apps=[W, window.Bale&&Bale.WebApp, window.Telegram&&Telegram.WebApp];
+    W=getWA();
+    const apps=[W, window.Bale&&window.Bale.WebApp, window.Telegram&&window.Telegram.WebApp];
     for(const app of apps){
       if(!app) continue;
       try{
-        const u=app.initDataUnsafe&&app.initDataUnsafe.user;
-        if(u&&u.id){uid=u.id;return uid}
+        const id=_uidFromObj(app.initDataUnsafe&&app.initDataUnsafe.user);
+        if(id){uid=id;return uid}
       }catch(e){}
       try{
-        const raw=app.initData||'';
-        if(raw){
-          let m=raw.match(/user%3D([^&]+)/);
-          let js='';
-          if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}
-          if(!js){m=raw.match(/user=([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}}
-          if(js){
-            try{
-              const u=JSON.parse(js);
-              if(u&&u.id){uid=u.id;return uid}
-            }catch(e){}
-          }
-          m=raw.match(/"id"\s*:\s*(\d{3,20})/);
-          if(m){uid=+m[1];return uid}
-        }
+        const id=_uidFromInitData(app.initData||'');
+        if(id){uid=id;return uid}
       }catch(e){}
     }
+    const loc=_uidFromLocation();
+    if(loc){uid=loc;return uid}
   }catch(e){}
   return uid;
 }
-try{refreshUid()}catch(e){}
-setTimeout(refreshUid,200);
-setTimeout(refreshUid,800);
-setTimeout(refreshUid,2000);
+_expandWA();
+setTimeout(_expandWA,100);
+setTimeout(_expandWA,400);
+setTimeout(_expandWA,1000);
+setTimeout(_expandWA,2500);
+setTimeout(_expandWA,5000);
+try{
+  document.addEventListener('DOMContentLoaded',_expandWA);
+  window.addEventListener('load',_expandWA);
+}catch(e){}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const rpc=(f,b)=>{const h={'Content-Type':'application/json','Accept':'application/json',apikey:SB_KEY};if(SB_KEY.slice(0,3)=='eyJ')h.Authorization='Bearer '+SB_KEY;return fetch(SB_URL+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)}).then(async r=>{let j=null;try{j=await r.json()}catch(e){}if(!r.ok){const err=new Error((j&&(j.message||j.error||j.hint))||('HTTP '+r.status));err.status=r.status;err.body=j;throw err}return j})};
 const sb=()=>{refreshUid();return !!(SB_URL&&SB_KEY&&uid)};
@@ -239,7 +295,18 @@ function duelStart(k,code){
   const priv=!!(code&&String(code).length);
   if(!SB_URL||!SB_KEY){if(priv){say('فایل بازی کلید آنلاین ندارد؛ مالک «دریافت فایل بازی» را دوباره بزند');return}botStart(k);return}
   refreshUid();
-  if(!uid){say('شناسه کاربر بله پیدا نشد. بازی را فقط از دکمه داخل بله باز کن (نه مرورگر).');return}
+  if(!uid){
+    say('در حال دریافت شناسه کاربر…');
+    show('dload');
+    let tries=0;
+    const waitUid=setInterval(()=>{
+      tries++;
+      refreshUid();
+      if(uid){clearInterval(waitUid);duelStart(k,code);return}
+      if(tries>=16){clearInterval(waitUid);say('شناسه کاربر بله پیدا نشد. از دکمه باز کردن بازی داخل ربات وارد شو.');show('duel')}
+    },300);
+    return;
+  }
   DL={kind:k,ph:'wait',t0:Date.now(),sc:0,paid:0,bot:0,priv:priv};
   say(priv?(code==='NEW'?'در حال ساخت اتاق…':'در حال ورود…'):'در حال پیدا کردن حریف…');
   show('dload');
