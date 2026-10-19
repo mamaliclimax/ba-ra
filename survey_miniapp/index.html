@@ -6,6 +6,16 @@
   <meta name="referrer" content="no-referrer" />
   <title>نظرسنجی پویش قرار همدلی</title>
   <script src="https://tapi.bale.ai/miniapp.js"></script>
+  <script>
+    // اگر صفحه بیش از ۸ ثانیه سفید ماند، راهنما نشان بده
+    setTimeout(function(){
+      var w = document.querySelector('.wrap');
+      if (w && w.offsetHeight < 40) {
+        document.body.innerHTML = '<div style="padding:24px;font-family:Tahoma,sans-serif;text-align:center;direction:rtl">' +
+          '<h3>بارگذاری طول کشید</h3><p>لطفاً با دکمه «باز کردن در مرورگر» دوباره وارد شوید یا اینترنت را بررسی کنید.</p></div>';
+      }
+    }, 8000);
+  </script>
   <style>
     :root {
       --bg: #0f172a;
