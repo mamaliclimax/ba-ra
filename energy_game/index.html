@@ -105,14 +105,54 @@ S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,m
 if(!S.lv||typeof S.lv!=='object')S.lv={};if(!Array.isArray(S.seen))S.seen=[];
 if(S.wk!=wkey()){S.wk=wkey();S.wp=0}
 const W=(window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null;
-function _expandWA(){try{if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}}catch(e){}}
+function _expandWA(){try{if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}refreshUid()}catch(e){}}
 _expandWA();setTimeout(_expandWA,300);setTimeout(_expandWA,1000);
 let uid=0;
-function refreshUid(){try{const u=(W&&W.initDataUnsafe&&W.initDataUnsafe.user)||{};if(u.id)uid=u.id}catch(e){}return uid}
+function refreshUid(){
+  try{
+    const apps=[W, window.Bale&&Bale.WebApp, window.Telegram&&Telegram.WebApp];
+    for(const app of apps){
+      if(!app) continue;
+      try{
+        const u=app.initDataUnsafe&&app.initDataUnsafe.user;
+        if(u&&u.id){uid=u.id;return uid}
+      }catch(e){}
+      try{
+        const raw=app.initData||'';
+        if(raw){
+          let m=raw.match(/user%3D([^&]+)/);
+          let js='';
+          if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}
+          if(!js){m=raw.match(/user=([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}}
+          if(js){
+            try{
+              const u=JSON.parse(js);
+              if(u&&u.id){uid=u.id;return uid}
+            }catch(e){}
+          }
+          m=raw.match(/"id"\s*:\s*(\d{3,20})/);
+          if(m){uid=+m[1];return uid}
+        }
+      }catch(e){}
+    }
+  }catch(e){}
+  return uid;
+}
 try{refreshUid()}catch(e){}
+setTimeout(refreshUid,200);
+setTimeout(refreshUid,800);
+setTimeout(refreshUid,2000);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const rpc=(f,b)=>{const h={'Content-Type':'application/json','Accept':'application/json',apikey:SB_KEY};if(SB_KEY.slice(0,3)=='eyJ')h.Authorization='Bearer '+SB_KEY;return fetch(SB_URL+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)}).then(async r=>{let j=null;try{j=await r.json()}catch(e){}if(!r.ok){const err=new Error((j&&(j.message||j.error||j.hint))||('HTTP '+r.status));err.status=r.status;err.body=j;throw err}return j})};
 const sb=()=>{refreshUid();return !!(SB_URL&&SB_KEY&&uid)};
+const onlineWhy=()=>{
+  refreshUid();
+  const miss=[];
+  if(!SB_URL) miss.push('آدرس Supabase داخل فایل بازی خالی است');
+  if(!SB_KEY) miss.push('کلید anon داخل فایل بازی خالی است');
+  if(SB_URL&&SB_KEY&&!uid) miss.push('شناسه کاربر بله خوانده نشد — فقط از دکمه داخل بله باز کنید');
+  return miss;
+};
 let sy;function sync(){clearTimeout(sy);sy=setTimeout(doSync,1500)}function doSync(){if(sb()&&S.p)try{rpc('egame_sync',{p_uid:String(uid),p_f:S.p.f,p_l:S.p.l,p_c:S.p.c,p_pts:S.pts,p_wk:S.wk,p_wp:S.wp}).catch(()=>{})}catch(e){}}
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}sync()}
 let AC;
@@ -190,14 +230,16 @@ post.lb=()=>{if(sb())rpc('egame_top',{p_wk:S.wk}).then(a=>{$('#top').innerHTML=a
 let DL=null;
 const dos=r=>r.me==1?{s:r.s2,f:r.f2}:{s:r.s1,f:r.f1};
 function botStart(k){DL={kind:k,ph:'vs',t0:Date.now(),sc:0,paid:0,bot:1,r:{id:'BOT',kind:k,pub:false,seed:rnd(2e9)+1,me:1,n1:me(),n2:'🤖 رقیب هوشمند',st:'play',s1:0,s2:0,f1:false,f2:false}};show('dvs')}
-function onlineOk(){return sb()}
+function onlineOk(){refreshUid();return !!(SB_URL&&SB_KEY)}
+function onlineReady(){refreshUid();return !!(SB_URL&&SB_KEY&&uid)}
 function duelFail(msg,k,allowBot){DL=null;say(msg||'اتصال برقرار نشد');show('duel');if(allowBot)setTimeout(()=>{try{if(confirm('آنلاین نشد. با رقیب هوشمند تمرین کنیم؟'))botStart(k)}catch(e){botStart(k)}},250)}
 function duelStart(k,code){
   if(DL&&(DL.ph=='wait'||DL.ph=='vs'||DL.ph=='play')){say('یک بازی در حال انجام است');return}
   refreshUid();
   const priv=!!(code&&String(code).length);
-  if(!onlineOk()){if(priv){say('برای اتاق دوستانه جدول آنلاین باید فعال باشد و از بله باز شود 🌐');return}botStart(k);return}
-  if(!uid){say('شناسه کاربر پیدا نشد؛ از داخل بله باز کن');return}
+  if(!SB_URL||!SB_KEY){if(priv){say('فایل بازی کلید آنلاین ندارد؛ مالک «دریافت فایل بازی» را دوباره بزند');return}botStart(k);return}
+  refreshUid();
+  if(!uid){say('شناسه کاربر بله پیدا نشد. بازی را فقط از دکمه داخل بله باز کن (نه مرورگر).');return}
   DL={kind:k,ph:'wait',t0:Date.now(),sc:0,paid:0,bot:0,priv:priv};
   say(priv?(code==='NEW'?'در حال ساخت اتاق…':'در حال ورود…'):'در حال پیدا کردن حریف…');
   show('dload');
@@ -212,7 +254,7 @@ function duelStart(k,code){
   }).catch(e=>{console.error(e);duelFail('خطای سرور: '+(e&&e.message||'اتصال'),k,!priv)})
 }
 V.dload=()=>`<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">⏳</div><h3>لطفاً صبر کن…</h3><p><small>ارتباط با سرور</small></p><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`
-V.duel=()=>{const on=onlineOk();return `<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>${on?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین خاموش است. می‌توانی با رقیب هوشمند تمرین کنی.'}</small></div><div class="grid">${B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')}${B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')}</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div>${on?'':'<p style="color:#ff9aa8;font-size:13px;margin:8px 0 0">برای اتاق دوستانه: SQL بازی را در Supabase اجرا کنید، کلید anon را در ربات بگذارید، سپس «دریافت فایل بازی» را دوباره بزنید.</p>'}</div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>${BK}`};
+V.duel=()=>{const on=onlineOk();return `<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>${on?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین خاموش است. می‌توانی با رقیب هوشمند تمرین کنی.'}</small></div><div class="grid">${B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')}${B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')}</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div>${on?'':`<p style="color:#ff9aa8;font-size:13px;margin:8px 0 0;text-align:right">آنلاین خاموش است:<br>• ${onlineWhy().join('<br>• ')||'تنظیم ناقص'}<br><br>مالک باید: ۱) SQL را اجرا کند ۲) GAME_SUPABASE_ANON_KEY را بگذارد ۳) ربات را Restart کند ۴) «دریافت فایل بازی» را بزند و index.html را روی GitHub جایگزین کند.</p>`}</div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>${BK}`};
 V.dwait=()=>{DL.ph='wait';const x=DL.r||{},showBot=!!x.pub||(Date.now()-(DL.t0||0)>25000);return `<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">${x.pub?'🔍':'🏠'}</div><h3>${x.pub?'در حال پیدا کردن حریف…':'اتاق دوستانه ساخته شد'}</h3>${x.pub?'':`<p>این کد را برای دوستت بفرست:</p><h1 style="letter-spacing:6px;margin:0;user-select:all;-webkit-user-select:all">${esc(x.id)}</h1><p><small>دوستت همین کد را در «ورود با کد» بزند</small></p>`}<p><small>${x.kind=='quiz'?'❓ کوییز دوئل':'🏠 دوئل خانه'} · منتظر ورود حریف</small></p><button class="btn" id="bt" data-a="dbot" style="--c:#b99cff;${showBot?'':'display:none'}">🤖 بازی با رقیب هوشمند</button><br><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`};
 V.dvs=()=>{const x=DL.r,a=x.me==1?[x.n1,x.n2]:[x.n2,x.n1];return `<div class="card vs"><div class="av">${nm(a[0])}</div><b class="vsb">VS</b><div class="av">${nm(a[1])}</div></div><h1 id="cn" style="text-align:center;font-size:84px;margin:0">۳</h1>`};
 post.dvs=()=>{DL.ph='vs';let n=3;const t=setInterval(()=>{if(cur!='dvs'){clearInterval(t);DL=null;return}n--;const e=$('#cn');if(n>0){if(e)e.textContent=fa(n);sfx.tick()}else{clearInterval(t);sfx.win();dgo()}},900)};
