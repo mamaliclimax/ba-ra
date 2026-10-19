@@ -63,6 +63,15 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 .cf{position:fixed;top:-14px;width:9px;height:14px;z-index:9;pointer-events:none;animation:fall 2s linear forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
 .avb{border:3px solid transparent;border-radius:16px;background:#ffffff1c;font-size:30px;padding:2px 6px;margin:2px;cursor:pointer}.avb.on{border-color:var(--y);transform:scale(1.12)}
+
+.mlib{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.mitem{display:flex;gap:10px;align-items:center;background:#ffffff14;border:2px solid #fff3;border-radius:16px;padding:8px;cursor:pointer;text-align:right;width:100%;color:inherit;font:inherit}
+.mitem:active{transform:scale(.98)}
+.mitem img,.mph{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#0004;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px}
+.mitem b{display:block;font-size:14px;line-height:1.4}
+.mitem small{opacity:.75;font-size:11px}
+.mplay{margin-top:8px}
+.mcov{width:100%;max-height:180px;object-fit:cover;border-radius:16px;margin:8px 0;background:#0004}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -72,7 +81,9 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 <script>
 'use strict';
 // ⚙️ این مقادیر را ربات هنگام «دریافت فایل بازی» خودکار پر می‌کند
-const STORY_URL="",ANIM_URL="",SB_URL="",SB_KEY="",NQ=354,QT=20,QD=15,K='barghi1';
+const STORIES=[{"url": "https://media.roozaneh.net/Podcast/Gheseh/Baby%20Story%20_Andaze%20Donya.mp3", "title": "", "cover": ""}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "", "cover": ""}],SB_URL="",SB_KEY="",NQ=354,QT=20,QD=15,K='barghi1';
+// سازگاری با نسخه‌های قدیمی تک‌لینک
+(function(){function norm(a){if(!a)return[];if(typeof a==='string')return a?[{url:a,title:'',cover:''}]:[];if(Array.isArray(a))return a.filter(x=>x&&x.url).map(x=>({url:String(x.url||''),title:String(x.title||''),cover:String(x.cover||'')}));return[]}window.__STORIES=norm(STORIES);window.__ANIMS=norm(ANIMS)})();
 const $=s=>document.querySelector(s),fa=n=>(+n).toLocaleString('fa-IR'),rnd=n=>Math.random()*n|0;
 const AP=[['لامپ رشته‌ای',60],['لامپ ال‌ای‌دی',9],['پنکه',50],['تلویزیون',100],['شارژر موبایل',5],['لپ‌تاپ',65],['یخچال',150],['اتو',1200],['سشوار',1800],['لباسشویی',500],['جاروبرقی',1400],['بخاری برقی',2000],['کولر گازی',1500],['مایکروویو',1000],['کتری برقی',2200],['کنسول بازی',120],['کامپیوتر',250],['پمپ آب',750]];
 const GD=['خاموش کردن چراغ اتاق خالی','درآوردن شارژر از پریز بعد از شارژ','باز کردن پرده در روز به جای چراغ','استفاده از لامپ کم‌مصرف','بستن سریع در یخچال','پر کردن لباسشویی قبل از روشن کردن'];
@@ -120,7 +131,7 @@ const V={},post={},ACT={};let cur,arg,G=null,Q=null,lastOk=0,rot=0;
 function show(n,a){if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;$('#v').innerHTML=V[n](a);$('#h').style.display=n=='reg'||n=='game'||n=='dq'?'none':'';window.scrollTo(0,0);post[n]&&post[n](a);hud();if(MS[n])say(MS[n])}
 V.reg=()=>`<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">${AVS.map((a,i)=>`<button class="avb${i?'':' on'}" data-a="v${i}">${a}</button>`).join('')}</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>`;
 ACT.reg=()=>{const v=i=>$('#'+i).value.replace(/[<>&"'`]/g,'').trim(),f=v('f'),l=v('l'),c=v('c');if(f.length<2||l.length<2||c.length<2){$('#er').textContent='لطفاً نام، نام خانوادگی و شهر را کامل بنویس 🙂';return}S.p={f,l,c,a:av};save();show('home')};
-V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl();return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small></div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',S.ms==today()?'✅ انجام شد':'+۵ امتیاز','#b99cff')}${B('anim','🎬','انیمیشن',S.ma==today()?'✅ انجام شد':'+۵ امتیاز','#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div>`};
+V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small></div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div>`};
 V.map=()=>{let h='<div class="house">';for(let t=0;t<3;t++){h+=`<div class="card"><b>طبقهٔ ${fa(t+1)}</b><div class="g4">`;for(let i=0;i<8;i++){const L=t*8+i,r=R[i],st=S.lv[L]||0,lk=L>0&&!S.lv[L-1];h+=`<button class="lv${lk?' lk':''}" data-a="L${L}" style="--c:${r[2]}"><b>${lk?'🔒':r[1]}</b>${r[0]}<br>${'⭐'.repeat(st)||'·'}</button>`}h+='</div></div>'}return h+'</div>'};
 function play(L,seed){const du=seed!=null;if(du)L=16+seed%8;else if(L>23||L>0&&!S.lv[L-1])return;const r=R[L%8],t=L/8|0,T=du?35:30+t*5,d=r[4].map(i=>({e:D[i][0],nm:D[i][1],w:D[i][2],tip:D[i][3],n:i==6,s:i==6?1:0})),f=d.filter(x=>!x.n),sum=f.reduce((a,x)=>a+x.w,0);f[0].s=2;G={L,t:T,d,E:0,k:0,cb:0,bn:0,du,r:du?mb(seed):Math.random,sp:1.2,iv:du?1:Math.max(.75,2.2-.08*L)*S.ad,pw:du?.5:.3+.1*t,mx:sum*T,cap:sum,m:sum*T*.03,over:0,st:1,h:0};show('game')}
 V.game=()=>{const r=R[G.L%8];return `<div class="bar">${G.du?'':'<button class="chip" data-a="map">🗺️</button>'}<span class="chip">⏱ <b id="t">${fa(G.t)}</b></span><span class="chip">⚡ <b id="w">۰</b> وات</span><span class="chip">✅ <b id="k">۰</b></span>${G.du?'<span class="chip" id="oq">👤 ۰</span>':''}</div><div class="meter"><i id="mb"></i></div><h3 style="text-align:center;margin:6px 0 0">${r[1]} ${r[0]} · ${G.du?'⚔️ دوئل':'مرحلهٔ '+fa(G.L+1)}</h3><div class="sc" style="--w:${r[2]};--fl:${r[3]};--k:${Math.min(.82,(innerWidth-24)/428).toFixed(2)}"><div class="rm"><div class="f bw"></div><div class="f lw"></div><div class="f fl"></div>${G.d.map((d,i)=>`<div class="dv s${d.s}" id="d${i}" style="--x:${P[i][0]}px;--y:${P[i][1]}px;--z:${P[i][2]}px"><u></u><span>${d.e}</span><em>${d.nm}</em></div>`).join('')}</div></div>`};
@@ -144,9 +155,32 @@ setInterval(qtick,250);
 const WV=[1,2,4,10,1,2,1,4],WP=[1,1,1,1,2,2,2,4,4,10];
 V.wheel=()=>{const l=wl();return `<div class="card" style="text-align:center"><h3 style="margin:0">🎡 گردونهٔ شانس</h3><div class="wp">▼</div><div class="wh" id="wh" style="transform:rotate(${rot}deg)">${WV.map((v,i)=>`<b style="transform:rotate(${i*45+22.5}deg) translateY(-84px)">${fa(v)}</b>`).join('')}</div><p id="wm">${l?'امروز '+fa(l)+' بار شانس داری':'امروز شانست تمام شد؛ فردا دوباره بیا 🌙'}</p><button class="btn" data-a="spin" style="--c:#ff9aa8;width:70%"${l?'':' disabled'}>بچرخان!</button>${BK}</div>`};
 ACT.spin=()=>{if(!wl()||cur!='wheel')return;S.wl--;const v=WP[rnd(WP.length)],ix=[];WV.forEach((x,i)=>{if(x==v)ix.push(i)});const a=ix[rnd(ix.length)]*45+22.5;rot+=1440+(((360-a-rot%360)%360)+360)%360;save();$('#wh').style.transform='rotate('+rot+'deg)';$('[data-a=spin]').disabled=true;const tk=setInterval(sfx.tick,250);setTimeout(()=>{clearInterval(tk);add(v);sfx.win();if(cur=='wheel')show('wheel');say(fa(v)+' امتیاز گرفتی! 🎉')},4200)};
-V.media=k=>{const u=k=='s'?STORY_URL:ANIM_URL,done=(k=='s'?S.ms:S.ma)==today(),t=k=='s'?'قصه شب':'انیمیشن';return `<div class="card" style="text-align:center"><div style="font-size:60px">${k=='s'?'🌙':'🎬'}</div><h3 style="margin:0">${t}</h3>${u?(k=='s'?`<audio id="md" src="${esc(u)}" controls style="width:100%"></audio>`:`<video id="md" src="${esc(u)}" controls playsinline style="width:100%;border-radius:16px"></video>`):`<p>لینک ${t} هنوز تنظیم نشده است.</p><button class="btn" data-a="demo" style="--c:#5ec8ff">پخش آزمایشی (۶ ثانیه)</button>`}<p id="mm">${done?'امروز ۵ امتیاز گرفتی ✅':'تا آخر '+(k=='s'?'گوش کن':'تماشا کن')+' و ۵ امتیاز بگیر!'}</p>${BK}</div>`};
+V.media=k=>{
+  if(k&&typeof k==='object'){arg=k;k=k.k||'s'}else{arg={k:k,ix:-1}}
+  const list=k=='s'?(window.__STORIES||[]):(window.__ANIMS||[]);
+  const doneDay=(k=='s'?S.ms:S.ma)==today();
+  const t=k=='s'?'قصه شب':'انیمیشن';
+  const emoji=k=='s'?'🌙':'🎬';
+  const ix=typeof arg==='object'&&arg&&arg.ix!=null?arg.ix:-1;
+  if(ix>=0&&list[ix]){
+    const it=list[ix];
+    const cov=it.cover?`<img class="mcov" src="${esc(it.cover)}" alt="" onerror="this.style.display='none'">`:'';
+    const player=k=='s'
+      ?`<audio id="md" src="${esc(it.url)}" controls style="width:100%"></audio>`
+      :`<video id="md" src="${esc(it.url)}" controls playsinline poster="${esc(it.cover||'')}" style="width:100%;border-radius:16px;background:#000"></video>`;
+    return `<div class="card" style="text-align:center"><div style="font-size:40px">${emoji}</div><h3 style="margin:0">${esc(it.title||t)}</h3>${cov}${player}<p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':'تا آخر '+(k=='s'?'گوش کن':'تماشا کن')+' و ۵ امتیاز بگیر!'}</p><button class="btn" data-a="${k=='s'?'story':'anim'}" style="--c:#b99cff;margin-top:8px">📚 بازگشت به فهرست</button>${BK}</div>`;
+  }
+  if(!list.length){
+    return `<div class="card" style="text-align:center"><div style="font-size:60px">${emoji}</div><h3 style="margin:0">${t}</h3><p>هنوز موردی اضافه نشده است.</p><button class="btn" data-a="demo" style="--c:#5ec8ff">پخش آزمایشی (۶ ثانیه)</button><p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':''}</p>${BK}</div>`;
+  }
+  const items=list.map((it,i)=>{
+    const cov=it.cover?`<img src="${esc(it.cover)}" alt="" onerror="this.outerHTML='<div class=mph>${emoji}</div>'">`:`<div class="mph">${emoji}</div>`;
+    return `<button class="mitem" data-a="mp${k}${i}">${cov}<span style="flex:1;min-width:0"><b>${esc(it.title||(t+' '+(i+1)))}</b><small>${k=='s'?'صوتی':'ویدیو'} · پخش</small></span><span style="font-size:22px">▶️</span></button>`;
+  }).join('');
+  return `<div class="card" style="text-align:center"><div style="font-size:48px">${emoji}</div><h3 style="margin:0">${t}</h3><small>${fa(list.length)} مورد · ${doneDay?'امروز امتیاز گرفتی ✅':'با تماشای کامل ۵ امتیاز'}</small><div class="mlib">${items}</div>${BK}</div>`;
+};
 function done(k){const f=k=='s'?'ms':'ma';if(S[f]==today())return;S[f]=today();add(5);sfx.win();say('۵ امتیاز گرفتی! 🎉');const e=$('#mm');if(e)e.textContent='امروز ۵ امتیاز گرفتی ✅'}
-post.media=k=>{const m=$('#md');if(m){m.onended=()=>done(k);m.ontimeupdate=()=>{if(m.duration&&m.currentTime/m.duration>.9)done(k)}}};
+post.media=k=>{if(k&&typeof k==='object')k=k.k||'s';const m=$('#md');if(m){m.onended=()=>done(k);m.ontimeupdate=()=>{if(m.duration&&m.currentTime/m.duration>.9)done(k)}}};
 ACT.demo=()=>{$('#mm').textContent='در حال پخش آزمایشی…';const k=arg;setTimeout(()=>done(k),6000)};
 V.lb=()=>`<div class="card" style="text-align:center"><h3 style="margin:0">🏆 جدول هفته (شنبه تا جمعه)</h3><p>${S.p.f} ${S.p.l} · ${S.p.c}</p><h1 style="margin:0">${fa(S.wp)} امتیاز</h1><p>مجموع همهٔ امتیازها: ${fa(S.pts)}</p><div id="top">${sb()?'در حال بارگیری…':'جدول همهٔ بچه‌ها فقط داخل بله فعال است.'}</div><p>آخر هفته، نفر اول جایزه می‌گیرد! 🎁</p>${BK}</div>`;
 post.lb=()=>{if(sb())rpc('egame_top',{p_wk:S.wk}).then(a=>{$('#top').innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.p)}</div>`).join('')||'هنوز کسی امتیاز نگرفته؛ اولین نفر تو باش!'}).catch(()=>{$('#top').textContent='اتصال به جدول برقرار نشد.'})};
@@ -173,7 +207,7 @@ V.dlb=k=>`<div class="card"><h3 style="margin:0">🏆 ${k=='quiz'?'جدول کو
 post.dlb=k=>[0,1].forEach(o=>{const e=$('#dl'+o);if(!sb()){e.textContent='فقط داخل بله فعال است.';return}rpc('egame_duel_top',{p_wk:wkey(o),p_kind:k}).then(a=>{e.innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.w)} برد از ${fa(x.g)}</div>`).join('')||'هنوز مسابقه‌ای ثبت نشده'}).catch(()=>{e.textContent='اتصال به جدول برقرار نشد.'})});
 Object.assign(ACT,{duel:()=>show('duel'),dq:()=>duelStart('quiz',''),dh:()=>duelStart('house',''),dnq:()=>duelStart('quiz','NEW'),dnh:()=>duelStart('house','NEW'),dj:()=>{const c=$('#rc').value.trim().toUpperCase();if(c.length<4){say('کد اتاق را بنویس 🙂');return}duelStart('quiz',c)},tq:()=>show('dlb','quiz'),th:()=>show('dlb','house'),dbot:()=>{if(sb())rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});botStart(DL.kind)},dx:()=>{if(DL&&DL.r&&DL.ph=='wait'&&sb())rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});DL=null;show('duel')}});
 Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
 // لمس وسیله‌ها: انتخاب با مختصات روی صفحه (مستقل از hit-test سه‌بعدی مرورگر)
 document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
 function boot(){
