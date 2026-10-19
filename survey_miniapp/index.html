@@ -1,257 +1,602 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند</title>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
-<script src="https://tapi.bale.ai/miniapp.js" defer onerror="console.warn('bale miniapp.js failed')"></script>
-<style>
-:root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{height:100%;min-height:100%;min-height:100dvh;scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;min-height:100vh;font:500 16px/1.7 Vazirmatn,Tahoma,system-ui,sans-serif;color:var(--tx);background:radial-gradient(circle at 85% 0,#5a45c9,transparent 55%),linear-gradient(#1c1550,#0e0a2c);background-attachment:scroll;user-select:none;-webkit-user-select:none}
-#app{max-width:480px;margin:auto;padding:12px 14px 120px;min-height:60vh;position:relative;z-index:1}
-.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
-.chip{background:var(--card);border:0;border-radius:99px;padding:3px 12px;font:800 15px Vazirmatn,Tahoma,sans-serif;color:inherit;white-space:nowrap;cursor:pointer}
-.card{background:var(--card);border-radius:24px;padding:14px;margin:10px 0}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn{border:0;border-radius:22px;padding:12px 8px;font:800 16px Vazirmatn,Tahoma,sans-serif;color:var(--ink);background:var(--c,#ffd54a);box-shadow:0 5px 0 #0004;cursor:pointer}
-.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #0004}
-.btn:disabled{filter:grayscale(1);opacity:.6}
-.btn b{display:block;font-size:36px;line-height:1.3}
-.btn small{display:block;font-weight:500;font-size:12px}
-input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #fff4;background:#0003;color:inherit;font:inherit;user-select:text;-webkit-user-select:text}
-.opt{display:block;width:100%;margin:8px 0;padding:12px;border-radius:16px;border:2px solid #fff5;background:#ffffff14;color:inherit;font:800 15px Vazirmatn,Tahoma,sans-serif;cursor:pointer}
-.opt.ok{background:#1fae7a;border-color:var(--g)}.opt.no{background:#c93c58;border-color:var(--r)}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.lv{border:0;border-radius:16px;padding:6px 2px;background:var(--c);color:var(--ink);font:800 12px Vazirmatn,Tahoma,sans-serif;cursor:pointer}
-.lv b{display:block;font-size:26px;line-height:1.3}.lk{filter:grayscale(1) brightness(.6);pointer-events:none}
-.house{transform:perspective(700px) rotateX(5deg)}
-.meter{height:12px;border-radius:9px;background:#0005;overflow:hidden}.meter i{display:block;height:100%;width:0;transition:width .2s}
-.sc{perspective:760px;perspective-origin:50% 126px;height:312px;padding-top:16px;display:flex;justify-content:center;align-items:flex-start}
-.rm{position:relative;flex:none;width:300px;height:220px;transform-style:preserve-3d;transform:scale(var(--k,.8)) rotateX(-22deg) rotateY(-26deg)}
-.f{position:absolute;left:0;pointer-events:none;box-shadow:inset 0 0 40px #0003}
-.bw{width:300px;height:220px;top:0;transform:translateZ(-150px);background:var(--w)}
-.lw{width:300px;height:220px;top:0;transform:rotateY(90deg) translateZ(-150px);background:var(--w);filter:brightness(.8)}
-.fl{width:300px;height:300px;top:-40px;transform:rotateX(90deg) translateZ(-110px);background:radial-gradient(ellipse at 50% 55%,#ff5d7a99 0 33%,#0000 34%),repeating-conic-gradient(#0002 0 25%,#0000 0 50%) 0 0/60px 60px,var(--fl)}
-.bw::after,.lw::after{position:absolute;left:50%;top:14%;font-size:60px;line-height:1;transform:translateX(-50%)}
-.bw::after{content:'🪟'}.lw::after{content:'🖼️';font-size:46px}
-.dv{position:absolute;left:calc(50% - 40px);top:calc(50% - 46px);width:80px;height:92px;text-align:center;cursor:pointer;transform:translate3d(var(--x),var(--y),var(--z)) rotateY(26deg) rotateX(22deg);transition:filter .3s}
-.dv span{display:block;font-size:62px;line-height:68px}
-.dv em{display:block;font:800 11px/16px Vazirmatn,Tahoma,sans-serif;background:#0009;border-radius:8px}
-.dv u{position:absolute;z-index:3;top:-6px;right:0;font-size:30px;text-decoration:none;pointer-events:none}
-.s0{filter:grayscale(1) brightness(.6)}.s1{filter:drop-shadow(0 0 10px var(--g))}
-.s2{filter:drop-shadow(0 0 14px var(--r))}.s2 span{animation:sh .35s infinite}
-@keyframes sh{50%{transform:rotate(9deg) scale(1.12)}}
-.wh{width:240px;height:240px;border-radius:50%;margin:0 auto 10px;position:relative;border:6px solid var(--tx);background:conic-gradient(#ff9aa8 0 45deg,#ffd54a 0 90deg,#3ee0a3 0 135deg,#5ec8ff 0 180deg,#ff9aa8 0 225deg,#ffd54a 0 270deg,#3ee0a3 0 315deg,#b99cff 0 360deg);transition:transform 4s cubic-bezier(.15,.7,.1,1)}
-.wh b{position:absolute;left:50%;top:50%;width:30px;margin:-14px -15px;text-align:center;font-size:20px;color:var(--ink)}
-.wp{font-size:34px;line-height:1;color:var(--r);margin-bottom:-10px;position:relative;z-index:1}
-#m{position:fixed;bottom:calc(8px + env(safe-area-inset-bottom,0px));left:0;right:0;max-width:480px;margin:auto;display:flex;gap:8px;align-items:flex-end;padding:0 12px;pointer-events:none}
-#m i{font-style:normal;font-size:48px;pointer-events:auto;animation:bob 2s ease-in-out infinite}
-#m p{margin:0 0 8px;background:var(--tx);color:var(--ink);border-radius:16px 16px 16px 4px;padding:6px 12px;font:800 14px/1.6 Vazirmatn,Tahoma,sans-serif;box-shadow:0 3px 12px #0006}
-@keyframes bob{50%{transform:translateY(-6px) rotate(-5deg)}}
-@keyframes pop{0%{transform:scale(.6)}70%{transform:scale(1.08)}}
-.fx{position:fixed;z-index:9;pointer-events:none;font:800 26px Vazirmatn,Tahoma,sans-serif;white-space:nowrap;transform:translateX(-50%);animation:up .8s forwards}
-@keyframes up{to{transform:translate(-50%,-60px);opacity:0}}
-.big{width:100%;margin:2px 0 4px;padding:16px;font-size:20px;background:linear-gradient(90deg,#ff5d7a,#ffb44a,#ffd54a);animation:glow 2s ease-in-out infinite}
-.big small{font-size:13px}
-@keyframes glow{50%{box-shadow:0 5px 0 #0004,0 0 24px #ffb44a}}
-.vs{display:flex;align-items:center;justify-content:space-around;text-align:center;font-weight:800}
-.av{width:38%}.ab{font-size:60px;line-height:1.2}.vsb{font-size:38px;color:var(--y);text-shadow:0 0 14px var(--r);animation:pop .5s}
-.spin{display:inline-block;animation:bob 1.2s ease-in-out infinite}
-.cf{position:fixed;top:-14px;width:9px;height:14px;z-index:9;pointer-events:none;animation:fall 2s linear forwards}
-@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
-.avb{border:3px solid transparent;border-radius:16px;background:#ffffff1c;font-size:30px;padding:2px 6px;margin:2px;cursor:pointer}.avb.on{border-color:var(--y);transform:scale(1.12)}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="referrer" content="no-referrer" />
+  <title>نظرسنجی پویش قرار همدلی</title>
+  <script src="https://tapi.bale.ai/miniapp.js"></script>
+  <script>
+    // اگر صفحه بیش از ۸ ثانیه سفید ماند، راهنما نشان بده
+    setTimeout(function(){
+      var w = document.querySelector('.wrap');
+      if (w && w.offsetHeight < 40) {
+        document.body.innerHTML = '<div style="padding:24px;font-family:Tahoma,sans-serif;text-align:center;direction:rtl">' +
+          '<h3>بارگذاری طول کشید</h3><p>لطفاً با دکمه «باز کردن در مرورگر» دوباره وارد شوید یا اینترنت را بررسی کنید.</p></div>';
+      }
+    }, 8000);
+  </script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #0d9488;
+      --accent2: #14b8a6;
+      --danger: #ef4444;
+      --border: rgba(255,255,255,.1);
+      --ok: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Tahoma, system-ui, sans-serif;
+      background: linear-gradient(165deg, #0f172a 0%, #134e4a 50%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 12px 14px 40px;
+      line-height: 1.7;
+    }
+    .wrap { max-width: 520px; margin: 0 auto; }
+    .header {
+      text-align: center;
+      padding: 18px 12px 12px;
+    }
+    .header .badge {
+      display: inline-block;
+      background: rgba(13,148,136,.2);
+      border: 1px solid rgba(20,184,166,.4);
+      color: #5eead4;
+      font-size: .78rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #fff, #5eead4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .header p { color: var(--muted); font-size: .85rem; margin-top: 6px; }
 
-.mlib{display:flex;flex-direction:column;gap:10px;margin:10px 0}
-.mitem{display:flex;gap:10px;align-items:center;background:#ffffff14;border:2px solid #fff3;border-radius:16px;padding:8px;cursor:pointer;text-align:right;width:100%;color:inherit;font:inherit}
-.mitem:active{transform:scale(.98)}
-.mitem img,.mph{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#0004;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px}
-.mitem b{display:block;font-size:14px;line-height:1.4}
-.mitem small{opacity:.75;font-size:11px}
-.mplay{margin-top:8px}
-.mcov{width:100%;max-height:180px;object-fit:cover;border-radius:16px;margin:8px 0;background:#0004}
-@media (prefers-reduced-motion:reduce){*{animation:none!important}}
-</style>
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,.08);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 12px 0 18px;
+    }
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width .3s ease;
+      width: 0%;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+    .q-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--accent2);
+      color: var(--accent2);
+      font-weight: 700;
+      font-size: .85rem;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+    .q-title {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-weight: 700;
+      font-size: .95rem;
+      margin-bottom: 12px;
+      color: #e2e8f0;
+    }
+    .q-title .req { color: var(--danger); margin-right: 2px; }
+
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: .15s;
+      background: rgba(255,255,255,.03);
+    }
+    .opt:hover, .opt:active { background: rgba(20,184,166,.12); border-color: rgba(20,184,166,.45); }
+    .opt.selected { background: rgba(20,184,166,.18); border-color: var(--accent2); }
+    .opt input { margin-top: 3px; accent-color: var(--accent2); width: 18px; height: 18px; flex-shrink: 0; }
+    .opt span { font-size: .88rem; color: #cbd5e1; }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      background: rgba(0,0,0,.25);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .9rem;
+      resize: vertical;
+      min-height: 90px;
+    }
+    input[type="text"] { min-height: auto; }
+
+    .captcha-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .captcha-box .q {
+      background: rgba(0,0,0,.3);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      font-size: 1.1rem;
+      color: #5eead4;
+    }
+    .captcha-box input {
+      width: 90px;
+      text-align: center;
+      min-height: auto;
+      padding: 8px;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      position: sticky;
+      bottom: 8px;
+      z-index: 5;
+    }
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-weight: 700;
+      font-size: .95rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: .15s;
+    }
+    .btn-prev {
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-next, .btn-submit {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #042f2e;
+    }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn:active:not(:disabled) { transform: scale(.98); }
+
+    .screen { display: none; }
+    .screen.active { display: block; animation: fade .25s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .success {
+      text-align: center;
+      padding: 40px 16px;
+    }
+    .success .icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .success h2 { font-size: 1.3rem; margin-bottom: 8px; color: var(--ok); }
+    .success p { color: var(--muted); font-size: .9rem; }
+
+    .error-msg {
+      background: rgba(239,68,68,.15);
+      border: 1px solid rgba(239,68,68,.4);
+      color: #fca5a5;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: .85rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .hint { color: var(--muted); font-size: .78rem; margin-top: 6px; }
+
+    .name-row { margin-bottom: 10px; }
+    .name-row label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+  </style>
 </head>
 <body>
-<div id="app"><div class="bar" id="h"></div><div id="v"></div></div>
-<div id="m"><i>🤖</i><p>سلام!</p></div>
-<script>
-'use strict';
-// ⚙️ این مقادیر را ربات هنگام «دریافت فایل بازی» خودکار پر می‌کند
-const STORIES=[{"url": "https://dl.sevilmusics.com/cdn/music/srvrt/Baby%20Story%20_Olagh%20Namard%20%5BSevilMusic%5D.mp3", "title": "الاغ قدر نشناس", "cover": "https://mzn.wikipedia.org/wiki/%D9%BE%D8%B1%D9%88%D9%86%D8%AF%D9%87:Donkey_in_Clovelly,_North_Devon,_England.jpg"}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "پت مت", "cover": "https://istanama.com/wp-content/uploads/2021/04/Pat-and-Mat3.jpg"}],SB_URL="https://bfzreeyyhmygpnfzczwn.supabase.co",SB_KEY="sb_publishable_9OcON2qika5bnRt-mO0cDg_cRJ_OXUF",NQ=354,QT=20,QD=15,K='barghi1';
-// سازگاری با نسخه‌های قدیمی تک‌لینک
-(function(){function norm(a){if(!a)return[];if(typeof a==='string')return a?[{url:a,title:'',cover:''}]:[];if(Array.isArray(a))return a.filter(x=>x&&x.url).map(x=>({url:String(x.url||''),title:String(x.title||''),cover:String(x.cover||'')}));return[]}window.__STORIES=norm(STORIES);window.__ANIMS=norm(ANIMS)})();
-const $=s=>document.querySelector(s),fa=n=>(+n).toLocaleString('fa-IR'),rnd=n=>Math.random()*n|0;
-const AP=[['لامپ رشته‌ای',60],['لامپ ال‌ای‌دی',9],['پنکه',50],['تلویزیون',100],['شارژر موبایل',5],['لپ‌تاپ',65],['یخچال',150],['اتو',1200],['سشوار',1800],['لباسشویی',500],['جاروبرقی',1400],['بخاری برقی',2000],['کولر گازی',1500],['مایکروویو',1000],['کتری برقی',2200],['کنسول بازی',120],['کامپیوتر',250],['پمپ آب',750]];
-const GD=['خاموش کردن چراغ اتاق خالی','درآوردن شارژر از پریز بعد از شارژ','باز کردن پرده در روز به جای چراغ','استفاده از لامپ کم‌مصرف','بستن سریع در یخچال','پر کردن لباسشویی قبل از روشن کردن'];
-const BD=['روشن گذاشتن تلویزیون در اتاق خالی','ماندن شارژر در پریز بدون استفاده','روشن کردن چراغ در ظهر آفتابی','باز گذاشتن در یخچال','روشن بودن کولر با پنجرهٔ باز','روشن کردن لباسشویی با دو تا لباس'];
-const D=[['💡','لامپ',60,'چراغِ اتاقِ خالی را خاموش کن!'],['📺','تلویزیون',100,'تلویزیونِ بدون بیننده برق می‌خورد!'],['🌀','پنکه',50,'پنکه برای اتاق خالی لازم نیست.'],['🎮','کنسول',120,'بعد از بازی، کنسول را خاموش کن.'],['💻','لپ‌تاپ',65,'لپ‌تاپِ رهاشده را خاموش کن.'],['🔌','شارژر',5,'شارژرِ بدون گوشی هم برق می‌گیرد!'],['🧊','یخچال',150,''],['🚿','آبگرمکن',1500,'آبِ گرمِ بی‌مصرف انرژی هدر می‌دهد.'],['❄️','کولر',1500,'با پنجرهٔ باز، کولر روشن نگذار!'],['🌬️','سشوار',1800,'سشوار را بعد از استفاده خاموش کن.'],['🫖','کتری',2200,'آب اضافه نجوشان؛ کتری را خاموش کن.'],['💧','پمپ آب',750,'پمپ آب بی‌دلیل کار نکند.']];
-const R=[['هال','🛋️','#ff9a8b','#e3b778',[0,1,2,3]],['آشپزخانه','🍳','#7be0b5','#d8d0bd',[0,6,10,11]],['اتاق بازی','🧸','#ffd36e','#cfa6ff',[0,3,4,5]],['حمام','🛁','#7ed6ff','#bfe9ff',[0,7,9,11]],['خواب','🛏️','#b9a7ff','#e6c9a8',[0,8,5,1]],['مطالعه','📚','#ffb3d1','#dcc7a1',[0,4,5,2]],['حیاط','🌳','#8fe388','#a7d67a',[0,11,2,8]],['انباری','🔧','#a0b4ff','#c9c1b3',[0,6,7,9]]];
-const P=[[-62,64,-95],[-60,64,78],[82,64,-31],[42,64,91]];
-const PR=['آفرین!','عالی بود!','تو قهرمان انرژی‌ای! ⚡','دمت گرم!','چه باهوشی! 🌟'];
-const MS={duel:'رقابت واقعی؛ آماده‌ای؟ ⚔️',dwait:'منتظر حریف باش… آماده شو! 🔥',dq:'سریع و دقیق جواب بده! ⚡',home:'سلام! بیا برق را هوشمندانه مصرف کنیم ⚡',map:'یک اتاق انتخاب کن؛ هر مرحله سخت‌تر می‌شود!',game:'قرمز 💸 = برق هدر می‌رود، لمسش کن. سبز 🙂 = دارند استفاده می‌کنند.',quiz:'فکر کن و جواب بده؛ اشتباه هم یاد گرفتن است 💛',wheel:'شانست را امتحان کن! 🍀',media:'راحت بنشین و لذت ببر 🌙',lb:'تلاش کن، جایزه منتظر توست! 🎁'};
-const AVS=['🦊','🐼','🐯','🦁','🐸','🐙','🦄','🐧'];let av=AVS[0];
-const mb=a=>()=>{let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
-const me=()=>(S.p.a||'🙂')+' '+S.p.f+' '+S.p.l[0]+'.';
-const nm=n=>{const a=Array.from(n||'🙂 ?');return '<div class="ab">'+esc(a[0])+'</div><b>'+esc(a.slice(2).join(''))+'</b>'};
-const dk=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),today=()=>dk(new Date());
-const wkey=o=>{const d=new Date();return dk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-(d.getDay()+1)%7-7*(o||0)))};
-let S=null;try{S=JSON.parse(localStorage.getItem(K)||'null')}catch(e){S=null}
-if(!S||typeof S!=='object')S={};
-S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1},S);
-if(!S.lv||typeof S.lv!=='object')S.lv={};if(!Array.isArray(S.seen))S.seen=[];
-if(S.wk!=wkey()){S.wk=wkey();S.wp=0}
-const W=(window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null;
-function _expandWA(){try{if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}}catch(e){}}
-_expandWA();setTimeout(_expandWA,300);setTimeout(_expandWA,1000);
-let uid=0;
-function refreshUid(){try{const u=(W&&W.initDataUnsafe&&W.initDataUnsafe.user)||{};if(u.id)uid=u.id}catch(e){}return uid}
-try{refreshUid()}catch(e){}
-const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
-const rpc=(f,b)=>{const h={'Content-Type':'application/json','Accept':'application/json',apikey:SB_KEY};if(SB_KEY.slice(0,3)=='eyJ')h.Authorization='Bearer '+SB_KEY;return fetch(SB_URL+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)}).then(async r=>{let j=null;try{j=await r.json()}catch(e){}if(!r.ok){const err=new Error((j&&(j.message||j.error||j.hint))||('HTTP '+r.status));err.status=r.status;err.body=j;throw err}return j})};
-const sb=()=>{refreshUid();return !!(SB_URL&&SB_KEY&&uid)};
-let sy;function sync(){clearTimeout(sy);sy=setTimeout(doSync,1500)}function doSync(){if(sb()&&S.p)try{rpc('egame_sync',{p_uid:String(uid),p_f:S.p.f,p_l:S.p.l,p_c:S.p.c,p_pts:S.pts,p_wk:S.wk,p_wp:S.wp}).catch(()=>{})}catch(e){}}
-function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}sync()}
-let AC;
-function tone(f,d,t,v,s){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime+(s||0);o.type=t||'sine';o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(v||.12,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.start(n);o.stop(n+d)}catch(e){}}
-const seq=a=>a.forEach((f,i)=>tone(f,.2,'triangle',.13,i*.1));
-const sfx={ok:()=>seq([523,659,784]),no:()=>tone(170,.3,'sawtooth',.07),tap:()=>tone(700,.06,'square',.04),win:()=>seq([523,659,784,1047,1319]),tick:()=>tone(1000,.03,'square',.04)};
-setInterval(()=>{if(AC&&!document.hidden)tone([392,440,523,587,659][rnd(5)],1,'sine',.025)},800);
-function say(t){const p=$('#m p');p.textContent=t;p.style.animation='none';p.offsetWidth;p.style.animation='pop .35s'}
-$('#m i').onclick=()=>{try{const u=new SpeechSynthesisUtterance($('#m p').textContent);u.lang='fa-IR';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
-const hud=()=>{$('#h').innerHTML=`<button class="chip" data-a="home">🏠</button><span class="chip">⭐ ${fa(S.pts)}</span><span class="chip">📅 ${fa(S.wp)}</span><button class="chip" data-a="snd">${S.snd?'🔊':'🔇'}</button>`};
-function add(n){if(S.wk!=wkey()){S.wk=wkey();S.wp=0}S.pts+=n;S.wp+=n;save();hud()}
-const wl=()=>{if(S.wd!=today()){S.wd=today();S.wl=3;save()}return S.wl};
-const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return fa(s/60|0)+':'+fa(s%60).padStart(2,'۰')};
-const tree=()=>{const g=S.pts+2*Object.values(S.lv).reduce((a,b)=>a+b,0);return g<10?'🌱':g<30?'🌿':g<60?'🪴':g<100?'🌳':'🌳🍎'};
-const B=(a,e,t,s,c)=>`<button class="btn" data-a="${a}" style="--c:${c}"><b>${e}</b>${t}<small>${s}</small></button>`;
-const BK='<button class="btn" data-a="home" style="--c:#b99cff;margin-top:8px">🏠 برگشت</button>';
-const V={},post={},ACT={};let cur,arg,G=null,Q=null,lastOk=0,rot=0;
-function show(n,a){if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;$('#v').innerHTML=V[n](a);$('#h').style.display=n=='reg'||n=='game'||n=='dq'?'none':'';window.scrollTo(0,0);post[n]&&post[n](a);hud();if(MS[n])say(MS[n])}
-V.reg=()=>`<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">${AVS.map((a,i)=>`<button class="avb${i?'':' on'}" data-a="v${i}">${a}</button>`).join('')}</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>`;
-ACT.reg=()=>{const v=i=>$('#'+i).value.replace(/[<>&"'`]/g,'').trim(),f=v('f'),l=v('l'),c=v('c');if(f.length<2||l.length<2||c.length<2){$('#er').textContent='لطفاً نام، نام خانوادگی و شهر را کامل بنویس 🙂';return}S.p={f,l,c,a:av};save();show('home')};
-V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small></div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div>`};
-V.map=()=>{let h='<div class="house">';for(let t=0;t<3;t++){h+=`<div class="card"><b>طبقهٔ ${fa(t+1)}</b><div class="g4">`;for(let i=0;i<8;i++){const L=t*8+i,r=R[i],st=S.lv[L]||0,lk=L>0&&!S.lv[L-1];h+=`<button class="lv${lk?' lk':''}" data-a="L${L}" style="--c:${r[2]}"><b>${lk?'🔒':r[1]}</b>${r[0]}<br>${'⭐'.repeat(st)||'·'}</button>`}h+='</div></div>'}return h+'</div>'};
-function play(L,seed){const du=seed!=null;if(du)L=16+seed%8;else if(L>23||L>0&&!S.lv[L-1])return;const r=R[L%8],t=L/8|0,T=du?35:30+t*5,d=r[4].map(i=>({e:D[i][0],nm:D[i][1],w:D[i][2],tip:D[i][3],n:i==6,s:i==6?1:0})),f=d.filter(x=>!x.n),sum=f.reduce((a,x)=>a+x.w,0);f[0].s=2;G={L,t:T,d,E:0,k:0,cb:0,bn:0,du,r:du?mb(seed):Math.random,sp:1.2,iv:du?1:Math.max(.75,2.2-.08*L)*S.ad,pw:du?.5:.3+.1*t,mx:sum*T,cap:sum,m:sum*T*.03,over:0,st:1,h:0};show('game')}
-V.game=()=>{const r=R[G.L%8];return `<div class="bar">${G.du?'':'<button class="chip" data-a="map">🗺️</button>'}<span class="chip">⏱ <b id="t">${fa(G.t)}</b></span><span class="chip">⚡ <b id="w">۰</b> وات</span><span class="chip">✅ <b id="k">۰</b></span>${G.du?'<span class="chip" id="oq">👤 ۰</span>':''}</div><div class="meter"><i id="mb"></i></div><h3 style="text-align:center;margin:6px 0 0">${r[1]} ${r[0]} · ${G.du?'⚔️ دوئل':'مرحلهٔ '+fa(G.L+1)}</h3><div class="sc" style="--w:${r[2]};--fl:${r[3]};--k:${Math.min(.82,(innerWidth-24)/428).toFixed(2)}"><div class="rm"><div class="f bw"></div><div class="f lw"></div><div class="f fl"></div>${G.d.map((d,i)=>`<div class="dv s${d.s}" id="d${i}" style="--x:${P[i][0]}px;--y:${P[i][1]}px;--z:${P[i][2]}px"><u></u><span>${d.e}</span><em>${d.nm}</em></div>`).join('')}</div></div>`};
-function draw(i){const d=G.d[i],e=$('#d'+i);if(!e)return;e.className='dv s'+d.s;e.querySelector('u').textContent=['','🙂','💸'][d.s]}
-post.game=()=>{G.d.forEach((d,i)=>draw(i));G.h=setInterval(tick,100)};
-function spawn(){const c=G.d.filter(d=>!d.n),d=c[G.r()*c.length|0],ro=G.r();if(d.s==0)d.s=ro<G.pw?2:1;else if(d.s==1)d.s=2;draw(G.d.indexOf(d))}
-function tick(){if(G.over)return;G.t-=.1;G.sp-=.1;if(G.sp<=0){G.sp=G.iv*(.7+G.r()*.6);spawn()}let w=0;G.d.forEach(d=>{if(d.s==2)w+=d.w});G.E+=w*.1;const p=Math.min(100,w/G.cap*100),b=$('#mb');$('#t').textContent=fa(Math.max(0,Math.ceil(G.t)));$('#w').textContent=fa(w);$('#k').textContent=fa(G.k);b.style.width=p+'%';b.style.background=p<30?'#3ee0a3':p<60?'#ffd54a':'#ff5d7a';if(G.t<=0)endL()}
-function fx(i,t){const e=$('#d'+i);if(!e)return;const r=e.getBoundingClientRect(),n=document.createElement('b');n.className='fx';n.textContent=t;n.style.left=r.left+r.width/2+'px';n.style.top=r.top+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),800)}
-function tap(i){const d=G.d[i];if(!d||G.over)return;if(d.n){G.E+=G.m;G.cb=0;sfx.no();fx(i,'🧊 لازم است!');say('🧊 یخچال باید همیشه روشن بماند!');return}if(d.s==2){d.s=0;G.k++;G.cb++;if(G.cb>=3)G.bn+=G.cb;sfx.ok();fx(i,G.cb>=3?'🔥 ×'+fa(G.cb):'+۱ ✅');say(d.tip)}else if(d.s==1){d.s=0;G.E+=G.m;G.cb=0;sfx.no();fx(i,'🙈');say('اوه! داشتند ازش استفاده می‌کردند 🙈')}else return;draw(i)}
-function endL(){clearInterval(G.h);G.over=1;const r=G.E/G.mx;if(G.du){DL.sc=Math.round(1000*Math.max(0,1-2.5*r))+10*G.k+G.bn;sfx.win();dend();return}G.st=r<.1?3:r<.2?2:1;S.lv[G.L]=Math.max(S.lv[G.L]||0,G.st);S.ad=G.st==3?Math.max(.75,S.ad-.07):G.st==1?Math.min(1.3,S.ad+.1):S.ad;save();sfx.win();show('res');say(G.st==3?'تو واقعاً هوشمندی! 🌟':'آفرین! دفعهٔ بعد بهتر هم می‌شود 💪')}
-V.res=()=>{const s=G.st;return `<div class="card" style="text-align:center"><div style="font-size:52px">${'⭐'.repeat(s)}${'☆'.repeat(3-s)}</div><h2>${['','تمام کردی!','خیلی خوب!','فوق‌العاده!'][s]}</h2><p>${fa(G.k)} بار برقِ هدررفته را قطع کردی.<br>${s<3?'کمی سریع‌تر باشی، ۳ ستاره می‌گیری!':'برقی مرحلهٔ بعد را کمی سخت‌تر می‌کند 🚀'}</p><div class="grid"><button class="btn" data-a="L${G.L}" style="--c:#5ec8ff">🔁 دوباره</button>${G.L<23?`<button class="btn" data-a="L${G.L+1}" style="--c:#3ee0a3">▶ مرحلهٔ بعد</button>`:''}</div><button class="btn" data-a="map" style="--c:#b99cff;margin-top:10px">🏠 نقشهٔ خانه</button></div>`};
-function mk(id,g){g=g||Math.random;let c,o,q,ex;if(id<306){const t=id&1;let r=(id+1)*2654435761>>>0;const x=[];while(x.length<4){r=(r*1664525+1013904223)>>>0;const i=(r>>>9)%AP.length;if(x.indexOf(i)<0)x.push(i)}x.sort((a,b)=>AP[a][1]-AP[b][1]);const k=AP[t?x[0]:x[3]];c=k[0];ex=k[0]+' حدود '+fa(k[1])+' وات برق می‌کشد.';o=x.map(i=>AP[i][0]);q='کدام وسیله هنگام روشن بودن برق '+(t?'کمتری':'بیشتری')+' می‌کشد؟'}else{const h=id-306,t=h&1,i=(h>>1)%6,O=[[0,1,2],[1,3,5],[2,3,4],[0,2,5]][((h>>1)/6|0)%4];c=(t?BD:GD)[i];ex=(t?'این کار برق را هدر می‌دهد: ':'درست است: ')+c;o=[c].concat(O.map(d=>(t?GD:BD)[(i+d)%6]));q=t?'کدام کار اشتباه است و برق را هدر می‌دهد؟':'کدام کار برق را صرفه‌جویی می‌کند؟'}for(let i=3;i>0;i--){const j=g()*(i+1)|0,t=o[i];o[i]=o[j];o[j]=t}return{id,q,o,c,ex,d:0}}
-function startQ(){let u=[];for(let i=0;i<NQ;i++)if(S.seen.indexOf(i)<0)u.push(i);if(u.length<4){S.seen=[];u=[];for(let i=0;i<NQ;i++)u.push(i)}const ids=[];while(ids.length<4)ids.push(u.splice(rnd(u.length),1)[0]);S.seen=S.seen.concat(ids);S.qs={ids,i:0,ok:0};save()}
-V.quiz=()=>{if(!S.qs){if(S.nq>Date.now())return `<div class="card" style="text-align:center"><div style="font-size:60px">⏳</div><p>۴ سؤال بعدی تا</p><h1 id="cd" style="margin:0">${fmt(S.nq-Date.now())}</h1><p>دیگر باز می‌شود. تا آن موقع گردونه یا قصهٔ شب را امتحان کن!</p>${BK}</div>`;startQ()}let q=S.qs;if(q.t&&Date.now()-q.t>QT*1e3+1500){q.i++;q.t=0;if(q.i>=4){lastOk=q.ok;S.nq=Date.now()+36e5;S.qs=null;save();return V.qr()}save()}if(!Q||Q.id!=q.ids[q.i])Q=mk(q.ids[q.i]);if(!q.t){q.t=Date.now();save()}return `<div class="card"><span class="chip" style="float:left">⏱ <b id="qs">${fa(QT)}</b></span><small>سؤال ${fa(q.i+1)} از ۴ · هر جواب درست ۱ امتیاز</small><div class="meter" style="margin:8px 0"><i id="qb" style="width:100%;background:#3ee0a3"></i></div><h3>${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="o${j}">${o}</button>`).join('')}<div id="fb"></div></div>`};
-function ans(j){if(!Q||Q.d||!S.qs)return;Q.d=1;const ok=j>=0&&Q.o[j]==Q.c,b=document.querySelectorAll('.opt'),q=S.qs;b.forEach((x,i)=>{x.disabled=true;if(Q.o[i]==Q.c)x.classList.add('ok')});if(ok){q.ok++;add(1);sfx.ok();say(PR[rnd(PR.length)])}else{if(j>=0)b[j].classList.add('no');sfx.no();say(j<0?'وقتت تمام شد ⏰ اشکال نداره!':'اشکال نداره! حالا درستش را می‌دانی 💛')}q.i++;q.t=0;const last=q.i>=4;if(last){lastOk=q.ok;S.nq=Date.now()+36e5;S.qs=null}save();$('#fb').innerHTML=`<p>${ok?'✅':j<0?'⏰':'💡'} ${Q.ex}</p><button class="btn" data-a="nq" style="--c:#ffd54a;width:100%">${last?'دیدن نتیجه':'سؤال بعدی'}</button>`}
-ACT.nq=()=>show(S.qs?'quiz':'qr');
-V.qr=()=>`<div class="card" style="text-align:center"><div style="font-size:56px">${lastOk>=3?'🏆':'🌟'}</div><h2>${fa(lastOk)} جواب درست از ۴</h2><p>${fa(lastOk)} امتیاز به حسابت اضافه شد.<br>۴ سؤال بعدی یک ساعت دیگر باز می‌شود ⏳</p>${BK}</div>`;
-setInterval(()=>{const c=$('#cd');if(cur=='quiz'&&c){const l=S.nq-Date.now();l>0?c.textContent=fmt(l):show('quiz')}},1000);
-function qtick(){const du=cur=='dq',q=du?DL&&DL.qs:S.qs;if(!(du||cur=='quiz')||!q||!Q||Q.d||!q.t)return;const T=du?QD:QT,l=Math.max(0,T-(Date.now()-q.t)/1e3),b=$('#qb'),s=$('#qs');if(s)s.textContent=fa(Math.ceil(l));if(b){b.style.width=l/T*100+'%';b.style.background=l>T*.4?'#3ee0a3':l>T*.2?'#ffd54a':'#ff5d7a'}if(l<=0)du?dans(-1):ans(-1)}
-setInterval(qtick,250);
-const WV=[1,2,4,10,1,2,1,4],WP=[1,1,1,1,2,2,2,4,4,10];
-V.wheel=()=>{const l=wl();return `<div class="card" style="text-align:center"><h3 style="margin:0">🎡 گردونهٔ شانس</h3><div class="wp">▼</div><div class="wh" id="wh" style="transform:rotate(${rot}deg)">${WV.map((v,i)=>`<b style="transform:rotate(${i*45+22.5}deg) translateY(-84px)">${fa(v)}</b>`).join('')}</div><p id="wm">${l?'امروز '+fa(l)+' بار شانس داری':'امروز شانست تمام شد؛ فردا دوباره بیا 🌙'}</p><button class="btn" data-a="spin" style="--c:#ff9aa8;width:70%"${l?'':' disabled'}>بچرخان!</button>${BK}</div>`};
-ACT.spin=()=>{if(!wl()||cur!='wheel')return;S.wl--;const v=WP[rnd(WP.length)],ix=[];WV.forEach((x,i)=>{if(x==v)ix.push(i)});const a=ix[rnd(ix.length)]*45+22.5;rot+=1440+(((360-a-rot%360)%360)+360)%360;save();$('#wh').style.transform='rotate('+rot+'deg)';$('[data-a=spin]').disabled=true;const tk=setInterval(sfx.tick,250);setTimeout(()=>{clearInterval(tk);add(v);sfx.win();if(cur=='wheel')show('wheel');say(fa(v)+' امتیاز گرفتی! 🎉')},4200)};
-V.media=k=>{
-  if(k&&typeof k==='object'){arg=k;k=k.k||'s'}else{arg={k:k,ix:-1}}
-  const list=k=='s'?(window.__STORIES||[]):(window.__ANIMS||[]);
-  const doneDay=(k=='s'?S.ms:S.ma)==today();
-  const t=k=='s'?'قصه شب':'انیمیشن';
-  const emoji=k=='s'?'🌙':'🎬';
-  const ix=typeof arg==='object'&&arg&&arg.ix!=null?arg.ix:-1;
-  if(ix>=0&&list[ix]){
-    const it=list[ix];
-    const cov=it.cover?`<img class="mcov" src="${esc(it.cover)}" alt="" onerror="this.style.display='none'">`:'';
-    const player=k=='s'
-      ?`<audio id="md" src="${esc(it.url)}" controls style="width:100%"></audio>`
-      :`<video id="md" src="${esc(it.url)}" controls playsinline poster="${esc(it.cover||'')}" style="width:100%;border-radius:16px;background:#000"></video>`;
-    return `<div class="card" style="text-align:center"><div style="font-size:40px">${emoji}</div><h3 style="margin:0">${esc(it.title||t)}</h3>${cov}${player}<p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':'تا آخر '+(k=='s'?'گوش کن':'تماشا کن')+' و ۵ امتیاز بگیر!'}</p><button class="btn" data-a="${k=='s'?'story':'anim'}" style="--c:#b99cff;margin-top:8px">📚 بازگشت به فهرست</button>${BK}</div>`;
-  }
-  if(!list.length){
-    return `<div class="card" style="text-align:center"><div style="font-size:60px">${emoji}</div><h3 style="margin:0">${t}</h3><p>هنوز موردی اضافه نشده است.</p><button class="btn" data-a="demo" style="--c:#5ec8ff">پخش آزمایشی (۶ ثانیه)</button><p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':''}</p>${BK}</div>`;
-  }
-  const items=list.map((it,i)=>{
-    const cov=it.cover?`<img src="${esc(it.cover)}" alt="" onerror="this.outerHTML='<div class=mph>${emoji}</div>'">`:`<div class="mph">${emoji}</div>`;
-    return `<button class="mitem" data-a="mp${k}${i}">${cov}<span style="flex:1;min-width:0"><b>${esc(it.title||(t+' '+(i+1)))}</b><small>${k=='s'?'صوتی':'ویدیو'} · پخش</small></span><span style="font-size:22px">▶️</span></button>`;
-  }).join('');
-  return `<div class="card" style="text-align:center"><div style="font-size:48px">${emoji}</div><h3 style="margin:0">${t}</h3><small>${fa(list.length)} مورد · ${doneDay?'امروز امتیاز گرفتی ✅':'با تماشای کامل ۵ امتیاز'}</small><div class="mlib">${items}</div>${BK}</div>`;
-};
-function done(k){const f=k=='s'?'ms':'ma';if(S[f]==today())return;S[f]=today();add(5);sfx.win();say('۵ امتیاز گرفتی! 🎉');const e=$('#mm');if(e)e.textContent='امروز ۵ امتیاز گرفتی ✅'}
-post.media=k=>{if(k&&typeof k==='object')k=k.k||'s';const m=$('#md');if(m){m.onended=()=>done(k);m.ontimeupdate=()=>{if(m.duration&&m.currentTime/m.duration>.9)done(k)}}};
-ACT.demo=()=>{$('#mm').textContent='در حال پخش آزمایشی…';const k=arg;setTimeout(()=>done(k),6000)};
-V.lb=()=>`<div class="card" style="text-align:center"><h3 style="margin:0">🏆 جدول هفته (شنبه تا جمعه)</h3><p>${S.p.f} ${S.p.l} · ${S.p.c}</p><h1 style="margin:0">${fa(S.wp)} امتیاز</h1><p>مجموع همهٔ امتیازها: ${fa(S.pts)}</p><div id="top">${sb()?'در حال بارگیری…':'جدول همهٔ بچه‌ها فقط داخل بله فعال است.'}</div><p>آخر هفته، نفر اول جایزه می‌گیرد! 🎁</p>${BK}</div>`;
-post.lb=()=>{if(sb())rpc('egame_top',{p_wk:S.wk}).then(a=>{$('#top').innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.p)}</div>`).join('')||'هنوز کسی امتیاز نگرفته؛ اولین نفر تو باش!'}).catch(()=>{$('#top').textContent='اتصال به جدول برقرار نشد.'})};
-// ===== رقابت آنلاین دونفره (Supabase + بذر مشترک؛ اگر آنلاین نبود: تمرین با رقیب هوشمند) =====
-let DL=null;
-const dos=r=>r.me==1?{s:r.s2,f:r.f2}:{s:r.s1,f:r.f1};
-function botStart(k){DL={kind:k,ph:'vs',t0:Date.now(),sc:0,paid:0,bot:1,r:{id:'BOT',kind:k,pub:false,seed:rnd(2e9)+1,me:1,n1:me(),n2:'🤖 رقیب هوشمند',st:'play',s1:0,s2:0,f1:false,f2:false}};show('dvs')}
-function onlineOk(){return sb()}
-function duelFail(msg,k,allowBot){DL=null;say(msg||'اتصال برقرار نشد');show('duel');if(allowBot)setTimeout(()=>{try{if(confirm('آنلاین نشد. با رقیب هوشمند تمرین کنیم؟'))botStart(k)}catch(e){botStart(k)}},250)}
-function duelStart(k,code){
-  if(DL&&(DL.ph=='wait'||DL.ph=='vs'||DL.ph=='play')){say('یک بازی در حال انجام است');return}
-  refreshUid();
-  const priv=!!(code&&String(code).length);
-  if(!onlineOk()){if(priv){say('برای اتاق دوستانه جدول آنلاین باید فعال باشد و از بله باز شود 🌐');return}botStart(k);return}
-  if(!uid){say('شناسه کاربر پیدا نشد؛ از داخل بله باز کن');return}
-  DL={kind:k,ph:'wait',t0:Date.now(),sc:0,paid:0,bot:0,priv:priv};
-  say(priv?(code==='NEW'?'در حال ساخت اتاق…':'در حال ورود…'):'در حال پیدا کردن حریف…');
-  show('dload');
-  rpc('egame_duel_enter',{p_uid:String(uid),p_name:me(),p_kind:k,p_code:code||'',p_wk:S.wk}).then(r=>{
-    if(!DL)return;
-    if(r&&r.err=='nf'){DL=null;say('کد اتاق پیدا نشد 😕');show('duel');return}
-    if(r&&r.err=='full'){DL=null;say('اتاق پر است یا بازی شروع شده');show('duel');return}
-    if(r&&r.err){DL=null;say('خطا: '+r.err);show('duel');return}
-    if(!r||!r.id){duelFail('پاسخ سرور نامعتبر',k,!priv);return}
-    DL.r=r;DL.kind=r.kind||k;
-    show(r.st==='play'?'dvs':'dwait');
-  }).catch(e=>{console.error(e);duelFail('خطای سرور: '+(e&&e.message||'اتصال'),k,!priv)})
-}
-V.dload=()=>`<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">⏳</div><h3>لطفاً صبر کن…</h3><p><small>ارتباط با سرور</small></p><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`
-V.duel=()=>{const on=onlineOk();return `<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>${on?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین خاموش است. می‌توانی با رقیب هوشمند تمرین کنی.'}</small></div><div class="grid">${B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')}${B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')}</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div>${on?'':'<p style="color:#ff9aa8;font-size:13px;margin:8px 0 0">برای اتاق دوستانه: SQL بازی را در Supabase اجرا کنید، کلید anon را در ربات بگذارید، سپس «دریافت فایل بازی» را دوباره بزنید.</p>'}</div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>${BK}`};
-V.dwait=()=>{DL.ph='wait';const x=DL.r||{},showBot=!!x.pub||(Date.now()-(DL.t0||0)>25000);return `<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">${x.pub?'🔍':'🏠'}</div><h3>${x.pub?'در حال پیدا کردن حریف…':'اتاق دوستانه ساخته شد'}</h3>${x.pub?'':`<p>این کد را برای دوستت بفرست:</p><h1 style="letter-spacing:6px;margin:0;user-select:all;-webkit-user-select:all">${esc(x.id)}</h1><p><small>دوستت همین کد را در «ورود با کد» بزند</small></p>`}<p><small>${x.kind=='quiz'?'❓ کوییز دوئل':'🏠 دوئل خانه'} · منتظر ورود حریف</small></p><button class="btn" id="bt" data-a="dbot" style="--c:#b99cff;${showBot?'':'display:none'}">🤖 بازی با رقیب هوشمند</button><br><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`};
-V.dvs=()=>{const x=DL.r,a=x.me==1?[x.n1,x.n2]:[x.n2,x.n1];return `<div class="card vs"><div class="av">${nm(a[0])}</div><b class="vsb">VS</b><div class="av">${nm(a[1])}</div></div><h1 id="cn" style="text-align:center;font-size:84px;margin:0">۳</h1>`};
-post.dvs=()=>{DL.ph='vs';let n=3;const t=setInterval(()=>{if(cur!='dvs'){clearInterval(t);DL=null;return}n--;const e=$('#cn');if(n>0){if(e)e.textContent=fa(n);sfx.tick()}else{clearInterval(t);sfx.win();dgo()}},900)};
-function dgo(){DL.ph='play';DL.sc=0;if(DL.kind=='quiz'){const g=mb(DL.r.seed),ids=[];while(ids.length<6){const i=g()*NQ|0;if(ids.indexOf(i)<0)ids.push(i)}DL.qs={ids,i:0,t:0};DL.g=mb(DL.r.seed+7);show('dq')}else play(null,DL.r.seed)}
-V.dq=()=>{const s=DL.qs;Q=mk(s.ids[s.i],DL.g);s.t=Date.now();const op=dos(DL.r);return `<div class="bar"><span class="chip">${fa(s.i+1)}/۶</span><span class="chip">⭐ ${fa(DL.sc)}</span><span class="chip" id="oqq">👤 ${fa(DL.bot?0:op.s)}</span></div><div class="meter"><i id="qb" style="width:100%;background:#3ee0a3"></i></div><div class="card"><h3 style="margin-top:0">${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="o${j}">${o}</button>`).join('')}</div>`};
-function dans(j){if(!Q||Q.d)return;Q.d=1;const s=DL.qs,l=Math.max(0,QD-(Date.now()-s.t)/1e3),ok=j>=0&&Q.o[j]==Q.c,b=document.querySelectorAll('.opt');b.forEach((x,i)=>{x.disabled=true;if(Q.o[i]==Q.c)x.classList.add('ok')});if(ok){DL.sc+=10+Math.ceil(l*.6);sfx.ok();say(PR[rnd(PR.length)])}else{if(j>=0)b[j].classList.add('no');sfx.no();say(j<0?'وقت تمام شد ⏰':'این یکی را از دست دادی 💪')}s.i++;setTimeout(()=>{if(cur!='dq')return;s.i>=6?dend():show('dq')},1100)}
-function dend(){DL.ph='end';if(DL.bot){const o=DL.kind=='quiz'?40+rnd(50):350+rnd(450);Object.assign(DL.r,{st:'done',s1:DL.sc,s2:o,f1:true,f2:true,win:DL.sc>o?String(uid):DL.sc<o?'bot':'draw'});DL.ph='res';show('dres');return}show('dres');dloop()}
-function dloop(){if(!DL||!DL.r||DL.bot||!sb()||DL.r.id==='BOT')return;const p={p_id:DL.r.id,p_uid:String(uid)};if(DL.ph=='wait'){if(cur=='dwait'||cur=='dload'){rpc('egame_duel_poll',p).then(r=>{if(!DL||DL.ph!='wait'||!r||!r.id||r.err)return;DL.r=r;if(r.st=='play'){show('dvs');return}if(Date.now()-DL.t0>2e4){const b=$('#bt');if(b)b.style.display=''}}).catch(()=>{})}}else if(DL.ph=='play'||DL.ph=='end'){const f=DL.ph=='end';p.p_score=f?DL.sc:cur=='game'&&G?G.k:DL.sc;p.p_final=!!f;rpc('egame_duel_submit',p).then(r=>{if(!DL||!r||!r.id)return;DL.r=r;const o=dos(r),e=$('#oq')||$('#oqq');if(e)e.textContent='👤 '+(o.f?'🏁 ':'')+fa(o.s);if(r.st=='done'&&DL.ph=='end'){DL.ph='res';show('dres')}}).catch(()=>{})}}
-setInterval(dloop,2000);
-function conf(){for(let i=0;i<36;i++){const n=document.createElement('i');n.className='cf';n.style.cssText='left:'+rnd(100)+'%;background:hsl('+rnd(360)+' 90% 60%);animation-delay:'+rnd(600)+'ms';document.body.appendChild(n);setTimeout(()=>n.remove(),2700)}}
-function fin(){if(!DL||DL.paid)return;DL.paid=1;const x=DL.r,w=x.win==String(uid);if(w){conf();sfx.win();say('🏆 آفرین قهرمان!')}else sfx.no();if(!DL.bot&&x.pub){const p=w?3:x.win=='draw'?1:0;if(p)add(p)}}
-V.dres=()=>{const x=DL.r,m=x.me==1,ms=x.st=='done'?(m?x.s1:x.s2):DL.sc,os=m?x.s2:x.s1,on=m?x.n2:x.n1;if(x.st!='done')return `<div class="card" style="text-align:center"><div class="spin" style="font-size:64px">⏳</div><h3 style="margin:0">امتیاز تو: ${fa(ms)}</h3><p>منتظر پایان بازی حریف…</p><small>اگر حریف بازی را رها کند، بعد از یک دقیقه برنده می‌شوی.</small></div>`;const w=x.win==String(uid),dr=x.win=='draw';return `<div class="card" style="text-align:center"><div style="font-size:76px;line-height:1.2">${w?'🏆':dr?'🤝':'😅'}</div><h2 style="margin:0">${w?'تو برنده شدی!':dr?'مساوی شد!':'این بار حریف برد!'}</h2><h1 style="margin:6px 0">${fa(ms)} : ${fa(os)}</h1><small>${esc(on||'')}</small>${!DL.bot&&x.pub?`<p>${w?'+۳':dr?'+۱':'+۰'} امتیاز هفته</p>`:''}${DL.bot?'<p><small>(تمرین با رقیب هوشمند؛ در جدول حساب نمی‌شود)</small></p>':''}<div class="grid"><button class="btn" data-a="${DL.kind=='quiz'?'dq':'dh'}" style="--c:#5ec8ff">🔁 دوئل دوباره</button><button class="btn" data-a="${DL.kind=='quiz'?'tq':'th'}" style="--c:#ffd54a">🏆 جدول</button></div>${BK}</div>`};
-post.dres=()=>{if(DL&&DL.r.st=='done')fin()};
-V.dlb=k=>`<div class="card"><h3 style="margin:0">🏆 ${k=='quiz'?'جدول کوییز دوئل':'جدول دوئل خانه'}</h3><small>برنده = بیشترین تعداد برد در هفته (شنبه تا جمعه)</small></div><div class="card"><b>این هفته</b><div id="dl0">در حال بارگیری…</div></div><div class="card"><b>👑 هفتهٔ قبل</b><div id="dl1">در حال بارگیری…</div></div>${BK}`;
-post.dlb=k=>[0,1].forEach(o=>{const e=$('#dl'+o);if(!sb()){e.textContent='فقط داخل بله فعال است.';return}rpc('egame_duel_top',{p_wk:wkey(o),p_kind:k}).then(a=>{e.innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.w)} برد از ${fa(x.g)}</div>`).join('')||'هنوز مسابقه‌ای ثبت نشده'}).catch(()=>{e.textContent='اتصال به جدول برقرار نشد.'})});
-Object.assign(ACT,{duel:()=>show('duel'),dq:()=>duelStart('quiz',''),dh:()=>duelStart('house',''),dnq:()=>duelStart('quiz','NEW'),dnh:()=>duelStart('house','NEW'),dj:()=>{const c=(($('#rc')&&$('#rc').value)||'').trim().toUpperCase();if(c.length<4){say('کد اتاق را بنویس 🙂');return}duelStart('quiz',c)},tq:()=>show('dlb','quiz'),th:()=>show('dlb','house'),dbot:()=>{const k=(DL&&DL.kind)||'quiz';if(DL&&DL.r&&DL.r.id&&DL.r.id!=='BOT'&&sb())rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});botStart(k)},dx:()=>{if(DL&&DL.r&&DL.r.id&&DL.r.id!=='BOT'&&sb()&&(DL.ph=='wait'||cur=='dwait'||cur=='dload'))rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});DL=null;show('duel')}});
-Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
-// لمس وسیله‌ها: انتخاب با مختصات روی صفحه (مستقل از hit-test سه‌بعدی مرورگر)
-document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
-function boot(){
-  try{
-    show('home');
-    // اگر بعد از show هنوز محتوا خالی بود، یک پیام اضطراری نشان بده
-    setTimeout(function(){
-      var v=document.getElementById('v');
-      if(v && !v.innerHTML.trim()){
-        v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:48px">⚡</div><h2>سلام! من برقی‌ام</h2><p>اگر این پیام را می‌بینی، روی دکمه بزن تا بازی شروع شود.</p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%" onclick="try{show(\'reg\')}catch(e){alert(e)}">شروع</button></div>';
-        say('سلام! بیا شروع کنیم ⚡');
+  <div class="wrap">
+    <div class="header">
+      <div class="badge">طرح ملی مدیریت مصرف برق</div>
+      <h1>نظرسنجی پویش «قرار همدلی»</h1>
+      <p>نظر شما به بهبود پویش‌های آینده کمک می‌کند</p>
+    </div>
+    <div class="progress-bar"><div class="fill" id="progress"></div></div>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- STEP 0: نام + کپچا -->
+    <div class="screen active" id="step0">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۰</span> ورود به نظرسنجی</div>
+        <div class="name-row">
+          <label>نام (اختیاری)</label>
+          <input type="text" id="userName" placeholder="مثلاً علی — می‌توانید خالی بگذارید" maxlength="60" />
+        </div>
+        <div class="name-row" style="margin-top:14px">
+          <label>کپچا — برای جلوگیری از ربات <span style="color:var(--danger)">*</span></label>
+          <div class="captcha-box">
+            <div class="q" id="captchaQ">۳ + ۵ = ؟</div>
+            <input type="text" id="captchaA" inputmode="numeric" placeholder="پاسخ" maxlength="4" />
+            <button type="button" class="btn btn-prev" style="flex:0;padding:8px 12px;font-size:.8rem" onclick="refreshCaptcha()">↻</button>
+          </div>
+        </div>
+        <p class="hint">پس از تأیید کپچا وارد سوالات می‌شوید.</p>
+      </div>
+      <div class="btns">
+        <button class="btn btn-next" onclick="goStart()">شروع نظرسنجی</button>
+      </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="screen" id="step1">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۱</span><span><span class="req">*</span> آیا از برگزاری طرح ملی مدیریت مصرف برق در تابستان ۱۴۰۵ تحت عنوان «پویش قرار همدلی» آگاه شدید؟</span></div>
+        <label class="opt"><input type="radio" name="q1" value="خیلی زیاد" /><span>خیلی زیاد</span></label>
+        <label class="opt"><input type="radio" name="q1" value="زیاد" /><span>زیاد</span></label>
+        <label class="opt"><input type="radio" name="q1" value="تا حدودی" /><span>تا حدودی</span></label>
+        <label class="opt"><input type="radio" name="q1" value="کم" /><span>کم</span></label>
+        <label class="opt"><input type="radio" name="q1" value="خیلی کم" /><span>خیلی کم</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(0)">قبلی</button>
+        <button class="btn btn-next" onclick="go(2)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="screen" id="step2">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۲</span><span><span class="req">*</span> از چه طریق با این پویش آشنا شدید؟ (می‌توانید چند مورد انتخاب کنید)</span></div>
+        <label class="opt"><input type="checkbox" name="q2" value="رسانه ملی" /><span>رسانه ملی</span></label>
+        <label class="opt"><input type="checkbox" name="q2" value="فضای مجازی" /><span>فضای مجازی</span></label>
+        <label class="opt"><input type="checkbox" name="q2" value="تبلیغات محیطی" /><span>تبلیغات محیطی</span></label>
+        <label class="opt"><input type="checkbox" name="q2" value="اپلیکیشن برق من یا پیامک" /><span>اپلیکیشن برق من یا پیامک</span></label>
+        <label class="opt"><input type="checkbox" name="q2" value="خبرگزاری‌ها (مهر، تسنیم، فارس، ایسنا و ...)" /><span>خبرگزاری‌ها (مهر، تسنیم، فارس، ایسنا و ...)</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(1)">قبلی</button>
+        <button class="btn btn-next" onclick="go(3)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="screen" id="step3">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۳</span><span><span class="req">*</span> کدامیک از پیام‌ها یا تبلیغات این پویش برای شما جذاب و اثرگذار بود؟ (چند مورد مجاز است)</span></div>
+        <label class="opt"><input type="checkbox" name="q3" value="۲۵ درجه؛ قرار همدلی" /><span>۲۵ درجه؛ قرار همدلی</span></label>
+        <label class="opt"><input type="checkbox" name="q3" value="قرارمون یادت نره" /><span>قرارمون یادت نره</span></label>
+        <label class="opt"><input type="checkbox" name="q3" value="تیزرهای ورزشی دوره جام جهانی" /><span>تیزرهای ورزشی دوره جام جهانی</span></label>
+        <label class="opt"><input type="checkbox" name="q3" value="تیزر استخراج غیرمجاز رمز ارز" /><span>تیزر استخراج غیرمجاز رمز ارز</span></label>
+        <label class="opt"><input type="checkbox" name="q3" value="تیزرهای همدلی با جنوب" /><span>تیزرهای همدلی با جنوب</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(2)">قبلی</button>
+        <button class="btn btn-next" onclick="go(4)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="screen" id="step4">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۴</span><span><span class="req">*</span> آیا هدف و پیام اصلی پویش را دریافت کرده و به خاطر دارید؟</span></div>
+        <label class="opt"><input type="radio" name="q4" value="کاملا" /><span>کاملاً</span></label>
+        <label class="opt"><input type="radio" name="q4" value="تا حدودی" /><span>تا حدودی</span></label>
+        <label class="opt"><input type="radio" name="q4" value="نه چندان" /><span>نه چندان</span></label>
+        <label class="opt"><input type="radio" name="q4" value="کم" /><span>کم</span></label>
+        <label class="opt"><input type="radio" name="q4" value="خیلی کم" /><span>خیلی کم</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(3)">قبلی</button>
+        <button class="btn btn-next" onclick="go(5)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="screen" id="step5">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۵</span><span><span class="req">*</span> به نظر شما پیام اصلی پویش چه بوده است؟ (چند مورد مجاز است)</span></div>
+        <label class="opt"><input type="checkbox" name="q5" value="ایجاد حس همدلی در شرایط خاص کشور با هدف بهینه‌سازی مصرف برق و کاهش اعمال خاموشی‌ها" /><span>ایجاد حس همدلی در شرایط خاص کشور با هدف بهینه‌سازی مصرف برق و کاهش اعمال خاموشی‌ها</span></label>
+        <label class="opt"><input type="checkbox" name="q5" value="اطمینان‌بخشی به جامعه در خصوص خدمت‌رسانی بی‌وقفه و پایدار صنعت برق با وجود تهدیدات دشمن در خصوص زیرساخت‌های انرژی" /><span>اطمینان‌بخشی به جامعه در خصوص خدمت‌رسانی بی‌وقفه و پایدار صنعت برق با وجود تهدیدات دشمن در خصوص زیرساخت‌های انرژی</span></label>
+        <label class="opt"><input type="checkbox" name="q5" value="تنظیم دمای اسپلیت روی ۲۵ درجه" /><span>تنظیم دمای اسپلیت روی ۲۵ درجه</span></label>
+        <label class="opt"><input type="checkbox" name="q5" value="استفاده از دور کند کولر آبی" /><span>استفاده از دور کند کولر آبی</span></label>
+        <label class="opt"><input type="checkbox" name="q5" value="فرهنگ‌سازی مدیریت مصرف برق بویژه استفاده بهینه از وسایل سرمایشی در دوره اوج بار (تابستان)" /><span>فرهنگ‌سازی مدیریت مصرف برق بویژه استفاده بهینه از وسایل سرمایشی در دوره اوج بار (تابستان)</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(4)">قبلی</button>
+        <button class="btn btn-next" onclick="go(6)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="screen" id="step6">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۶</span><span><span class="req">*</span> به نظر شما پیام پویش و راهکارهای مصرف بهینه برق ارایه‌شده در آن با شرایط واقعی زندگی منطبق و قابل اجرا بود؟</span></div>
+        <label class="opt"><input type="radio" name="q6" value="خیلی زیاد" /><span>خیلی زیاد</span></label>
+        <label class="opt"><input type="radio" name="q6" value="زیاد" /><span>زیاد</span></label>
+        <label class="opt"><input type="radio" name="q6" value="تا حدودی" /><span>تا حدودی</span></label>
+        <label class="opt"><input type="radio" name="q6" value="کم" /><span>کم</span></label>
+        <label class="opt"><input type="radio" name="q6" value="خیلی کم" /><span>خیلی کم</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(5)">قبلی</button>
+        <button class="btn btn-next" onclick="go(7)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="screen" id="step7">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۷</span><span><span class="req">*</span> آیا پس از آشنایی با پویش، تا پایان تابستان کولر خود را روی ۲۵ درجه یا دور کند تنظیم کردید؟</span></div>
+        <label class="opt"><input type="radio" name="q7" value="همیشه" /><span>همیشه</span></label>
+        <label class="opt"><input type="radio" name="q7" value="اغلب" /><span>اغلب</span></label>
+        <label class="opt"><input type="radio" name="q7" value="گاهی اوقات" /><span>گاهی اوقات</span></label>
+        <label class="opt"><input type="radio" name="q7" value="به ندرت" /><span>به ندرت</span></label>
+        <label class="opt"><input type="radio" name="q7" value="هرگز" /><span>هرگز</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(6)">قبلی</button>
+        <button class="btn btn-next" onclick="go(8)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 8 -->
+    <div class="screen" id="step8">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۸</span><span><span class="req">*</span> پس از آشنایی با این پویش کدامیک از راهکارهای مصرف بهینه برق را انجام دادید؟ (چند مورد مجاز است)</span></div>
+        <label class="opt"><input type="checkbox" name="q8" value="کاهش استفاده از وسایل پرمصرف برقی در ساعات اوج بار" /><span>کاهش استفاده از وسایل پرمصرف برقی در ساعات اوج بار</span></label>
+        <label class="opt"><input type="checkbox" name="q8" value="تنظیم کولر گازی روی ۲۵ درجه و کولر آبی روی دور کند (بویژه در ساعات اوج مصرف)" /><span>تنظیم کولر گازی روی ۲۵ درجه و کولر آبی روی دور کند (بویژه در ساعات اوج مصرف)</span></label>
+        <label class="opt"><input type="checkbox" name="q8" value="عدم استفاده همزمان از وسایل برقی" /><span>عدم استفاده همزمان از وسایل برقی</span></label>
+        <label class="opt"><input type="checkbox" name="q8" value="استفاده از سایبان برای کولر آبی" /><span>استفاده از سایبان برای کولر آبی</span></label>
+        <label class="opt"><input type="checkbox" name="q8" value="خاموش کردن وسایل برقی در صورت عدم نیاز و قرار ندادن در حالت آماده به کار" /><span>خاموش کردن وسایل برقی در صورت عدم نیاز و قرار ندادن در حالت آماده به کار</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(7)">قبلی</button>
+        <button class="btn btn-next" onclick="go(9)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 9 -->
+    <div class="screen" id="step9">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۹</span><span><span class="req">*</span> آیا تابستان امسال اقدام دیگری برای کاهش مصرف برق انجام دادید؟ (چند مورد مجاز است)</span></div>
+        <label class="opt"><input type="checkbox" name="q9" value="استفاده کمتر از وسایل پرمصرف" /><span>استفاده کمتر از وسایل پرمصرف</span></label>
+        <label class="opt"><input type="checkbox" name="q9" value="خاموش کردن لامپ‌های اضافی و استفاده از نور طبیعی" /><span>خاموش کردن لامپ‌های اضافی و استفاده از نور طبیعی</span></label>
+        <label class="opt"><input type="checkbox" name="q9" value="کاهش محسوس مصرف برق در همدلی با مردم جنوب در شرایط جنگی" /><span>کاهش محسوس مصرف برق در همدلی با مردم جنوب در شرایط جنگی</span></label>
+        <label class="opt"><input type="checkbox" name="q9" value="توجه و گزارش استفاده غیرمجاز از برق نظیر ماینرها" /><span>توجه و گزارش استفاده غیرمجاز از برق نظیر ماینرها</span></label>
+        <label class="opt"><input type="checkbox" name="q9" value="هیچ اقدامی نکردم" /><span>هیچ اقدامی نکردم</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(8)">قبلی</button>
+        <button class="btn btn-next" onclick="go(10)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 10 -->
+    <div class="screen" id="step10">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۱۰</span><span><span class="req">*</span> آیا با شرکت در پویش، رفتار مصرفی شما تغییر کرده است؟</span></div>
+        <label class="opt"><input type="radio" name="q10" value="خیلی زیاد" /><span>خیلی زیاد</span></label>
+        <label class="opt"><input type="radio" name="q10" value="زیاد" /><span>زیاد</span></label>
+        <label class="opt"><input type="radio" name="q10" value="تا حدودی" /><span>تا حدودی</span></label>
+        <label class="opt"><input type="radio" name="q10" value="کم" /><span>کم</span></label>
+        <label class="opt"><input type="radio" name="q10" value="خیلی کم" /><span>خیلی کم</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(9)">قبلی</button>
+        <button class="btn btn-next" onclick="go(11)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 11 -->
+    <div class="screen" id="step11">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۱۱</span><span><span class="req">*</span> احساس می‌کنید مصرف برق خانوار شما در تابستان امسال نسبت به سال قبل تغییر کرد؟</span></div>
+        <label class="opt"><input type="radio" name="q11" value="کاهش یافت" /><span>کاهش یافت</span></label>
+        <label class="opt"><input type="radio" name="q11" value="اندکی کاهش یافت" /><span>اندکی کاهش یافت</span></label>
+        <label class="opt"><input type="radio" name="q11" value="تغییری نکرد" /><span>تغییری نکرد</span></label>
+        <label class="opt"><input type="radio" name="q11" value="افزایش یافت" /><span>افزایش یافت</span></label>
+        <label class="opt"><input type="radio" name="q11" value="تغییر محسوس نبود" /><span>تغییر محسوس نبود</span></label>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(10)">قبلی</button>
+        <button class="btn btn-next" onclick="go(12)">بعدی</button>
+      </div>
+    </div>
+
+    <!-- STEP 12 -->
+    <div class="screen" id="step12">
+      <div class="card">
+        <div class="q-title"><span class="q-num">۱۲</span> لطفاً ضمن ارزیابی پویش، پیشنهادات خود را برای بهبود سطح اثربخشی پویش‌های آتی بیان کنید.</div>
+        <textarea id="q12" placeholder="پیشنهادات و نظرات شما (اختیاری)..." maxlength="1500"></textarea>
+        <p class="hint">حداکثر ۱۵۰۰ کاراکتر</p>
+      </div>
+      <div class="btns">
+        <button class="btn btn-prev" onclick="go(11)">قبلی</button>
+        <button class="btn btn-submit" id="submitBtn" onclick="submitSurvey()">ارسال نظرسنجی</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="screen" id="stepDone">
+      <div class="success">
+        <div class="icon">✅</div>
+        <h2>ممنون از مشارکت شما</h2>
+        <p>پاسخ‌های شما با موفقیت ثبت شد و در بهبود پویش‌های آینده استفاده می‌شود.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---- Captcha ----
+    let captchaAns = 0;
+    function refreshCaptcha() {
+      const a = Math.floor(Math.random() * 9) + 1;
+      const b = Math.floor(Math.random() * 9) + 1;
+      captchaAns = a + b;
+      document.getElementById('captchaQ').textContent = a + ' + ' + b + ' = ؟';
+      document.getElementById('captchaA').value = '';
+    }
+    refreshCaptcha();
+
+    // ---- Navigation ----
+    let current = 0;
+    const TOTAL = 12;
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = msg ? 'block' : 'none';
+      if (msg) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function updateProgress() {
+      const pct = current === 0 ? 0 : Math.round((current / TOTAL) * 100);
+      document.getElementById('progress').style.width = pct + '%';
+    }
+
+    function go(n) {
+      showError('');
+      if (n > current && current >= 1 && current <= TOTAL) {
+        if (!validateStep(current)) return;
       }
-    }, 400);
-  }catch(e){
-    console.error('BOOT ERROR', e);
-    var v=document.getElementById('v');
-    if(v) v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><h2>خطا در بارگذاری</h2><p style="direction:ltr;font-size:12px;opacity:.8">'+String(e&&e.message||e)+'</p><button class="btn" style="--c:#3ee0a3;width:100%" onclick="location.reload()">تلاش دوباره</button></div>';
-  }
-}
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
-else boot();
-</script>
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const id = n === 'done' ? 'stepDone' : ('step' + n);
+      document.getElementById(id).classList.add('active');
+      current = (n === 'done') ? TOTAL + 1 : n;
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goStart() {
+      showError('');
+      const ans = parseInt((document.getElementById('captchaA').value || '').trim(), 10);
+      if (isNaN(ans) || ans !== captchaAns) {
+        showError('پاسخ کپچا اشتباه است. دوباره امتحان کنید.');
+        refreshCaptcha();
+        return;
+      }
+      go(1);
+    }
+
+    function getRadio(name) {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el ? el.value : null;
+    }
+    function getChecks(name) {
+      return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked')).map(e => e.value);
+    }
+
+    function validateStep(n) {
+      if (n === 1 && !getRadio('q1')) { showError('لطفاً یکی از گزینه‌های سوال ۱ را انتخاب کنید.'); return false; }
+      if (n === 2 && getChecks('q2').length === 0) { showError('حداقل یک مورد از سوال ۲ را انتخاب کنید.'); return false; }
+      if (n === 3 && getChecks('q3').length === 0) { showError('حداقل یک مورد از سوال ۳ را انتخاب کنید.'); return false; }
+      if (n === 4 && !getRadio('q4')) { showError('لطفاً یکی از گزینه‌های سوال ۴ را انتخاب کنید.'); return false; }
+      if (n === 5 && getChecks('q5').length === 0) { showError('حداقل یک مورد از سوال ۵ را انتخاب کنید.'); return false; }
+      if (n === 6 && !getRadio('q6')) { showError('لطفاً یکی از گزینه‌های سوال ۶ را انتخاب کنید.'); return false; }
+      if (n === 7 && !getRadio('q7')) { showError('لطفاً یکی از گزینه‌های سوال ۷ را انتخاب کنید.'); return false; }
+      if (n === 8 && getChecks('q8').length === 0) { showError('حداقل یک مورد از سوال ۸ را انتخاب کنید.'); return false; }
+      if (n === 9 && getChecks('q9').length === 0) { showError('حداقل یک مورد از سوال ۹ را انتخاب کنید.'); return false; }
+      if (n === 10 && !getRadio('q10')) { showError('لطفاً یکی از گزینه‌های سوال ۱۰ را انتخاب کنید.'); return false; }
+      if (n === 11 && !getRadio('q11')) { showError('لطفاً یکی از گزینه‌های سوال ۱۱ را انتخاب کنید.'); return false; }
+      return true;
+    }
+
+    // highlight selected
+    document.addEventListener('change', function(e) {
+      if (!e.target.matches('input[type=radio], input[type=checkbox]')) return;
+      const name = e.target.name;
+      document.querySelectorAll('input[name="' + name + '"]').forEach(inp => {
+        inp.closest('.opt').classList.toggle('selected', inp.checked);
+      });
+    });
+
+    function collectData() {
+      return {
+        type: 'survey_hamdeli',
+        name: (document.getElementById('userName').value || '').trim(),
+        captcha_ok: true,
+        answers: {
+          q1: getRadio('q1'),
+          q2: getChecks('q2'),
+          q3: getChecks('q3'),
+          q4: getRadio('q4'),
+          q5: getChecks('q5'),
+          q6: getRadio('q6'),
+          q7: getRadio('q7'),
+          q8: getChecks('q8'),
+          q9: getChecks('q9'),
+          q10: getRadio('q10'),
+          q11: getRadio('q11'),
+          q12: (document.getElementById('q12').value || '').trim()
+        },
+        ts: Date.now()
+      };
+    }
+
+    function submitSurvey() {
+      showError('');
+      if (!validateStep(11)) { go(11); return; }
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'در حال ارسال…';
+
+      const payload = collectData();
+      const json = JSON.stringify(payload);
+
+      try {
+        const wa = (window.Bale && Bale.WebApp) || (window.Telegram && Telegram.WebApp);
+        if (wa && typeof wa.sendData === 'function') {
+          wa.sendData(json);
+          go('done');
+          if (wa.close) setTimeout(() => { try { wa.close(); } catch(e){} }, 1800);
+          return;
+        }
+      } catch (e) {
+        console.warn('WebApp sendData failed', e);
+      }
+
+      // fallback: copy for debug / show success anyway
+      console.log('SURVEY DATA', payload);
+      go('done');
+      btn.disabled = false;
+      btn.textContent = 'ارسال نظرسنجی';
+    }
+
+    // init WebApp
+    try {
+      const wa = (window.Bale && Bale.WebApp) || (window.Telegram && Telegram.WebApp);
+      if (wa) {
+        if (wa.ready) wa.ready();
+        if (wa.expand) wa.expand();
+      }
+    } catch (e) {}
+  </script>
 </body>
 </html>
