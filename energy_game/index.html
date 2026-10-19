@@ -81,7 +81,7 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 <script>
 'use strict';
 // ⚙️ این مقادیر را ربات هنگام «دریافت فایل بازی» خودکار پر می‌کند
-const STORIES=[{"url": "https://media.roozaneh.net/Podcast/Gheseh/Baby%20Story%20_Andaze%20Donya.mp3", "title": "", "cover": ""}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "", "cover": ""}],SB_URL="",SB_KEY="",NQ=354,QT=20,QD=15,K='barghi1';
+const STORIES=[{"url": "https://dl.sevilmusics.com/cdn/music/srvrt/Baby%20Story%20_Olagh%20Namard%20%5BSevilMusic%5D.mp3", "title": "الاغ قدر نشناس", "cover": "https://mzn.wikipedia.org/wiki/%D9%BE%D8%B1%D9%88%D9%86%D8%AF%D9%87:Donkey_in_Clovelly,_North_Devon,_England.jpg"}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "پت مت", "cover": "https://istanama.com/wp-content/uploads/2021/04/Pat-and-Mat3.jpg"}],SB_URL="",SB_KEY="",NQ=354,QT=20,QD=15,K='barghi1';
 // سازگاری با نسخه‌های قدیمی تک‌لینک
 (function(){function norm(a){if(!a)return[];if(typeof a==='string')return a?[{url:a,title:'',cover:''}]:[];if(Array.isArray(a))return a.filter(x=>x&&x.url).map(x=>({url:String(x.url||''),title:String(x.title||''),cover:String(x.cover||'')}));return[]}window.__STORIES=norm(STORIES);window.__ANIMS=norm(ANIMS)})();
 const $=s=>document.querySelector(s),fa=n=>(+n).toLocaleString('fa-IR'),rnd=n=>Math.random()*n|0;
