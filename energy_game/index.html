@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v6.2</title>
+<title>برقی و خانهٔ هوشمند v6.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -369,7 +369,7 @@ const WASTE_POOL=[
   {id:'kettle',e:'🫖',t:'کتری با آب اضافه',w:1,col:'#ffe0b2',shape:'kettle'},
   {id:'dryer',e:'💨',t:'سشوار روشن بی‌استفاده',w:1,col:'#f8bbd0',shape:'dryer'},
   {id:'washer',e:'🧺',t:'لباسشویی تقریباً خالی',w:1,col:'#d1c4e9',shape:'washer'},
-  {id:'iron',e:'熨',t:'اتو روشن روی میز',w:1,col:'#ffcdd2',shape:'iron'},
+  {id:'iron',e:'👔',t:'اتو روشن روی میز',w:1,col:'#ffcdd2',shape:'iron'},
   {id:'micro',e:'📡',t:'مایکروویو در حال کار بیهوده',w:1,col:'#d7ccc8',shape:'micro'},
   {id:'pc',e:'🖥️',t:'کامپیوتر روشن بدون کار',w:1,col:'#cfd8dc',shape:'pc'}
 ];
@@ -429,21 +429,24 @@ V.escape=()=>{
   ۱) پیدا کردن ۵ وسیلهٔ پرمصرف بین ۱۵ وسیله · ۲) کوییز · ۳) پازل · ۴) حدس توان<br>
   کلیک اشتباه = −۱ · هرکس زودتر تمام کند رتبه بهتری می‌گیرد</p>
   <p>${open?'🟢 رویداد الان باز است!':done?'✅ امروز شرکت کردی':'⏰ فعلاً بسته — حدود ۲۲:۰۰ بیا'}</p>
-  <button class="btn" data-a="nightgo" style="--c:#7e57c2;width:100%" ${(!open&&!done)?'disabled':''}>${done?'دیدن راهنما / تمرین':(open?'شروع فرار شبانه':'منتظر ۲۲:۰۰')}</button>
-  <button class="btn" data-a="nightpractice" style="--c:#5c6bc0;width:100%;margin-top:8px">تمرین آفلاین (بدون رتبه)</button>
+  <button class="btn" data-a="nightgo" style="--c:#7e57c2;width:100%">${open?'🟢 شروع رویداد ۲۲':(done?'شروع دوباره':'شروع بازی')}</button>
+  <button class="btn" data-a="nightpractice" style="--c:#5c6bc0;width:100%;margin-top:8px">🎮 تمرین آفلاین (همیشه باز)</button>
   ${BK}</div>`;
 };
 function startNight(practice){
-  const bonus=upBonus();
-  NG={practice:!!practice,stage:'hunt',t:120+bonus.time,score:0,need:5,found:0,foundIds:{},targets:null,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
-  NG.board=dealNightBoard();
-  show('nrun');
-  if(NG._iv)clearInterval(NG._iv);
-  NG._iv=setInterval(nightTick,1000);
-  if(NG._sh)clearInterval(NG._sh);
-  NG._sh=setInterval(()=>{if(!NG||NG.over||NG.stage!=='hunt')return;NG.shuffle++;NG.board=dealNightBoard();show('nrun');say('جای وسیله‌ها عوض شد!')},8000);
+  try{
+    const bonus=(typeof upBonus==='function')?upBonus():{time:0,score:0};
+    if(NG&&NG._iv)clearInterval(NG._iv);
+    if(NG&&NG._sh)clearInterval(NG._sh);
+    NG={practice:!!practice,stage:'hunt',t:120+(bonus.time||0),score:0,need:5,found:0,foundIds:{},targets:null,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
+    NG.board=dealNightBoard();
+    if(!NG.board||NG.board.length<10){say('خطا در چیدن صفحه');return}
+    show('nrun');
+    NG._iv=setInterval(nightTick,1000);
+    NG._sh=setInterval(()=>{if(!NG||NG.over||NG.stage!=='hunt')return;NG.shuffle++;NG.board=dealNightBoard();if(cur==='nrun')show('nrun');say('جای وسیله‌ها عوض شد!')},8000);
+  }catch(err){console.error(err);say('خطا در شروع: '+(err&&err.message||''));}
 }
-ACT.nightgo=()=>{if(S.nightDone===today()&&!nightOpen()){say('امروز تمام کردی');show('escape');return}startNight(false)};
+ACT.nightgo=()=>{startNight(!nightOpen())};
 ACT.nightpractice=()=>startNight(true);
 function nightTick(){
   if(!NG||NG.over)return;
@@ -839,7 +842,7 @@ V.dotsP=()=>{
     html+=`<div class="card" style="text-align:center"><h2>${w<0?'مساوی!':('برنده: '+esc(names[w]||''))}</h2>${BK}</div>`;
     return html;
   }
-  html+=`<div class="card" style="overflow:auto"><div style="display:inline-block;direction:ltr">`;
+  html+=`<div class="card" style="overflow:auto;text-align:center"><div style="display:inline-block;direction:ltr;margin:0 auto">`;
   for(let r=0;r<=n;r++){
     // horizontal edges row
     html+=`<div style="display:flex;align-items:center">`;
@@ -981,7 +984,7 @@ V.snP=()=>{
       html+=`<div style="background:${bg};border:0.5px solid #8d6e6355;position:relative;font-size:8px;font-weight:800;color:#4e342e;padding:1px">
         <span style="opacity:.7">${fa(num)}</span>
         <div style="position:absolute;inset:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px">
-        ${tokens.map(i=>`<span style="width:13px;height:13px;border-radius:50%;background:${SN_COL[i]};border:2px solid #fff;box-shadow:0 2px 4px #0006"></span>`).join('')}
+        ${tokens.map(i=>`<span style="width:20px;height:20px;border-radius:50%;background:${SN_COL[i]};border:2.5px solid #fff;box-shadow:0 2px 6px #0007"></span>`).join('')}
         </div></div>`;
     }
   }
@@ -1029,119 +1032,78 @@ function ludoNew(np){
   return {tokens:tokens,np:np,turn:0,dice:0,rolling:0,extra:0,winner:-1,starts:[0,13,26,39]};
 }
 // مختصات دایره‌های مسیر روی viewBox 0..100 (صلیب)
-function ludoTrackXY(){
-  // 52 cells around cross - approximate classic layout
-  const pts=[];
-  // bottom arm upward-left side then around — simplified ring of 52
-  // Horizontal bottom row (left to right) cells near bottom of cross
-  const push= (x,y)=>pts.push([x,y]);
-  // Start blue (bottom): go left along bottom arm top edge then counterclockwise
-  // We'll place 52 points along the cross path
-  // Bottom arm (6 cells up the center column area from bottom)
-  for(let i=0;i<6;i++)push(50-6, 88-i*5.5);
-  for(let i=0;i<6;i++)push(38-i*5.2, 55);
-  for(let i=0;i<3;i++)push(8, 55-i*5.5);
-  for(let i=0;i<6;i++)push(8+i*5.2, 38);
-  for(let i=0;i<6;i++)push(44, 38-i*5.2);
-  for(let i=0;i<3;i++)push(44+i*5.5, 8);
-  for(let i=0;i<6;i++)push(62, 8+i*5.2);
-  for(let i=0;i<6;i++)push(62+i*5.2, 38);
-  for(let i=0;i<3;i++)push(92, 38+i*5.5);
-  for(let i=0;i<6;i++)push(92-i*5.2, 55);
-  for(let i=0;i<6;i++)push(56, 55+i*5.5);
-  for(let i=0;i<3;i++)push(56-i*5.5, 88);
-  // pad/trim to 52
-  while(pts.length<52)pts.push(pts[pts.length-1]||[50,50]);
-  return pts.slice(0,52);
-}
-const LUDO_PATH=null; // filled at runtime first call
-function getLudoPath(){
-  if(window.__LUDO_PATH)return window.__LUDO_PATH;
-  window.__LUDO_PATH=ludoTrackXY();
-  return window.__LUDO_PATH;
-}
 function ludoBoardSvg(D,names,turn){
-  const C=SN_COL;
-  const path=getLudoPath();
-  // Home yard centers
-  const yards=[[22,78],[22,22],[78,22],[78,78]]; // p0 blue BL, p1 red TL, p2 yellow TR, p3 green BR — match image-ish: green TL, blue TR, red BL, yellow BR
-  // Image: green top-left, blue top-right, red bottom-left, yellow bottom-right
-  const yardPos=[
-    [[14,70],[22,70],[14,78],[22,78]], // p0
-    [[14,14],[22,14],[14,22],[22,22]], // p1
-    [[78,14],[86,14],[78,22],[86,22]], // p2
-    [[78,70],[86,70],[78,78],[86,78]]  // p3
+  const PC=SN_COL;
+  const step=5.6, origin=12.5, R=2.85;
+  const xy=(r,c)=>[origin+c*step, origin+r*step];
+  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:290px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
+  s+='<rect x="3" y="3" width="94" height="94" rx="8" fill="#e8d5b7" stroke="#5d4037" stroke-width="1.6"/>';
+  // yards: TL red, TR yellow, BL blue, BR green
+  s+='<rect x="5" y="5" width="33" height="33" rx="5" fill="#e53935" opacity="0.2"/>';
+  s+='<rect x="62" y="5" width="33" height="33" rx="5" fill="#fdd835" opacity="0.25"/>';
+  s+='<rect x="5" y="62" width="33" height="33" rx="5" fill="#1e88e5" opacity="0.2"/>';
+  s+='<rect x="62" y="62" width="33" height="33" rx="5" fill="#43a047" opacity="0.2"/>';
+  // path cells on cross (rows/cols 6-8)
+  for(let r=0;r<15;r++){
+    for(let c=0;c<15;c++){
+      if(!((r>=6&&r<=8)||(c>=6&&c<=8)))continue;
+      if(r===7&&c===7)continue;
+      if((r<6||r>8)&&(c<6||c>8))continue;
+      const [x,y]=xy(r,c);
+      let fill='#ffffff';
+      if(c===7&&r>=8&&r<=12)fill='#1e88e5';
+      if(r===7&&c>=2&&c<=6)fill='#e53935';
+      if(c===7&&r>=2&&r<=6)fill='#fdd835';
+      if(r===7&&c>=8&&c<=12)fill='#43a047';
+      s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+fill+'" stroke="#5d4037" stroke-width="0.65"/>';
+    }
+  }
+  const [cx,cy]=xy(7,7);
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="#fff8e1" stroke="#5d4037" stroke-width="0.9"/>';
+  s+='<text x="'+cx+'" y="'+(cy+1.6)+'" text-anchor="middle" font-size="5.5" fill="#5d4037">★</text>';
+  // path for movement
+  if(!window.__LP){
+    const seq=[];
+    for(let r=13;r>=8;r--)seq.push([r,6]);
+    for(let c=5;c>=0;c--)seq.push([8,c]);
+    for(let r=7;r>=0;r--)seq.push([r,0]);
+    for(let c=1;c<=6;c++)seq.push([0,c]);
+    for(let r=1;r<=6;r++)seq.push([r,8]);
+    for(let c=9;c<=14;c++)seq.push([6,c]);
+    for(let r=7;r<=14;r++)seq.push([r,14]);
+    for(let c=13;c>=8;c--)seq.push([14,c]);
+    for(let r=13;r>=9;r--)seq.push([r,8]);
+    window.__LP=seq.map(([r,c])=>xy(r,c));
+    while(window.__LP.length<52)window.__LP.push(window.__LP[window.__LP.length-1]);
+    window.__LP=window.__LP.slice(0,52);
+  }
+  const path=window.__LP;
+  const yardSlots=[
+    [[18,72],[28,72],[18,82],[28,82]],
+    [[18,16],[28,16],[18,26],[28,26]],
+    [[72,16],[82,16],[72,26],[82,26]],
+    [[72,72],[82,72],[72,82],[82,82]]
   ];
-  // Recolor to match image: 0 green, 1 blue, 2 red, 3 yellow for display when 4p — map SN_COL order
-  // Keep SN_COL: 0 blue, 1 red, 2 yellow, 3 green — place: blue bottom, red left-ish...
-  // Image order seats: TL green, TR blue, BL red, BR yellow
-  // Our p0=blue, p1=red, p2=yellow, p3=green
-  const seatYard=[1,0,2,3]; // not needed if we fix yardPos to p index
-
-  let s=`<svg viewBox="0 0 100 100" style="width:100%;max-width:340px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 8px 20px #0005)">`;
-  // board background
-  s+=`<rect x="2" y="2" width="96" height="96" rx="4" fill="#d7b899" stroke="#8d6e63" stroke-width="1.2"/>`;
-  // soft center
-  s+=`<rect x="35" y="35" width="30" height="30" fill="#c4a574" opacity="0.5"/>`;
-
-  // Draw path circles
-  path.forEach((pt,i)=>{
-    const [x,y]=pt;
-    let fill='#f5f5f5',stroke='#5d4037';
-    // color home stretches roughly
-    s+=`<circle cx="${x}" cy="${y}" r="3.1" fill="${fill}" stroke="${stroke}" stroke-width="0.55"/>`;
-  });
-
-  // Colored home columns into center (visual only)
-  const arms=[
-    {pts:[[50,72],[50,66],[50,60],[50,54],[50,48]],c:C[0]}, // bottom blue
-    {pts:[[28,50],[34,50],[40,50],[46,50]],c:C[1]}, // left red
-    {pts:[[50,28],[50,34],[50,40],[50,46]],c:C[2]}, // top yellow
-    {pts:[[72,50],[66,50],[60,50],[54,50]],c:C[3]}  // right green — adjust
-  ];
-  // Fix arm colors to match players 0-3
-  arms[0].c=C[0];arms[1].c=C[1];arms[2].c=C[2];arms[3].c=C[3];
-  arms.forEach(a=>a.pts.forEach(p=>{s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.1" fill="${a.c}" stroke="#fff" stroke-width="0.4" opacity="0.95"/>`}));
-
-  // Center star-ish
-  s+=`<circle cx="50" cy="50" r="5" fill="#fff8e1" stroke="#5d4037" stroke-width="0.6"/>`;
-  s+=`<text x="50" y="52" text-anchor="middle" font-size="4" fill="#5d4037">★</text>`;
-
-  // Yard bases (rounded squares)
-  const yardColors=[C[0],C[1],C[2],C[3]];
-  const yardBoxes=[[6,62,28,32],[6,6,28,32],[66,6,28,32],[66,62,28,32]];
-  yardBoxes.forEach((b,i)=>{
-    if(i>=D.np)return;
-    s+=`<rect x="${b[0]}" y="${b[1]}" width="${b[2]}" height="${b[3]}" rx="3" fill="${yardColors[i]}" opacity="0.25" stroke="${yardColors[i]}" stroke-width="0.8"/>`;
-  });
-
-  // Tokens
   for(let p=0;p<D.np;p++){
     D.tokens[p].forEach((v,ti)=>{
       let x,y;
-      if(v===0){
-        const slot=yardPos[p][ti];x=slot[0];y=slot[1];
-      }else if(v>0&&v<53){
-        const abs=(D.starts[p]+v-1)%52;const pt=path[abs];x=pt[0];y=pt[1];
-      }else{
-        // home stretch
-        const step=Math.min(5,v-52);
-        if(p===0){x=50;y=72-step*5.5}
-        else if(p===1){x=28+step*5.5;y=50}
-        else if(p===2){x=50;y=28+step*5.5}
-        else{x=72-step*5.5;y=50}
+      if(v===0){const sl=yardSlots[p][ti];x=sl[0];y=sl[1];}
+      else if(v>0&&v<53){const pt=path[(D.starts[p]+v-1)%52];x=pt[0];y=pt[1];}
+      else{
+        const k=Math.min(5,v-52);
+        if(p===0){const q=xy(13-k,7);x=q[0];y=q[1]}
+        else if(p===1){const q=xy(7,1+k);x=q[0];y=q[1]}
+        else if(p===2){const q=xy(1+k,7);x=q[0];y=q[1]}
+        else{const q=xy(7,13-k);x=q[0];y=q[1]}
       }
-      // pawn shape
-      s+=`<g transform="translate(${x},${y})">
-        <circle cx="0" cy="-1.2" r="2.3" fill="${C[p]}" stroke="#fff" stroke-width="0.55"/>
-        <ellipse cx="0" cy="2" rx="2.4" ry="2" fill="${C[p]}" stroke="#fff" stroke-width="0.4"/>
-        <circle cx="-0.7" cy="-1.5" r="0.45" fill="#fff8"/><circle cx="0.7" cy="-1.5" r="0.45" fill="#fff8"/>
-      </g>`;
+      const col=PC[p%4];
+      s+='<g transform="translate('+x+','+y+')"><circle cx="0" cy="-1.2" r="2.6" fill="'+col+'" stroke="#fff" stroke-width="0.7"/><ellipse cx="0" cy="2.2" rx="2.7" ry="2.2" fill="'+col+'" stroke="#fff" stroke-width="0.55"/></g>';
     });
   }
-  s+=`</svg>`;
+  s+='</svg>';
   return s;
 }
+
 V.ludo=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🏠</div>
 <h3>منچ کلاسیک</h3><p>صفحه صلیبی رنگی مثل بازی واقعی. هر نفر ۴ مهره. با ۶ بیرون بیا.</p>
 <button class="btn" data-a="ld2" style="--c:#ef5350;width:100%">۲ نفره محلی</button>
