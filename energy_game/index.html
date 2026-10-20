@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>برقی و خانهٔ هوشمند</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
-<script src="https://tapi.bale.ai/miniapp.js" onerror="console.warn('bale miniapp.js failed')"></script>
+<script src="https://tapi.bale.ai/miniapp.js"></script>
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{height:100%;min-height:100%;min-height:100dvh;scroll-padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;min-height:100vh;font:500 16px/1.7 Vazirmatn,Tahoma,system-ui,sans-serif;color:var(--tx);background:radial-gradient(circle at 85% 0,#5a45c9,transparent 55%),linear-gradient(#1c1550,#0e0a2c);background-attachment:scroll;user-select:none;-webkit-user-select:none}
-#app{max-width:480px;margin:auto;padding:12px 14px 120px;min-height:60vh;position:relative;z-index:1}
+body{margin:0;min-height:100vh;font:500 16px/1.7 Vazirmatn,Tahoma,system-ui,sans-serif;color:var(--tx);background:radial-gradient(circle at 85% 0,#5a45c9,transparent 55%),linear-gradient(#1c1550,#0e0a2c);background-attachment:fixed;user-select:none;-webkit-user-select:none}
+#app{max-width:480px;margin:auto;padding:12px 14px 120px}
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
 .chip{background:var(--card);border:0;border-radius:99px;padding:3px 12px;font:800 15px Vazirmatn,Tahoma,sans-serif;color:inherit;white-space:nowrap;cursor:pointer}
 .card{background:var(--card);border-radius:24px;padding:14px;margin:10px 0}
@@ -63,15 +63,6 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 .cf{position:fixed;top:-14px;width:9px;height:14px;z-index:9;pointer-events:none;animation:fall 2s linear forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
 .avb{border:3px solid transparent;border-radius:16px;background:#ffffff1c;font-size:30px;padding:2px 6px;margin:2px;cursor:pointer}.avb.on{border-color:var(--y);transform:scale(1.12)}
-
-.mlib{display:flex;flex-direction:column;gap:10px;margin:10px 0}
-.mitem{display:flex;gap:10px;align-items:center;background:#ffffff14;border:2px solid #fff3;border-radius:16px;padding:8px;cursor:pointer;text-align:right;width:100%;color:inherit;font:inherit}
-.mitem:active{transform:scale(.98)}
-.mitem img,.mph{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#0004;flex:none;display:flex;align-items:center;justify-content:center;font-size:28px}
-.mitem b{display:block;font-size:14px;line-height:1.4}
-.mitem small{opacity:.75;font-size:11px}
-.mplay{margin-top:8px}
-.mcov{width:100%;max-height:180px;object-fit:cover;border-radius:16px;margin:8px 0;background:#0004}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -81,9 +72,7 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 <script>
 'use strict';
 // ⚙️ این مقادیر را ربات هنگام «دریافت فایل بازی» خودکار پر می‌کند
-const STORIES=[{"url": "https://dl.sevilmusics.com/cdn/music/srvrt/Baby%20Story%20_Olagh%20Namard%20%5BSevilMusic%5D.mp3", "title": "الاغ قدر نشناس", "cover": "https://mzn.wikipedia.org/wiki/%D9%BE%D8%B1%D9%88%D9%86%D8%AF%D9%87:Donkey_in_Clovelly,_North_Devon,_England.jpg"}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "پت مت", "cover": "https://istanama.com/wp-content/uploads/2021/04/Pat-and-Mat3.jpg"}],SB_URL="https://bfzreeyyhmygpnfzczwn.supabase.co",SB_KEY="sb_publishable_9OcON2qika5bnRt-mO0cDg_cRJ_OXUF",NQ=354,QT=20,QD=15,K='barghi1';
-// سازگاری با نسخه‌های قدیمی تک‌لینک
-(function(){function norm(a){if(!a)return[];if(typeof a==='string')return a?[{url:a,title:'',cover:''}]:[];if(Array.isArray(a))return a.filter(x=>x&&x.url).map(x=>({url:String(x.url||''),title:String(x.title||''),cover:String(x.cover||'')}));return[]}window.__STORIES=norm(STORIES);window.__ANIMS=norm(ANIMS)})();
+const STORY_URL="",ANIM_URL="",SB_URL="",SB_KEY="",NQ=354,QT=20,QD=15,K='barghi1';
 const $=s=>document.querySelector(s),fa=n=>(+n).toLocaleString('fa-IR'),rnd=n=>Math.random()*n|0;
 const AP=[['لامپ رشته‌ای',60],['لامپ ال‌ای‌دی',9],['پنکه',50],['تلویزیون',100],['شارژر موبایل',5],['لپ‌تاپ',65],['یخچال',150],['اتو',1200],['سشوار',1800],['لباسشویی',500],['جاروبرقی',1400],['بخاری برقی',2000],['کولر گازی',1500],['مایکروویو',1000],['کتری برقی',2200],['کنسول بازی',120],['کامپیوتر',250],['پمپ آب',750]];
 const GD=['خاموش کردن چراغ اتاق خالی','درآوردن شارژر از پریز بعد از شارژ','باز کردن پرده در روز به جای چراغ','استفاده از لامپ کم‌مصرف','بستن سریع در یخچال','پر کردن لباسشویی قبل از روشن کردن'];
@@ -99,73 +88,16 @@ const me=()=>(S.p.a||'🙂')+' '+S.p.f+' '+S.p.l[0]+'.';
 const nm=n=>{const a=Array.from(n||'🙂 ?');return '<div class="ab">'+esc(a[0])+'</div><b>'+esc(a.slice(2).join(''))+'</b>'};
 const dk=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),today=()=>dk(new Date());
 const wkey=o=>{const d=new Date();return dk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-(d.getDay()+1)%7-7*(o||0)))};
-let S=null;try{S=JSON.parse(localStorage.getItem(K)||'null')}catch(e){S=null}
-if(!S||typeof S!=='object')S={};
-S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1},S);
-if(!S.lv||typeof S.lv!=='object')S.lv={};if(!Array.isArray(S.seen))S.seen=[];
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1},S||{});
 if(S.wk!=wkey()){S.wk=wkey();S.wp=0}
-function _wa(){return (window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null}
-function _expandWA(){try{const W=_wa();if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}refreshUid()}catch(e){}}
-let uid=0;
-function _parseUserFromRaw(raw){
-  if(!raw||typeof raw!=='string') return 0;
-  try{
-    let m=raw.match(/(?:^|[&#?])(?:tgWebAppData|baleWebAppData|WebAppData)=([^&#]+)/i);
-    if(m){try{raw=decodeURIComponent(m[1])}catch(e){raw=m[1]}}
-    let js='';
-    m=raw.match(/user%3D([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}
-    if(!js){m=raw.match(/(?:^|&)user=([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=m[1]}}}
-    if(js){try{const u=JSON.parse(js);if(u&&u.id)return +u.id}catch(e){}}
-    m=raw.match(/"id"\s*:\s*(\d{3,20})/);if(m)return +m[1];
-  }catch(e){}
-  return 0;
-}
-function refreshUid(){
-  try{
-    if(uid) return uid;
-    const apps=[_wa(), window.Bale&&Bale.WebApp, window.Telegram&&Telegram.WebApp];
-    for(const app of apps){
-      if(!app) continue;
-      try{if(app.ready)app.ready()}catch(e){}
-      try{
-        const u=app.initDataUnsafe&&app.initDataUnsafe.user;
-        if(u&&u.id){uid=+u.id;return uid}
-      }catch(e){}
-      try{
-        const id=_parseUserFromRaw(app.initData||'');
-        if(id){uid=id;return uid}
-      }catch(e){}
-    }
-    try{
-      const id=_parseUserFromRaw((location.hash||'').replace(/^#/,'')+'&'+(location.search||'').replace(/^\?/,''));
-      if(id){uid=id;return uid}
-    }catch(e){}
-    try{
-      if(window.Telegram&&Telegram.WebView&&Telegram.WebView.initParams){
-        const p=Telegram.WebView.initParams;
-        const id=_parseUserFromRaw(p.tgWebAppData||p.baleWebAppData||'');
-        if(id){uid=id;return uid}
-      }
-    }catch(e){}
-  }catch(e){}
-  return uid;
-}
-_expandWA();
-[0,100,300,600,1000,2000,4000,7000].forEach(t=>setTimeout(function(){_expandWA();refreshUid()},t));
-try{document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshUid()})}catch(e){}
-try{window.addEventListener('focus',function(){refreshUid()})}catch(e){}
+const W=window.Bale&&Bale.WebApp||window.Telegram&&Telegram.WebApp;
+try{W.ready();W.expand()}catch(e){}
+let uid=0;try{uid=W.initDataUnsafe.user.id}catch(e){}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
-const rpc=(f,b)=>{const h={'Content-Type':'application/json','Accept':'application/json',apikey:SB_KEY};if(SB_KEY.slice(0,3)=='eyJ')h.Authorization='Bearer '+SB_KEY;return fetch(SB_URL+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)}).then(async r=>{let j=null;try{j=await r.json()}catch(e){}if(!r.ok){const err=new Error((j&&(j.message||j.error||j.hint))||('HTTP '+r.status));err.status=r.status;err.body=j;throw err}return j})};
-const sb=()=>{refreshUid();return !!(SB_URL&&SB_KEY&&uid)};
-const onlineWhy=()=>{
-  refreshUid();
-  const miss=[];
-  if(!SB_URL) miss.push('آدرس Supabase داخل فایل بازی خالی است');
-  if(!SB_KEY) miss.push('کلید anon داخل فایل بازی خالی است');
-  if(SB_URL&&SB_KEY&&!uid) miss.push('شناسه کاربر بله خوانده نشد — فقط از دکمه داخل بله باز کنید');
-  return miss;
-};
-let sy;function sync(){clearTimeout(sy);sy=setTimeout(doSync,1500)}function doSync(){if(sb()&&S.p)try{rpc('egame_sync',{p_uid:String(uid),p_f:S.p.f,p_l:S.p.l,p_c:S.p.c,p_pts:S.pts,p_wk:S.wk,p_wp:S.wp}).catch(()=>{})}catch(e){}}
+const rpc=(f,b)=>{const h={'Content-Type':'application/json',apikey:SB_KEY};if(SB_KEY.slice(0,3)=='eyJ')h.Authorization='Bearer '+SB_KEY;return fetch(SB_URL+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)}).then(r=>r.json())};
+const sb=()=>SB_URL&&SB_KEY&&uid;
+let sy;function sync(){clearTimeout(sy);sy=setTimeout(doSync,1500)}function doSync(){if(sb()&&S.p)try{rpc('game_sync',{p_uid:String(uid),p_f:S.p.f,p_l:S.p.l,p_c:S.p.c,p_pts:S.pts,p_wk:S.wk,p_wp:S.wp}).catch(()=>{})}catch(e){}}
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}sync()}
 let AC;
 function tone(f,d,t,v,s){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime+(s||0);o.type=t||'sine';o.frequency.value=f;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(v||.12,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.start(n);o.stop(n+d)}catch(e){}}
@@ -185,7 +117,7 @@ const V={},post={},ACT={};let cur,arg,G=null,Q=null,lastOk=0,rot=0;
 function show(n,a){if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;$('#v').innerHTML=V[n](a);$('#h').style.display=n=='reg'||n=='game'||n=='dq'?'none':'';window.scrollTo(0,0);post[n]&&post[n](a);hud();if(MS[n])say(MS[n])}
 V.reg=()=>`<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">${AVS.map((a,i)=>`<button class="avb${i?'':' on'}" data-a="v${i}">${a}</button>`).join('')}</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>`;
 ACT.reg=()=>{const v=i=>$('#'+i).value.replace(/[<>&"'`]/g,'').trim(),f=v('f'),l=v('l'),c=v('c');if(f.length<2||l.length<2||c.length<2){$('#er').textContent='لطفاً نام، نام خانوادگی و شهر را کامل بنویس 🙂';return}S.p={f,l,c,a:av};save();show('home')};
-V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small></div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div>`};
+V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl();return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small></div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',S.ms==today()?'✅ انجام شد':'+۵ امتیاز','#b99cff')}${B('anim','🎬','انیمیشن',S.ma==today()?'✅ انجام شد':'+۵ امتیاز','#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div>`};
 V.map=()=>{let h='<div class="house">';for(let t=0;t<3;t++){h+=`<div class="card"><b>طبقهٔ ${fa(t+1)}</b><div class="g4">`;for(let i=0;i<8;i++){const L=t*8+i,r=R[i],st=S.lv[L]||0,lk=L>0&&!S.lv[L-1];h+=`<button class="lv${lk?' lk':''}" data-a="L${L}" style="--c:${r[2]}"><b>${lk?'🔒':r[1]}</b>${r[0]}<br>${'⭐'.repeat(st)||'·'}</button>`}h+='</div></div>'}return h+'</div>'};
 function play(L,seed){const du=seed!=null;if(du)L=16+seed%8;else if(L>23||L>0&&!S.lv[L-1])return;const r=R[L%8],t=L/8|0,T=du?35:30+t*5,d=r[4].map(i=>({e:D[i][0],nm:D[i][1],w:D[i][2],tip:D[i][3],n:i==6,s:i==6?1:0})),f=d.filter(x=>!x.n),sum=f.reduce((a,x)=>a+x.w,0);f[0].s=2;G={L,t:T,d,E:0,k:0,cb:0,bn:0,du,r:du?mb(seed):Math.random,sp:1.2,iv:du?1:Math.max(.75,2.2-.08*L)*S.ad,pw:du?.5:.3+.1*t,mx:sum*T,cap:sum,m:sum*T*.03,over:0,st:1,h:0};show('game')}
 V.game=()=>{const r=R[G.L%8];return `<div class="bar">${G.du?'':'<button class="chip" data-a="map">🗺️</button>'}<span class="chip">⏱ <b id="t">${fa(G.t)}</b></span><span class="chip">⚡ <b id="w">۰</b> وات</span><span class="chip">✅ <b id="k">۰</b></span>${G.du?'<span class="chip" id="oq">👤 ۰</span>':''}</div><div class="meter"><i id="mb"></i></div><h3 style="text-align:center;margin:6px 0 0">${r[1]} ${r[0]} · ${G.du?'⚔️ دوئل':'مرحلهٔ '+fa(G.L+1)}</h3><div class="sc" style="--w:${r[2]};--fl:${r[3]};--k:${Math.min(.82,(innerWidth-24)/428).toFixed(2)}"><div class="rm"><div class="f bw"></div><div class="f lw"></div><div class="f fl"></div>${G.d.map((d,i)=>`<div class="dv s${d.s}" id="d${i}" style="--x:${P[i][0]}px;--y:${P[i][1]}px;--z:${P[i][2]}px"><u></u><span>${d.e}</span><em>${d.nm}</em></div>`).join('')}</div></div>`};
@@ -209,103 +141,39 @@ setInterval(qtick,250);
 const WV=[1,2,4,10,1,2,1,4],WP=[1,1,1,1,2,2,2,4,4,10];
 V.wheel=()=>{const l=wl();return `<div class="card" style="text-align:center"><h3 style="margin:0">🎡 گردونهٔ شانس</h3><div class="wp">▼</div><div class="wh" id="wh" style="transform:rotate(${rot}deg)">${WV.map((v,i)=>`<b style="transform:rotate(${i*45+22.5}deg) translateY(-84px)">${fa(v)}</b>`).join('')}</div><p id="wm">${l?'امروز '+fa(l)+' بار شانس داری':'امروز شانست تمام شد؛ فردا دوباره بیا 🌙'}</p><button class="btn" data-a="spin" style="--c:#ff9aa8;width:70%"${l?'':' disabled'}>بچرخان!</button>${BK}</div>`};
 ACT.spin=()=>{if(!wl()||cur!='wheel')return;S.wl--;const v=WP[rnd(WP.length)],ix=[];WV.forEach((x,i)=>{if(x==v)ix.push(i)});const a=ix[rnd(ix.length)]*45+22.5;rot+=1440+(((360-a-rot%360)%360)+360)%360;save();$('#wh').style.transform='rotate('+rot+'deg)';$('[data-a=spin]').disabled=true;const tk=setInterval(sfx.tick,250);setTimeout(()=>{clearInterval(tk);add(v);sfx.win();if(cur=='wheel')show('wheel');say(fa(v)+' امتیاز گرفتی! 🎉')},4200)};
-V.media=k=>{
-  if(k&&typeof k==='object'){arg=k;k=k.k||'s'}else{arg={k:k,ix:-1}}
-  const list=k=='s'?(window.__STORIES||[]):(window.__ANIMS||[]);
-  const doneDay=(k=='s'?S.ms:S.ma)==today();
-  const t=k=='s'?'قصه شب':'انیمیشن';
-  const emoji=k=='s'?'🌙':'🎬';
-  const ix=typeof arg==='object'&&arg&&arg.ix!=null?arg.ix:-1;
-  if(ix>=0&&list[ix]){
-    const it=list[ix];
-    const cov=it.cover?`<img class="mcov" src="${esc(it.cover)}" alt="" onerror="this.style.display='none'">`:'';
-    const player=k=='s'
-      ?`<audio id="md" src="${esc(it.url)}" controls style="width:100%"></audio>`
-      :`<video id="md" src="${esc(it.url)}" controls playsinline poster="${esc(it.cover||'')}" style="width:100%;border-radius:16px;background:#000"></video>`;
-    return `<div class="card" style="text-align:center"><div style="font-size:40px">${emoji}</div><h3 style="margin:0">${esc(it.title||t)}</h3>${cov}${player}<p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':'تا آخر '+(k=='s'?'گوش کن':'تماشا کن')+' و ۵ امتیاز بگیر!'}</p><button class="btn" data-a="${k=='s'?'story':'anim'}" style="--c:#b99cff;margin-top:8px">📚 بازگشت به فهرست</button>${BK}</div>`;
-  }
-  if(!list.length){
-    return `<div class="card" style="text-align:center"><div style="font-size:60px">${emoji}</div><h3 style="margin:0">${t}</h3><p>هنوز موردی اضافه نشده است.</p><button class="btn" data-a="demo" style="--c:#5ec8ff">پخش آزمایشی (۶ ثانیه)</button><p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':''}</p>${BK}</div>`;
-  }
-  const items=list.map((it,i)=>{
-    const cov=it.cover?`<img src="${esc(it.cover)}" alt="" onerror="this.outerHTML='<div class=mph>${emoji}</div>'">`:`<div class="mph">${emoji}</div>`;
-    return `<button class="mitem" data-a="mp${k}${i}">${cov}<span style="flex:1;min-width:0"><b>${esc(it.title||(t+' '+(i+1)))}</b><small>${k=='s'?'صوتی':'ویدیو'} · پخش</small></span><span style="font-size:22px">▶️</span></button>`;
-  }).join('');
-  return `<div class="card" style="text-align:center"><div style="font-size:48px">${emoji}</div><h3 style="margin:0">${t}</h3><small>${fa(list.length)} مورد · ${doneDay?'امروز امتیاز گرفتی ✅':'با تماشای کامل ۵ امتیاز'}</small><div class="mlib">${items}</div>${BK}</div>`;
-};
+V.media=k=>{const u=k=='s'?STORY_URL:ANIM_URL,done=(k=='s'?S.ms:S.ma)==today(),t=k=='s'?'قصه شب':'انیمیشن';return `<div class="card" style="text-align:center"><div style="font-size:60px">${k=='s'?'🌙':'🎬'}</div><h3 style="margin:0">${t}</h3>${u?(k=='s'?`<audio id="md" src="${esc(u)}" controls style="width:100%"></audio>`:`<video id="md" src="${esc(u)}" controls playsinline style="width:100%;border-radius:16px"></video>`):`<p>لینک ${t} هنوز تنظیم نشده است.</p><button class="btn" data-a="demo" style="--c:#5ec8ff">پخش آزمایشی (۶ ثانیه)</button>`}<p id="mm">${done?'امروز ۵ امتیاز گرفتی ✅':'تا آخر '+(k=='s'?'گوش کن':'تماشا کن')+' و ۵ امتیاز بگیر!'}</p>${BK}</div>`};
 function done(k){const f=k=='s'?'ms':'ma';if(S[f]==today())return;S[f]=today();add(5);sfx.win();say('۵ امتیاز گرفتی! 🎉');const e=$('#mm');if(e)e.textContent='امروز ۵ امتیاز گرفتی ✅'}
-post.media=k=>{if(k&&typeof k==='object')k=k.k||'s';const m=$('#md');if(m){m.onended=()=>done(k);m.ontimeupdate=()=>{if(m.duration&&m.currentTime/m.duration>.9)done(k)}}};
+post.media=k=>{const m=$('#md');if(m){m.onended=()=>done(k);m.ontimeupdate=()=>{if(m.duration&&m.currentTime/m.duration>.9)done(k)}}};
 ACT.demo=()=>{$('#mm').textContent='در حال پخش آزمایشی…';const k=arg;setTimeout(()=>done(k),6000)};
 V.lb=()=>`<div class="card" style="text-align:center"><h3 style="margin:0">🏆 جدول هفته (شنبه تا جمعه)</h3><p>${S.p.f} ${S.p.l} · ${S.p.c}</p><h1 style="margin:0">${fa(S.wp)} امتیاز</h1><p>مجموع همهٔ امتیازها: ${fa(S.pts)}</p><div id="top">${sb()?'در حال بارگیری…':'جدول همهٔ بچه‌ها فقط داخل بله فعال است.'}</div><p>آخر هفته، نفر اول جایزه می‌گیرد! 🎁</p>${BK}</div>`;
-post.lb=()=>{if(sb())rpc('egame_top',{p_wk:S.wk}).then(a=>{$('#top').innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.p)}</div>`).join('')||'هنوز کسی امتیاز نگرفته؛ اولین نفر تو باش!'}).catch(()=>{$('#top').textContent='اتصال به جدول برقرار نشد.'})};
+post.lb=()=>{if(sb())rpc('game_top',{p_wk:S.wk}).then(a=>{$('#top').innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.p)}</div>`).join('')||'هنوز کسی امتیاز نگرفته؛ اولین نفر تو باش!'}).catch(()=>{$('#top').textContent='اتصال به جدول برقرار نشد.'})};
 // ===== رقابت آنلاین دونفره (Supabase + بذر مشترک؛ اگر آنلاین نبود: تمرین با رقیب هوشمند) =====
 let DL=null;
 const dos=r=>r.me==1?{s:r.s2,f:r.f2}:{s:r.s1,f:r.f1};
 function botStart(k){DL={kind:k,ph:'vs',t0:Date.now(),sc:0,paid:0,bot:1,r:{id:'BOT',kind:k,pub:false,seed:rnd(2e9)+1,me:1,n1:me(),n2:'🤖 رقیب هوشمند',st:'play',s1:0,s2:0,f1:false,f2:false}};show('dvs')}
-function onlineOk(){refreshUid();return !!(SB_URL&&SB_KEY)}
-function onlineReady(){refreshUid();return !!(SB_URL&&SB_KEY&&uid)}
-function duelFail(msg,k,allowBot){DL=null;say(msg||'اتصال برقرار نشد');show('duel');if(allowBot)setTimeout(()=>{try{if(confirm('آنلاین نشد. با رقیب هوشمند تمرین کنیم؟'))botStart(k)}catch(e){botStart(k)}},250)}
-function duelStart(k,code){
-  if(DL&&(DL.ph=='wait'||DL.ph=='vs'||DL.ph=='play')){say('یک بازی در حال انجام است');return}
-  refreshUid();
-  const priv=!!(code&&String(code).length);
-  if(!SB_URL||!SB_KEY){if(priv){say('فایل بازی کلید آنلاین ندارد؛ مالک «دریافت فایل بازی» را دوباره بزند');return}botStart(k);return}
-  refreshUid();
-  if(!uid){say('شناسه کاربر بله پیدا نشد. بازی را فقط از دکمه داخل بله باز کن (نه مرورگر).');return}
-  DL={kind:k,ph:'wait',t0:Date.now(),sc:0,paid:0,bot:0,priv:priv};
-  say(priv?(code==='NEW'?'در حال ساخت اتاق…':'در حال ورود…'):'در حال پیدا کردن حریف…');
-  show('dload');
-  rpc('egame_duel_enter',{p_uid:String(uid),p_name:me(),p_kind:k,p_code:code||'',p_wk:S.wk}).then(r=>{
-    if(!DL)return;
-    if(r&&r.err=='nf'){DL=null;say('کد اتاق پیدا نشد 😕');show('duel');return}
-    if(r&&r.err=='full'){DL=null;say('اتاق پر است یا بازی شروع شده');show('duel');return}
-    if(r&&r.err){DL=null;say('خطا: '+r.err);show('duel');return}
-    if(!r||!r.id){duelFail('پاسخ سرور نامعتبر',k,!priv);return}
-    DL.r=r;DL.kind=r.kind||k;
-    show(r.st==='play'?'dvs':'dwait');
-  }).catch(e=>{console.error(e);duelFail('خطای سرور: '+(e&&e.message||'اتصال'),k,!priv)})
-}
-V.dload=()=>`<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">⏳</div><h3>لطفاً صبر کن…</h3><p><small>ارتباط با سرور</small></p><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`
-V.duel=()=>{const on=onlineOk();return `<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>${on?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین خاموش است. می‌توانی با رقیب هوشمند تمرین کنی.'}</small></div><div class="grid">${B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')}${B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')}</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div>${on?'':`<p style="color:#ff9aa8;font-size:13px;margin:8px 0 0;text-align:right">آنلاین خاموش است:<br>• ${onlineWhy().join('<br>• ')||'تنظیم ناقص'}<br><br>مالک باید: ۱) SQL را اجرا کند ۲) GAME_SUPABASE_ANON_KEY را بگذارد ۳) ربات را Restart کند ۴) «دریافت فایل بازی» را بزند و index.html را روی GitHub جایگزین کند.</p>`}</div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>${BK}`};
-V.dwait=()=>{DL.ph='wait';const x=DL.r||{},showBot=!!x.pub||(Date.now()-(DL.t0||0)>25000);return `<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">${x.pub?'🔍':'🏠'}</div><h3>${x.pub?'در حال پیدا کردن حریف…':'اتاق دوستانه ساخته شد'}</h3>${x.pub?'':`<p>این کد را برای دوستت بفرست:</p><h1 style="letter-spacing:6px;margin:0;user-select:all;-webkit-user-select:all">${esc(x.id)}</h1><p><small>دوستت همین کد را در «ورود با کد» بزند</small></p>`}<p><small>${x.kind=='quiz'?'❓ کوییز دوئل':'🏠 دوئل خانه'} · منتظر ورود حریف</small></p><button class="btn" id="bt" data-a="dbot" style="--c:#b99cff;${showBot?'':'display:none'}">🤖 بازی با رقیب هوشمند</button><br><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`};
+function duelStart(k,code){if(DL&&(DL.ph=='wait'||DL.ph=='vs'))return;if(!sb()){botStart(k);return}DL={kind:k,ph:'wait',t0:Date.now(),sc:0,paid:0};rpc('game_duel_enter',{p_uid:String(uid),p_name:me(),p_kind:k,p_code:code,p_wk:S.wk}).then(r=>{if(r&&r.err=='nf'){DL=null;say('کد اتاق پیدا نشد 😕');return}if(!r||!r.id){botStart(k);return}DL.r=r;DL.kind=r.kind;show(r.st=='play'?'dvs':'dwait')}).catch(()=>botStart(k))}
+V.duel=()=>`<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>${sb()?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین فقط داخل بله فعال است؛ اینجا با رقیب هوشمند تمرین کن.'}</small></div><div class="grid">${B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')}${B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')}</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="5" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div></div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>${BK}`;
+V.dwait=()=>{DL.ph='wait';const x=DL.r;return `<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">🔍</div><h3>${x.pub?'در حال پیدا کردن حریف…':'اتاق دوستانه ساخته شد'}</h3>${x.pub?'':`<p>این کد را برای دوستت بفرست:</p><h1 style="letter-spacing:6px;margin:0">${esc(x.id)}</h1>`}<p><small>${x.kind=='quiz'?'❓ کوییز دوئل':'🏠 دوئل خانه'} · منتظر ورود حریف</small></p><button class="btn" id="bt" data-a="dbot" style="--c:#b99cff;display:none">🤖 بازی با رقیب هوشمند</button><br><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`};
 V.dvs=()=>{const x=DL.r,a=x.me==1?[x.n1,x.n2]:[x.n2,x.n1];return `<div class="card vs"><div class="av">${nm(a[0])}</div><b class="vsb">VS</b><div class="av">${nm(a[1])}</div></div><h1 id="cn" style="text-align:center;font-size:84px;margin:0">۳</h1>`};
 post.dvs=()=>{DL.ph='vs';let n=3;const t=setInterval(()=>{if(cur!='dvs'){clearInterval(t);DL=null;return}n--;const e=$('#cn');if(n>0){if(e)e.textContent=fa(n);sfx.tick()}else{clearInterval(t);sfx.win();dgo()}},900)};
 function dgo(){DL.ph='play';DL.sc=0;if(DL.kind=='quiz'){const g=mb(DL.r.seed),ids=[];while(ids.length<6){const i=g()*NQ|0;if(ids.indexOf(i)<0)ids.push(i)}DL.qs={ids,i:0,t:0};DL.g=mb(DL.r.seed+7);show('dq')}else play(null,DL.r.seed)}
 V.dq=()=>{const s=DL.qs;Q=mk(s.ids[s.i],DL.g);s.t=Date.now();const op=dos(DL.r);return `<div class="bar"><span class="chip">${fa(s.i+1)}/۶</span><span class="chip">⭐ ${fa(DL.sc)}</span><span class="chip" id="oqq">👤 ${fa(DL.bot?0:op.s)}</span></div><div class="meter"><i id="qb" style="width:100%;background:#3ee0a3"></i></div><div class="card"><h3 style="margin-top:0">${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="o${j}">${o}</button>`).join('')}</div>`};
 function dans(j){if(!Q||Q.d)return;Q.d=1;const s=DL.qs,l=Math.max(0,QD-(Date.now()-s.t)/1e3),ok=j>=0&&Q.o[j]==Q.c,b=document.querySelectorAll('.opt');b.forEach((x,i)=>{x.disabled=true;if(Q.o[i]==Q.c)x.classList.add('ok')});if(ok){DL.sc+=10+Math.ceil(l*.6);sfx.ok();say(PR[rnd(PR.length)])}else{if(j>=0)b[j].classList.add('no');sfx.no();say(j<0?'وقت تمام شد ⏰':'این یکی را از دست دادی 💪')}s.i++;setTimeout(()=>{if(cur!='dq')return;s.i>=6?dend():show('dq')},1100)}
 function dend(){DL.ph='end';if(DL.bot){const o=DL.kind=='quiz'?40+rnd(50):350+rnd(450);Object.assign(DL.r,{st:'done',s1:DL.sc,s2:o,f1:true,f2:true,win:DL.sc>o?String(uid):DL.sc<o?'bot':'draw'});DL.ph='res';show('dres');return}show('dres');dloop()}
-function dloop(){if(!DL||!DL.r||DL.bot||!sb()||DL.r.id==='BOT')return;const p={p_id:DL.r.id,p_uid:String(uid)};if(DL.ph=='wait'){if(cur=='dwait'||cur=='dload'){rpc('egame_duel_poll',p).then(r=>{if(!DL||DL.ph!='wait'||!r||!r.id||r.err)return;DL.r=r;if(r.st=='play'){show('dvs');return}if(Date.now()-DL.t0>2e4){const b=$('#bt');if(b)b.style.display=''}}).catch(()=>{})}}else if(DL.ph=='play'||DL.ph=='end'){const f=DL.ph=='end';p.p_score=f?DL.sc:cur=='game'&&G?G.k:DL.sc;p.p_final=!!f;rpc('egame_duel_submit',p).then(r=>{if(!DL||!r||!r.id)return;DL.r=r;const o=dos(r),e=$('#oq')||$('#oqq');if(e)e.textContent='👤 '+(o.f?'🏁 ':'')+fa(o.s);if(r.st=='done'&&DL.ph=='end'){DL.ph='res';show('dres')}}).catch(()=>{})}}
+function dloop(){if(!DL||!DL.r||DL.bot||!sb())return;const p={p_id:DL.r.id,p_uid:String(uid)};if(DL.ph=='wait'){if(cur!='dwait'){rpc('game_duel_cancel',p).catch(()=>{});DL=null;return}rpc('game_duel_poll',p).then(r=>{if(!DL||DL.ph!='wait'||!r)return;if(r.st=='play'){DL.r=r;show('dvs')}else if(DL.r.pub&&Date.now()-DL.t0>2e4){const b=$('#bt');if(b)b.style.display=''}}).catch(()=>{})}else if(DL.ph=='play'||DL.ph=='end'){const f=DL.ph=='end';p.p_score=f?DL.sc:cur=='game'&&G?G.k:DL.sc;p.p_final=f;rpc('game_duel_submit',p).then(r=>{if(!DL||!r||!r.id)return;DL.r=r;const o=dos(r),e=$('#oq')||$('#oqq');if(e)e.textContent='👤 '+(o.f?'🏁 ':'')+fa(o.s);if(r.st=='done'&&DL.ph=='end'){DL.ph='res';show('dres')}}).catch(()=>{})}}
 setInterval(dloop,2000);
 function conf(){for(let i=0;i<36;i++){const n=document.createElement('i');n.className='cf';n.style.cssText='left:'+rnd(100)+'%;background:hsl('+rnd(360)+' 90% 60%);animation-delay:'+rnd(600)+'ms';document.body.appendChild(n);setTimeout(()=>n.remove(),2700)}}
 function fin(){if(!DL||DL.paid)return;DL.paid=1;const x=DL.r,w=x.win==String(uid);if(w){conf();sfx.win();say('🏆 آفرین قهرمان!')}else sfx.no();if(!DL.bot&&x.pub){const p=w?3:x.win=='draw'?1:0;if(p)add(p)}}
 V.dres=()=>{const x=DL.r,m=x.me==1,ms=x.st=='done'?(m?x.s1:x.s2):DL.sc,os=m?x.s2:x.s1,on=m?x.n2:x.n1;if(x.st!='done')return `<div class="card" style="text-align:center"><div class="spin" style="font-size:64px">⏳</div><h3 style="margin:0">امتیاز تو: ${fa(ms)}</h3><p>منتظر پایان بازی حریف…</p><small>اگر حریف بازی را رها کند، بعد از یک دقیقه برنده می‌شوی.</small></div>`;const w=x.win==String(uid),dr=x.win=='draw';return `<div class="card" style="text-align:center"><div style="font-size:76px;line-height:1.2">${w?'🏆':dr?'🤝':'😅'}</div><h2 style="margin:0">${w?'تو برنده شدی!':dr?'مساوی شد!':'این بار حریف برد!'}</h2><h1 style="margin:6px 0">${fa(ms)} : ${fa(os)}</h1><small>${esc(on||'')}</small>${!DL.bot&&x.pub?`<p>${w?'+۳':dr?'+۱':'+۰'} امتیاز هفته</p>`:''}${DL.bot?'<p><small>(تمرین با رقیب هوشمند؛ در جدول حساب نمی‌شود)</small></p>':''}<div class="grid"><button class="btn" data-a="${DL.kind=='quiz'?'dq':'dh'}" style="--c:#5ec8ff">🔁 دوئل دوباره</button><button class="btn" data-a="${DL.kind=='quiz'?'tq':'th'}" style="--c:#ffd54a">🏆 جدول</button></div>${BK}</div>`};
 post.dres=()=>{if(DL&&DL.r.st=='done')fin()};
 V.dlb=k=>`<div class="card"><h3 style="margin:0">🏆 ${k=='quiz'?'جدول کوییز دوئل':'جدول دوئل خانه'}</h3><small>برنده = بیشترین تعداد برد در هفته (شنبه تا جمعه)</small></div><div class="card"><b>این هفته</b><div id="dl0">در حال بارگیری…</div></div><div class="card"><b>👑 هفتهٔ قبل</b><div id="dl1">در حال بارگیری…</div></div>${BK}`;
-post.dlb=k=>[0,1].forEach(o=>{const e=$('#dl'+o);if(!sb()){e.textContent='فقط داخل بله فعال است.';return}rpc('egame_duel_top',{p_wk:wkey(o),p_kind:k}).then(a=>{e.innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.w)} برد از ${fa(x.g)}</div>`).join('')||'هنوز مسابقه‌ای ثبت نشده'}).catch(()=>{e.textContent='اتصال به جدول برقرار نشد.'})});
-Object.assign(ACT,{duel:()=>show('duel'),dq:()=>duelStart('quiz',''),dh:()=>duelStart('house',''),dnq:()=>duelStart('quiz','NEW'),dnh:()=>duelStart('house','NEW'),dj:()=>{const c=(($('#rc')&&$('#rc').value)||'').trim().toUpperCase();if(c.length<4){say('کد اتاق را بنویس 🙂');return}duelStart('quiz',c)},tq:()=>show('dlb','quiz'),th:()=>show('dlb','house'),dbot:()=>{const k=(DL&&DL.kind)||'quiz';if(DL&&DL.r&&DL.r.id&&DL.r.id!=='BOT'&&sb())rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});botStart(k)},dx:()=>{if(DL&&DL.r&&DL.r.id&&DL.r.id!=='BOT'&&sb()&&(DL.ph=='wait'||cur=='dwait'||cur=='dload'))rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});DL=null;show('duel')}});
+post.dlb=k=>[0,1].forEach(o=>{const e=$('#dl'+o);if(!sb()){e.textContent='فقط داخل بله فعال است.';return}rpc('game_duel_top',{p_wk:wkey(o),p_kind:k}).then(a=>{e.innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.w)} برد از ${fa(x.g)}</div>`).join('')||'هنوز مسابقه‌ای ثبت نشده'}).catch(()=>{e.textContent='اتصال به جدول برقرار نشد.'})});
+Object.assign(ACT,{duel:()=>show('duel'),dq:()=>duelStart('quiz',''),dh:()=>duelStart('house',''),dnq:()=>duelStart('quiz','NEW'),dnh:()=>duelStart('house','NEW'),dj:()=>{const c=$('#rc').value.trim().toUpperCase();if(c.length<4){say('کد اتاق را بنویس 🙂');return}duelStart('quiz',c)},tq:()=>show('dlb','quiz'),th:()=>show('dlb','house'),dbot:()=>{if(sb())rpc('game_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});botStart(DL.kind)},dx:()=>{if(DL&&DL.r&&DL.ph=='wait'&&sb())rpc('game_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});DL=null;show('duel')}});
 Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
 // لمس وسیله‌ها: انتخاب با مختصات روی صفحه (مستقل از hit-test سه‌بعدی مرورگر)
 document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
-function boot(){
-  try{
-    show('home');
-    // اگر بعد از show هنوز محتوا خالی بود، یک پیام اضطراری نشان بده
-    setTimeout(function(){
-      var v=document.getElementById('v');
-      if(v && !v.innerHTML.trim()){
-        v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:48px">⚡</div><h2>سلام! من برقی‌ام</h2><p>اگر این پیام را می‌بینی، روی دکمه بزن تا بازی شروع شود.</p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%" onclick="try{show(\'reg\')}catch(e){alert(e)}">شروع</button></div>';
-        say('سلام! بیا شروع کنیم ⚡');
-      }
-    }, 400);
-  }catch(e){
-    console.error('BOOT ERROR', e);
-    var v=document.getElementById('v');
-    if(v) v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><h2>خطا در بارگذاری</h2><p style="direction:ltr;font-size:12px;opacity:.8">'+String(e&&e.message||e)+'</p><button class="btn" style="--c:#3ee0a3;width:100%" onclick="location.reload()">تلاش دوباره</button></div>';
-  }
-}
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
-else boot();
+show('home');
 </script>
 </body>
 </html>
