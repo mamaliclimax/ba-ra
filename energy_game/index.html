@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v5</title>
+<title>برقی و خانهٔ هوشمند v6</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -184,7 +184,7 @@ const V={},post={},ACT={};let cur,arg,G=null,Q=null,lastOk=0,rot=0;
 function show(n,a){if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;$('#v').innerHTML=V[n](a);$('#h').style.display=n=='reg'||n=='game'||n=='dq'?'none':'';window.scrollTo(0,0);post[n]&&post[n](a);hud();if(MS[n])say(MS[n])}
 V.reg=()=>`<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">${AVS.map((a,i)=>`<button class="avb${i?'':' on'}" data-a="v${i}">${a}</button>`).join('')}</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>`;
 ACT.reg=()=>{const v=i=>$('#'+i).value.replace(/[<>&"'`]/g,'').trim(),f=v('f'),l=v('l'),c=v('c');if(f.length<2||l.length<2||c.length<2){$('#er').textContent='لطفاً نام، نام خانوادگی و شهر را کامل بنویس 🙂';return}S.p={f,l,c,a:av};save();show('home')};
-V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length,dDone=S.dch===today(),hKey=hourKey(),hDone=S.hq===hKey,vDone=S.voteD===today(),upN=Object.keys(S.up||{}).filter(k=>S.up[k]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small>${upN?`<br><small>🏠 ارتقاها: ${fa(upN)}</small>`:''}${S.team?`<br><small>👥 تیم ${esc(S.team.name||S.team.code)}</small>`:''}</div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div><div class="card" style="margin-top:12px"><b>🎮 بخش‌های جدید</b></div><div class="grid">${B('daily','📅','چالش امروز',dDone?('✅ '+fa(S.dchOk)+' درست'):'۵ سؤال · جایزه','#ff8a65')}${B('escape','🌙','فرار شبانه ۲۲', (S.nightDone===today()?'✅ تمام':'۲۲:۰۰ · ۴ مرحله'),'#7e57c2')}${B('shop','🏡','خانه هوشمند',fa(upN)+' ارتقا · ببین اثر','#26a69a')}${B('team','👥','تیم و کلاس',S.team?(esc(S.team.code)):'بساز / بپیوند','#42a5f5')}${B('hourly','⏰','کوییز ساعتی',hDone?('✅ '+fa(S.hqOk)):'۱۰ سؤال این ساعت','#ec407a')}${B('vote','✍️','جمله هفته',vDone?'نوشتی ✅':'یک جمله بنویس','#ab47bc')}</div>${teamBoardHtml()}`};
+V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length,dDone=S.dch===today(),hKey=hourKey(),hDone=S.hq===hKey,vDone=S.voteD===today(),upN=Object.keys(S.up||{}).filter(k=>S.up[k]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small>${upN?`<br><small>🏠 ارتقاها: ${fa(upN)}</small>`:''}${S.team?`<br><small>👥 تیم ${esc(S.team.name||S.team.code)}</small>`:''}</div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div><div class="card" style="margin-top:12px"><b>🎮 بخش‌های جدید</b></div><div class="grid">${B('daily','📅','چالش امروز',dDone?('✅ '+fa(S.dchOk)+' درست'):'۵ سؤال · جایزه','#ff8a65')}${B('escape','🌙','فرار شبانه ۲۲', (S.nightDone===today()?'✅ تمام':'۲۲:۰۰ · ۴ مرحله'),'#7e57c2')}${B('shop','🏡','خانه هوشمند',fa(upN)+' ارتقا · ببین اثر','#26a69a')}${B('team','👥','تیم و کلاس',S.team?(esc(S.team.code)):'بساز / بپیوند','#42a5f5')}${B('hourly','⏰','کوییز ساعتی',hDone?('✅ '+fa(S.hqOk)):'۱۰ سؤال این ساعت','#ec407a')}${B('vote','✍️','جمله هفته',vDone?'نوشتی ✅':'یک جمله بنویس','#ab47bc')}${B('boards','🎲','بازی رومیزی','نقطه · منچ · مارپله','#ff7043')}</div>${teamBoardHtml()}`};
 V.map=()=>{let h='<div class="house">';for(let t=0;t<3;t++){h+=`<div class="card"><b>طبقهٔ ${fa(t+1)}</b><div class="g4">`;for(let i=0;i<8;i++){const L=t*8+i,r=R[i],st=S.lv[L]||0,lk=L>0&&!S.lv[L-1];h+=`<button class="lv${lk?' lk':''}" data-a="L${L}" style="--c:${r[2]}"><b>${lk?'🔒':r[1]}</b>${r[0]}<br>${'⭐'.repeat(st)||'·'}</button>`}h+='</div></div>'}return h+'</div>'};
 function play(L,seed){const du=seed!=null;if(du)L=16+seed%8;else if(L>23||L>0&&!S.lv[L-1])return;const r=R[L%8],t=L/8|0,T=du?35:30+t*5,d=r[4].map(i=>({e:D[i][0],nm:D[i][1],w:D[i][2],tip:D[i][3],n:i==6,s:i==6?1:0})),f=d.filter(x=>!x.n),sum=f.reduce((a,x)=>a+x.w,0);f[0].s=2;G={L,t:T,d,E:0,k:0,cb:0,bn:0,du,r:du?mb(seed):Math.random,sp:1.2,iv:du?1:Math.max(.75,2.2-.08*L)*S.ad,pw:du?.5:.3+.1*t,mx:sum*T,cap:sum,m:sum*T*.03,over:0,st:1,h:0};show('game')}
 V.game=()=>{const r=R[G.L%8];return `<div class="bar">${G.du?'':'<button class="chip" data-a="map">🗺️</button>'}<span class="chip">⏱ <b id="t">${fa(G.t)}</b></span><span class="chip">⚡ <b id="w">۰</b> وات</span><span class="chip">✅ <b id="k">۰</b></span>${G.du?'<span class="chip" id="oq">👤 ۰</span>':''}</div><div class="meter"><i id="mb"></i></div><h3 style="text-align:center;margin:6px 0 0">${r[1]} ${r[0]} · ${G.du?'⚔️ دوئل':'مرحلهٔ '+fa(G.L+1)}</h3><div class="sc" style="--w:${r[2]};--fl:${r[3]};--k:${Math.min(.82,(innerWidth-24)/428).toFixed(2)}"><div class="rm"><div class="f bw"></div><div class="f lw"></div><div class="f fl"></div>${G.d.map((d,i)=>`<div class="dv s${d.s}" id="d${i}" style="--x:${P[i][0]}px;--y:${P[i][1]}px;--z:${P[i][2]}px"><u></u><span>${d.e}</span><em>${d.nm}</em></div>`).join('')}</div></div>`};
@@ -333,42 +333,78 @@ function dailyAns(j){const Qd=window.__DQ&&window.__DQ[window.__DI];if(!Qd||Qd._
 ACT.dn=()=>{if(window.__DI<4){window.__DI++;show('daily')}else{const ok=window.__DOK|0;S.dch=today();S.dchOk=ok;const bonus=(ok>=4?5:ok>=2?3:1)+upBonus().score;add(bonus);window.__DQ=null;sfx.win();show('daily');say(fa(bonus)+' امتیاز چالش امروز!')}};
 
 // ========== فرار شبانه ۲۲:۰۰ — ۴ مرحله ==========
-const POOL=[
-  {e:'💡',t:'چراغ اتاق خالی',w:1},{e:'📺',t:'تلویزیون بدون بیننده',w:1},{e:'🔌',t:'شارژر در پریز',w:1},
-  {e:'🪟',t:'پنجره باز + کولر',w:1},{e:'🧊',t:'در یخچال باز',w:1},{e:'💻',t:'لپ‌تاپ رهاشده',w:1},
-  {e:'🎮',t:'کنسول روشن',w:1},{e:'🌀',t:'پنکه اتاق خالی',w:1},{e:'🛁',t:'آبگرمکن بی‌مصرف',w:1},
-  {e:'🫖',t:'کتری جوشانده اضافه',w:1},{e:'吹风机',t:'سشوار روشن',w:1},{e:'🧹',t:'جاروبرقی بی‌کار',w:1},
-  {e:'🧺',t:'لباسشویی نیمه‌پر',w:1},{e:'📻',t:'رادیو روشن بیهوده',w:1},{e:'🔋',t:'باتری در شارژ دائم',w:1},
-  {e:'🕯️',t:'لامپ راهرو روز',w:1},{e:'🖥️',t:'مانیتور دوم خاموش‌نشده',w:1},{e:'📱',t:'چند شارژر همزمان',w:1},
-  {e:'🚪',t:'در باز و کولر',w:1},{e:'🔥',t:'بخاری برقی + پنجره',w:1},{e:'🌡️',t:'ترموستات خیلی سرد',w:1},
-  {e:'🔦',t:'چراغ قوه روشن',w:1},{e:'🛎️',t:'دستگاه آماده‌به‌کار',w:1},{e:'🧯',t:'هیتر اضافه',w:1},
-  {e:'🎥',t:'دوربین بی‌نیاز روشن',w:1},
-  {e:'🪴',t:'گلدان',w:0},{e:'📚',t:'کتاب',w:0},{e:'🧸',t:'عروسک',w:0},{e:'🖼️',t:'قاب عکس',w:0},
-  {e:'🪑',t:'صندلی',w:0},{e:'🛏️',t:'بالش',w:0},{e:'🪞',t:'آینه',w:0},{e:'🧥',t:'لباس آویز',w:0},
-  {e:'🧹',t:'جارو دستی',w:0},{e:'🧵',t:'نخ و سوزن',w:0},{e:'🧩',t:'پازل چوبی',w:0},{e:'🎨',t:'مداد رنگی',w:0},
-  {e:'⚽',t:'توپ',w:0},{e:'🎸',t:'گیتار',w:0},{e:'🕰️',t:'ساعت دیواری',w:0},{e:'🧴',t:'شیشه خالی',w:0},
-  {e:'🧺',t:'سبد لباس',w:0},{e:'🧂',t:'نمکدان',w:0},{e:'🥄',t:'قاشق',w:0},{e:'🧻',t:'دستمال',w:0},
-  {e:'🧢',t:'کلاه',w:0},{e:'🧦',t:'جوراب',w:0},{e:'🎁',t:'جعبه کادو',w:0},{e:'🧱',t:'آجر تزئینی',w:0},
-  {e:'🪨',t:'سنگ دکور',w:0}
-];
-// fix emoji-only labels that used Persian as e
-POOL[10]={e:'💨',t:'سشوار روشن',w:1};
 
-let NG=null; // night game state
-function nightSeed(){return daySeed()*17+22}
-function dealNightBoard(){
-  const g=mb(nightSeed()+(NG?NG.shuffle:0));
-  const idxs=POOL.map((_,i)=>i);
-  for(let i=idxs.length-1;i>0;i--){const j=g()*(i+1)|0;const t=idxs[i];idxs[i]=idxs[j];idxs[j]=t}
-  const pick=idxs.slice(0,15).map(i=>({...POOL[i],id:i,found:0,key:i+'-'+((NG&&NG.shuffle)|0)}));
-  return pick;
+const WASTE_POOL=[
+  {id:'lamp',e:'💡',t:'لامپ روشن در اتاق خالی',w:1,col:'#fff59d',shape:'bulb'},
+  {id:'tv',e:'📺',t:'تلویزیون بدون بیننده',w:1,col:'#90caf9',shape:'tv'},
+  {id:'charger',e:'🔌',t:'شارژر در پریز بدون گوشی',w:1,col:'#a5d6a7',shape:'plug'},
+  {id:'ac',e:'❄️',t:'کولر با پنجره باز',w:1,col:'#80deea',shape:'ac'},
+  {id:'fridge',e:'🧊',t:'در یخچال باز مانده',w:1,col:'#b3e5fc',shape:'fridge'},
+  {id:'laptop',e:'💻',t:'لپ‌تاپ روشن رهاشده',w:1,col:'#c5cae9',shape:'laptop'},
+  {id:'console',e:'🎮',t:'کنسول بازی روشن',w:1,col:'#e1bee7',shape:'console'},
+  {id:'fan',e:'🌀',t:'پنکه اتاق خالی',w:1,col:'#b2dfdb',shape:'fan'},
+  {id:'heater',e:'🔥',t:'بخاری برقی و پنجره باز',w:1,col:'#ffccbc',shape:'heater'},
+  {id:'kettle',e:'🫖',t:'کتری با آب اضافه',w:1,col:'#ffe0b2',shape:'kettle'},
+  {id:'dryer',e:'💨',t:'سشوار روشن بی‌استفاده',w:1,col:'#f8bbd0',shape:'dryer'},
+  {id:'washer',e:'🧺',t:'لباسشویی تقریباً خالی',w:1,col:'#d1c4e9',shape:'washer'},
+  {id:'iron',e:'熨',t:'اتو روشن روی میز',w:1,col:'#ffcdd2',shape:'iron'},
+  {id:'micro',e:'📡',t:'مایکروویو در حال کار بیهوده',w:1,col:'#d7ccc8',shape:'micro'},
+  {id:'pc',e:'🖥️',t:'کامپیوتر روشن بدون کار',w:1,col:'#cfd8dc',shape:'pc'}
+];
+// fix iron emoji
+WASTE_POOL[12]={id:'iron',e:'🧥',t:'اتو روشن روی میز',w:1,col:'#ffcdd2',shape:'iron'};
+const SAFE_POOL=[
+  {id:'plant',e:'🪴',t:'گلدان',w:0,col:'#e8f5e9',shape:'safe'},
+  {id:'book',e:'📚',t:'کتاب',w:0,col:'#efebe9',shape:'safe'},
+  {id:'toy',e:'🧸',t:'عروسک',w:0,col:'#fce4ec',shape:'safe'},
+  {id:'frame',e:'🖼️',t:'قاب عکس',w:0,col:'#f3e5f5',shape:'safe'},
+  {id:'chair',e:'🪑',t:'صندلی',w:0,col:'#fff3e0',shape:'safe'},
+  {id:'pillow',e:'🛏️',t:'بالش',w:0,col:'#e3f2fd',shape:'safe'},
+  {id:'mirror',e:'🪞',t:'آینه',w:0,col:'#e0f7fa',shape:'safe'},
+  {id:'ball',e:'⚽',t:'توپ',w:0,col:'#f1f8e9',shape:'safe'},
+  {id:'clock',e:'🕰️',t:'ساعت دیواری',w:0,col:'#fffde7',shape:'safe'},
+  {id:'spoon',e:'🥄',t:'قاشق',w:0,col:'#eceff1',shape:'safe'},
+  {id:'hat',e:'🧢',t:'کلاه',w:0,col:'#e8eaf6',shape:'safe'},
+  {id:'gift',e:'🎁',t:'جعبه کادو',w:0,col:'#fbe9e7',shape:'safe'},
+  {id:'sock',e:'🧦',t:'جوراب',w:0,col:'#e0f2f1',shape:'safe'},
+  {id:'brush',e:'🧹',t:'جارو دستی',w:0,col:'#f9fbe7',shape:'safe'},
+  {id:'pencil',e:'✏️',t:'مداد',w:0,col:'#fff8e1',shape:'safe'}
+];
+function deviceFace(it){
+  const bg=it.col||'#ffffff22';
+  const border=it.found?(it.w?'#3ee0a3':'#ff5d7a'):(it.w?'#ff8a65':'#ffffff33');
+  const mark=it.found?(it.w?'✓':'✗'):'';
+  return `<div style="width:100%;height:100%;border-radius:14px;background:linear-gradient(160deg,${bg},#1a1438);border:2px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;min-height:88px;box-shadow:0 4px 12px #0004">
+    <div style="font-size:34px;line-height:1.1">${it.e}</div>
+    <div style="font-size:10px;font-weight:800;margin-top:2px;text-align:center;line-height:1.2;color:#fffde7">${it.found?mark+' ':'💡 '}${esc(it.t.length>18?it.t.slice(0,16)+'…':it.t)}</div>
+  </div>`;
 }
+function dealNightBoard(){
+  // دقیقاً ۵ پرمصرف + ۱۰ بی‌خطر؛ با shuffle فقط جایشان عوض می‌شود
+  if(!NG.targets||!NG.targets.length){
+    const g=mb(nightSeed()+7);
+    const w=WASTE_POOL.map((_,i)=>i);
+    for(let i=w.length-1;i>0;i--){const j=g()*(i+1)|0;const t=w[i];w[i]=w[j];w[j]=t}
+    NG.targets=w.slice(0,5).map(i=>({...WASTE_POOL[i]}));
+  }
+  const g2=mb(nightSeed()+(NG.shuffle|0)*13+3);
+  const s=SAFE_POOL.map((_,i)=>i);
+  for(let i=s.length-1;i>0;i--){const j=g2()*(i+1)|0;const t=s[i];s[i]=s[j];s[j]=t}
+  const safes=s.slice(0,10).map(i=>({...SAFE_POOL[i]}));
+  const foundIds=NG.foundIds||{};
+  const wastes=NG.targets.map(t=>({...t,found:!!foundIds[t.id]}));
+  const board=wastes.concat(safes);
+  for(let i=board.length-1;i>0;i--){const j=g2()*(i+1)|0;const t=board[i];board[i]=board[j];board[j]=t}
+  return board.map((it,idx)=>({...it,found:it.w?!!foundIds[it.id]:!!it.found,_i:idx}));
+}
+
+
 V.escape=()=>{
   const open=nightOpen();
   const done=S.nightDone===today();
   return `<div class="card" style="text-align:center"><div style="font-size:52px">🌙</div><h3 style="margin:0">فرار شبانه انرژی</h3>
   <p>هر شب حدود <b>۲۲:۰۰</b> (به‌وقت ایران) · ۴ مرحله · ۲ دقیقه<br>
-  ۱) شکار ۱۵ هدررفت از بین وسایل · ۲) کوییز · ۳) پازل وسیله · ۴) حدس توان<br>
+  ۱) پیدا کردن ۵ وسیلهٔ پرمصرف بین ۱۵ وسیله · ۲) کوییز · ۳) پازل · ۴) حدس توان<br>
   کلیک اشتباه = −۱ · هرکس زودتر تمام کند رتبه بهتری می‌گیرد</p>
   <p>${open?'🟢 رویداد الان باز است!':done?'✅ امروز شرکت کردی':'⏰ فعلاً بسته — حدود ۲۲:۰۰ بیا'}</p>
   <button class="btn" data-a="nightgo" style="--c:#7e57c2;width:100%" ${(!open&&!done)?'disabled':''}>${done?'دیدن راهنما / تمرین':(open?'شروع فرار شبانه':'منتظر ۲۲:۰۰')}</button>
@@ -377,13 +413,13 @@ V.escape=()=>{
 };
 function startNight(practice){
   const bonus=upBonus();
-  NG={practice:!!practice,stage:'hunt',t:120+bonus.time,score:0,need:15,found:0,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
+  NG={practice:!!practice,stage:'hunt',t:120+bonus.time,score:0,need:5,found:0,foundIds:{},targets:null,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
   NG.board=dealNightBoard();
   show('nrun');
   if(NG._iv)clearInterval(NG._iv);
   NG._iv=setInterval(nightTick,1000);
   if(NG._sh)clearInterval(NG._sh);
-  NG._sh=setInterval(()=>{if(!NG||NG.over||NG.stage!=='hunt')return;NG.shuffle++;const kept=NG.board.filter(x=>x.found);const fresh=dealNightBoard();const need=15-kept.length;NG.board=kept.concat(fresh.filter(x=>!kept.some(k=>k.id===x.id)).slice(0,need));show('nrun');say('جای وسیله‌ها عوض شد!')},8000);
+  NG._sh=setInterval(()=>{if(!NG||NG.over||NG.stage!=='hunt')return;NG.shuffle++;NG.board=dealNightBoard();show('nrun');say('جای وسیله‌ها عوض شد!')},8000);
 }
 ACT.nightgo=()=>{if(S.nightDone===today()&&!nightOpen()){say('امروز تمام کردی');show('escape');return}startNight(false)};
 ACT.nightpractice=()=>startNight(true);
@@ -422,8 +458,8 @@ V.nrun=()=>{
   if(!NG)return V.escape();
   const bar=`<div class="bar"><span class="chip">⏱ <b id="nt">${fa(NG.t)}</b></span><span class="chip">⭐ ${fa(NG.score)}</span><span class="chip">${NG.stage==='hunt'?'🔍 '+fa(NG.found)+'/'+fa(NG.need):NG.stage}</span><button class="chip" data-a="escape">✖️</button></div>`;
   if(NG.stage==='hunt'){
-    return bar+`<div class="card"><b>مرحله ۱ — شکار هدررفت</b><p style="font-size:13px">۱۵ وسیلهٔ پرمصرف را پیدا کن. بی‌خطرها را نزن (−۱). هر ۸ ثانیه جایشان عوض می‌شود.</p>
-    <div class="g4">${NG.board.map((it,i)=>`<button class="lv" data-a="nx${i}" style="--c:${it.found?(it.w?'#3ee0a3':'#ff5d7a'):'#ffffff22'};min-height:70px"><b style="font-size:26px">${it.e}</b><br><small>${it.found?(it.w?'✅':'❌'):'؟'}</small></button>`).join('')}</div></div>`;
+    return bar+`<div class="card"><b>مرحله ۱ — شکار ۵ وسیلهٔ پرمصرف</b><p style="font-size:13px">بین ۱۵ وسیله، فقط <b>۵ تا پرمصرف</b> را پیدا کن. بقیه بی‌خطرند (−۱). هر ۸ ثانیه جایشان عوض می‌شود. با پیدا کردن هر ۵ تا → مرحله بعد.</p>
+    <div class="g4">${NG.board.map((it,i)=>`<button class="lv" data-a="nx${i}" style="--c:transparent;padding:2px;min-height:92px;background:transparent;box-shadow:none">${deviceFace(it)}</button>`).join('')}</div></div>`;
   }
   if(NG.stage==='quiz'){
     const Q=NG.q;if(!Q)return bar+'<div class="card">...</div>';
@@ -447,9 +483,12 @@ function nightHunt(i){
   if(!NG||NG.over||NG.stage!=='hunt')return;
   const it=NG.board[i];if(!it||it.found)return;
   it.found=1;
-  if(it.w){NG.found++;NG.score+=2;sfx.ok();say(it.t)}
-  else{NG.score=Math.max(0,NG.score-1);sfx.no();say('بی‌خطر بود! −۱')}
-  if(NG.found>=NG.need){nightToQuiz();return}
+  if(it.w){
+    if(!NG.foundIds)NG.foundIds={};
+    if(!NG.foundIds[it.id]){NG.foundIds[it.id]=1;NG.found++;NG.score+=2;sfx.ok();say('پیدا شد: '+it.t)}
+    else {show('nrun');return}
+  }else{NG.score=Math.max(0,NG.score-1);sfx.no();say('این پرمصرف نیست! −۱')}
+  if(NG.found>=NG.need){clearInterval(NG._sh);nightToQuiz();return}
   show('nrun');
 }
 function nightToQuiz(){
@@ -640,8 +679,395 @@ ACT.phsend=()=>{
   sfx.ok();show('vote');say('جمله‌ات ثبت شد ✍️');
 };
 
-Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),daily:()=>show('daily'),escape:()=>show('escape'),shop:()=>show('shop'),team:()=>show('team'),hourly:()=>show('hourly'),vote:()=>show('vote'),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(a.slice(0,4)=='buy_'){sfx.tap();buyUp(a.slice(4))}else if(a.slice(0,2)=='dy'){sfx.tap();dailyAns(+a.slice(2))}else if(a.slice(0,2)=='hy'){sfx.tap();hourlyAns(+a.slice(2))}else if(a.slice(0,2)=='nx'){sfx.tap();nightHunt(+a.slice(2))}else if(a.slice(0,2)=='nq'){sfx.tap();nightQuizAns(+a.slice(2))}else if(a.slice(0,2)=='np'){sfx.tap();nightPuzzle(+a.slice(2))}else if(a.slice(0,2)=='nw'){sfx.tap();nightWatt(+a.slice(2))}else if(a.slice(0,2)=='tj'){sfx.tap();teamVsAns(+a.slice(2))}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
+
+// ========== بازی‌های رومیزی: نقطه‌بازی، مارپله، منچ (۲/۴ نفره) ==========
+const BRD = {kind:null, mode:null, room:null, poll:null, local:null};
+
+function brdStopPoll(){if(BRD.poll){clearInterval(BRD.poll);BRD.poll=null}}
+async function brdSaveRoom(state){
+  if(!BRD.room||!sb())return;
+  try{
+    await fetch(SB_URL+'/rest/v1/egame_board?code=eq.'+encodeURIComponent(BRD.room.code),{
+      method:'PATCH',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,Prefer:'return=minimal'},
+      body:JSON.stringify({state:state,updated_at:new Date().toISOString()})
+    });
+  }catch(e){}
+}
+async function brdLoadRoom(code){
+  if(!sb())return null;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/egame_board?code=eq.'+encodeURIComponent(code)+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    const a=await r.json();return a&&a[0]?a[0]:null;
+  }catch(e){return null}
+}
+async function brdCreateRoom(kind,maxP){
+  const code=teamCode();
+  const meP={uid:String(uid||('L'+Date.now())),name:me(),seat:0};
+  const state={kind:kind,phase:'lobby',players:[meP],max:maxP,turn:0,data:null,winner:null};
+  if(sb()){
+    try{
+      await fetch(SB_URL+'/rest/v1/egame_board',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,Prefer:'return=minimal'},
+        body:JSON.stringify({code:code,kind:kind,state:state,host:meP.uid})});
+    }catch(e){}
+  }
+  BRD.room={code:code,host:true};BRD.kind=kind;
+  return state;
+}
+async function brdJoinRoom(code,kind){
+  code=(code||'').trim().toUpperCase();
+  if(code.length<4){say('کد را کامل بنویس');return null}
+  let row=await brdLoadRoom(code);
+  if(!row||!row.state){
+    // آفلاین: اتاق محلی ساختگی
+    say('اتاق آنلاین پیدا نشد — حالت محلی');
+    return null;
+  }
+  const st=typeof row.state==='string'?JSON.parse(row.state):row.state;
+  if(st.kind!==kind){say('این کد برای این بازی نیست');return null}
+  if(st.phase!=='lobby'&&!st.players.some(p=>p.uid===String(uid))){say('بازی شروع شده');return null}
+  const my=String(uid||('L'+Date.now()));
+  if(!st.players.some(p=>p.uid===my)){
+    if(st.players.length>=st.max){say('اتاق پر است');return null}
+    st.players.push({uid:my,name:me(),seat:st.players.length});
+    await brdSaveRoom(st);
+  }
+  BRD.room={code:code,host:false};BRD.kind=kind;
+  return st;
+}
+function brdStartPoll(renderFn){
+  brdStopPoll();
+  if(!BRD.room||!sb())return;
+  BRD.poll=setInterval(async()=>{
+    const row=await brdLoadRoom(BRD.room.code);
+    if(!row)return;
+    const st=typeof row.state==='string'?JSON.parse(row.state):row.state;
+    renderFn(st);
+  },2000);
+}
+
+V.boards=()=>`<div class="card" style="text-align:center"><div style="font-size:52px">🎲</div>
+<h3 style="margin:0">بازی‌های رومیزی</h3>
+<p>نقطه‌بازی (۲ نفر) · مار و پله (۲ یا ۴ نفر) · منچ (۲ یا ۴ نفر)<br>
+محلی روی یک گوشی یا آنلاین با کد اتاق</p></div>
+<div class="grid">
+${B('dots','▫️','نقطه‌بازی','۲ نفره · خط بکش','#42a5f5')}
+${B('snakes','🐍','مار و پله','۲ یا ۴ نفر','#66bb6a')}
+${B('ludo','🏠','منچ','۲ یا ۴ نفر','#ef5350')}
+</div>${BK}`;
+
+// ----- نقطه‌بازی (Dots and Boxes) -----
+function dotsNew(n){
+  // n = cells per side (3 => 4x4 dots)
+  const H=[],V=[];
+  for(let r=0;r<=n;r++){H[r]=[];for(let c=0;c<n;c++)H[r][c]=-1}
+  for(let r=0;r<n;r++){V[r]=[];for(let c=0;c<=n;c++)V[r][c]=-1}
+  return {n:n,H:H,V:V,box:[],score:[0,0],turn:0,done:0,players:[{name:'بازیکن ۱'},{name:'بازیکن ۲'}]};
+}
+function dotsBoxes(D){
+  const n=D.n;D.box=[];
+  for(let r=0;r<n;r++){D.box[r]=[];for(let c=0;c<n;c++){
+    const o=[D.H[r][c],D.H[r+1][c],D.V[r][c],D.V[r][c+1]];
+    D.box[r][c]=o.every(x=>x>=0)?o[0]:-1; // owner = first edge owner simplified: count later
+  }}
+}
+function dotsClaim(D,type,r,c,p){
+  if(type==='H'){if(D.H[r][c]>=0)return 0;D.H[r][c]=p}
+  else{if(D.V[r][c]>=0)return 0;D.V[r][c]=p}
+  let gained=0;const n=D.n;
+  const check=(br,bc)=>{
+    if(br<0||bc<0||br>=n||bc>=n)return;
+    if(D.H[br][bc]>=0&&D.H[br+1][bc]>=0&&D.V[br][bc]>=0&&D.V[br][bc+1]>=0){
+      if(D.box[br]&&D.box[br][bc]>=0)return;
+      if(!D.box[br])D.box[br]=[];
+      D.box[br][bc]=p;D.score[p]++;gained++;
+    }
+  };
+  if(type==='H'){check(r-1,c);check(r,c)}
+  else{check(r,c-1);check(r,c)}
+  return gained;
+}
+function dotsDone(D){const n=D.n;let t=n*n;return D.score[0]+D.score[1]>=t}
+V.dots=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">▫️</div>
+<h3>نقطه‌بازی</h3><p>با کشیدن خط بین نقطه‌ها مربع بساز. هر مربع = ۱ امتیاز. دوباره نوبت می‌گیری.</p>
+<button class="btn" data-a="dots2" style="--c:#42a5f5;width:100%">۲ نفره روی همین گوشی</button>
+<button class="btn" data-a="dotsO" style="--c:#5c6bc0;width:100%;margin-top:8px">آنلاین ۲ نفره (کد اتاق)</button>
+${BK}</div>`;
+ACT.dots2=()=>{BRD.kind='dots';BRD.mode='local';BRD.local=dotsNew(4);BRD.local.players=[{name:'بازیکن ۱'},{name:'بازیکن ۲'}];show('dotsP')};
+ACT.dotsO=()=>show('dotsL');
+V.dotsL=()=>`<div class="card" style="text-align:center"><h3>نقطه‌بازی آنلاین</h3>
+<button class="btn" data-a="dotsC" style="--c:#42a5f5;width:100%">ساخت اتاق</button>
+<input id="dc" placeholder="کد اتاق" maxlength="6" style="text-transform:uppercase;text-align:center;margin-top:10px">
+<button class="btn" data-a="dotsJ" style="--c:#3ee0a3;width:100%">پیوستن</button>${BK}</div>`;
+ACT.dotsC=async()=>{const st=await brdCreateRoom('dots',2);st.data=dotsNew(4);st.data.players=st.players;BRD.local=st;show('dotsW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('dotsP');else show('dotsW')})};
+ACT.dotsJ=async()=>{const code=($('#dc')&&$('#dc').value)||'';const st=await brdJoinRoom(code,'dots');if(!st)return;if(!st.data)st.data=dotsNew(4);BRD.local=st;show('dotsW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('dotsP');else show('dotsW')})};
+V.dotsW=()=>{const st=BRD.local||{players:[],code:BRD.room&&BRD.room.code};const code=(BRD.room&&BRD.room.code)||'';return `<div class="card" style="text-align:center"><h3>اتاق ${esc(code)}</h3>
+<p>بازیکنان: ${fa((st.players||[]).length)}/۲</p>
+${(st.players||[]).map(p=>`<div>${esc(p.name)}</div>`).join('')}
+${(st.players||[]).length>=2&&BRD.room&&BRD.room.host?`<button class="btn" data-a="dotsGo" style="--c:#42a5f5;width:100%">شروع بازی</button>`:'<small>منتظر بازیکن دوم…</small>'}
+<button class="btn" data-a="teamcopy" style="--c:#78909c;margin-top:8px" onclick="try{navigator.clipboard.writeText('${code}')}catch(e){}">کپی کد</button>
+${BK}</div>`};
+ACT.dotsGo=async()=>{const st=BRD.local;if(!st||st.players.length<2)return;st.phase='play';st.data=dotsNew(4);st.data.players=st.players;st.turn=0;await brdSaveRoom(st);BRD.local=st;show('dotsP')};
+V.dotsP=()=>{
+  const st=BRD.local;if(!st)return V.dots();
+  const D=st.data||st;const n=D.n||4;const turn=st.turn!=null?st.turn:D.turn;
+  const names=(st.players||D.players||[]).map(p=>p.name||'?');
+  let html=`<div class="bar"><span class="chip">${esc(names[0]||'۱')}: ${fa(D.score[0])}</span><span class="chip">نوبت: ${esc(names[turn]||'')}</span><span class="chip">${esc(names[1]||'۲')}: ${fa(D.score[1])}</span><button class="chip" data-a="boards">✖️</button></div>`;
+  if(D.done||dotsDone(D)){
+    const w=D.score[0]>D.score[1]?0:D.score[1]>D.score[0]?1:-1;
+    html+=`<div class="card" style="text-align:center"><h2>${w<0?'مساوی!':('برنده: '+esc(names[w]||''))}</h2>${BK}</div>`;
+    return html;
+  }
+  html+=`<div class="card" style="overflow:auto"><div style="display:inline-block;direction:ltr">`;
+  for(let r=0;r<=n;r++){
+    // horizontal edges row
+    html+=`<div style="display:flex;align-items:center">`;
+    for(let c=0;c<n;c++){
+      html+=`<span style="width:12px;height:12px;background:#fff;border-radius:50%;display:inline-block"></span>`;
+      const own=D.H[r][c];
+      html+=own>=0?`<span style="width:36px;height:6px;background:${own===0?'#42a5f5':'#ef5350'};display:inline-block;border-radius:3px"></span>`
+        :`<button data-a="dH${r}_${c}" style="width:36px;height:18px;padding:0;border:none;background:#ffffff22;border-radius:3px;cursor:pointer"></button>`;
+    }
+    html+=`<span style="width:12px;height:12px;background:#fff;border-radius:50%;display:inline-block"></span></div>`;
+    if(r<n){
+      html+=`<div style="display:flex;align-items:center">`;
+      for(let c=0;c<=n;c++){
+        const own=D.V[r][c];
+        html+=own>=0?`<span style="width:6px;height:36px;background:${own===0?'#42a5f5':'#ef5350'};display:inline-block;border-radius:3px"></span>`
+          :`<button data-a="dV${r}_${c}" style="width:18px;height:36px;padding:0;border:none;background:#ffffff22;border-radius:3px;cursor:pointer"></button>`;
+        if(c<n){
+          const b=D.box[r]&&D.box[r][c];
+          html+=`<span style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;background:${b===0?'#42a5f544':b===1?'#ef535044':'transparent'};font-size:18px">${b===0?'🔵':b===1?'🔴':''}</span>`;
+        }
+      }
+      html+=`</div>`;
+    }
+  }
+  html+=`</div><p style="font-size:12px;text-align:center">خط خالی را لمس کن</p></div>`;
+  return html;
+};
+function dotsMove(type,r,c){
+  const st=BRD.local;if(!st)return;
+  const D=st.data||st;
+  if(D.done||dotsDone(D))return;
+  const turn=st.turn!=null?st.turn:D.turn;
+  // online: only my seat
+  if(BRD.mode!=='local'&&BRD.room&&uid){
+    const meU=String(uid);
+    const seat=(st.players||[]).findIndex(p=>p.uid===meU);
+    if(seat>=0&&seat!==turn){say('نوبت تو نیست');return}
+  }
+  if(!D.box.length){D.box=[];for(let i=0;i<D.n;i++)D.box[i]=Array(D.n).fill(-1)}
+  const g=dotsClaim(D,type,r,c,turn);
+  if(g===0&&((type==='H'&&D.H[r][c]!==turn)||(type==='V'&&D.V[r][c]!==turn)))return;
+  if(g===0){
+    // already taken
+    if(type==='H'&&D.H[r][c]>=0&&D.H[r][c]!==turn)return;
+  }
+  sfx.tap();
+  if(g>0){sfx.ok();say('+'+fa(g));}
+  else{st.turn=D.turn=(turn+1)%2}
+  if(dotsDone(D)){D.done=1;sfx.win()}
+  if(BRD.room)brdSaveRoom(st);
+  show('dotsP');
+}
+
+// ----- مار و پله -----
+const SNAKES={16:6,47:26,49:11,56:53,62:19,64:60,87:24,93:73,95:75,98:78};
+const LADDERS={1:38,4:14,9:31,21:42,28:84,36:44,51:67,71:91,80:100};
+function snakesNew(np){
+  return {pos:Array(np).fill(0),turn:0,np:np,dice:0,done:0,winner:-1,log:[]};
+}
+V.snakes=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🐍</div>
+<h3>مار و پله</h3><p>تاس بینداز، از نردبان بالا برو، از مار پایین. اول به ۱۰۰ برس.</p>
+<button class="btn" data-a="sn2" style="--c:#66bb6a;width:100%">۲ نفره محلی</button>
+<button class="btn" data-a="sn4" style="--c:#43a047;width:100%;margin-top:8px">۴ نفره محلی</button>
+<button class="btn" data-a="snO" style="--c:#5c6bc0;width:100%;margin-top:8px">آنلاین با کد اتاق</button>
+${BK}</div>`;
+ACT.sn2=()=>{BRD.kind='snakes';BRD.mode='local';BRD.local={phase:'play',players:[{name:'بازیکن ۱'},{name:'بازیکن ۲'}],data:snakesNew(2),turn:0};show('snP')};
+ACT.sn4=()=>{BRD.kind='snakes';BRD.mode='local';BRD.local={phase:'play',players:[{name:'۱'},{name:'۲'},{name:'۳'},{name:'۴'}],data:snakesNew(4),turn:0};show('snP')};
+ACT.snO=()=>show('snL');
+V.snL=()=>`<div class="card" style="text-align:center"><h3>مارپله آنلاین</h3>
+<button class="btn" data-a="snC2" style="--c:#66bb6a;width:100%">اتاق ۲ نفره</button>
+<button class="btn" data-a="snC4" style="--c:#43a047;width:100%;margin-top:6px">اتاق ۴ نفره</button>
+<input id="sc" placeholder="کد اتاق" maxlength="6" style="text-transform:uppercase;text-align:center;margin-top:10px">
+<button class="btn" data-a="snJ" style="--c:#3ee0a3;width:100%">پیوستن</button>${BK}</div>`;
+ACT.snC2=async()=>{const st=await brdCreateRoom('snakes',2);st.data=snakesNew(2);BRD.local=st;show('snW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('snP');else show('snW')})};
+ACT.snC4=async()=>{const st=await brdCreateRoom('snakes',4);st.data=snakesNew(4);BRD.local=st;show('snW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('snP');else show('snW')})};
+ACT.snJ=async()=>{const st=await brdJoinRoom((($('#sc')&&$('#sc').value)||''),'snakes');if(!st)return;BRD.local=st;show('snW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('snP');else show('snW')})};
+V.snW=()=>{const st=BRD.local||{players:[]};const code=(BRD.room&&BRD.room.code)||'';return `<div class="card" style="text-align:center"><h3>اتاق ${esc(code)}</h3>
+<p>${fa((st.players||[]).length)}/${fa(st.max||2)} بازیکن</p>
+${(st.players||[]).map(p=>`<div>${esc(p.name)}</div>`).join('')}
+${(st.players||[]).length>=2&&BRD.room&&BRD.room.host?`<button class="btn" data-a="snGo" style="--c:#66bb6a;width:100%">شروع</button>`:'<small>منتظر بقیه…</small>'}
+${BK}</div>`};
+ACT.snGo=async()=>{const st=BRD.local;st.phase='play';st.data=snakesNew(st.players.length);st.turn=0;await brdSaveRoom(st);show('snP')};
+const SN_COL=['#42a5f5','#ef5350','#ffca28','#66bb6a'];
+V.snP=()=>{
+  const st=BRD.local;if(!st)return V.snakes();
+  const D=st.data;const np=D.np;const turn=st.turn!=null?st.turn:D.turn;
+  const names=(st.players||[]).map((p,i)=>p.name||('P'+i));
+  let html=`<div class="bar"><span class="chip">نوبت: ${esc(names[turn]||'')}</span><button class="chip" data-a="boards">✖️</button></div>`;
+  if(D.winner>=0){html+=`<div class="card" style="text-align:center"><h2>🏆 ${esc(names[D.winner])}</h2>${BK}</div>`;return html}
+  // mini board 10x10
+  html+=`<div class="card" style="direction:ltr;padding:6px"><div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px">`;
+  for(let row=9;row>=0;row--){
+    const leftToRight=row%2===0;
+    for(let col=0;col<10;col++){
+      const c=leftToRight?col:9-col;
+      const num=row*10+c+1;
+      let bg='#ffffff18';
+      if(SNAKES[num])bg='#ef535044';
+      if(LADDERS[num])bg='#66bb6a44';
+      const tokens=D.pos.map((p,i)=>p===num?i:-1).filter(i=>i>=0);
+      html+=`<div style="aspect-ratio:1;background:${bg};border-radius:4px;font-size:9px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;color:#fff9">${fa(num)}${tokens.map(i=>`<span style="width:8px;height:8px;border-radius:50%;background:${SN_COL[i%4]};display:inline-block;margin:1px"></span>`).join('')}</div>`;
+    }
+  }
+  html+=`</div>
+  <div style="margin-top:8px;text-align:center">
+  ${D.pos.map((p,i)=>`<span class="chip" style="border-color:${SN_COL[i]}">${esc(names[i])}: ${fa(p)}</span>`).join('')}
+  </div>
+  <button class="btn" data-a="snRoll" style="--c:#66bb6a;width:100%;margin-top:8px">🎲 تاس بینداز${D.dice?(' · '+fa(D.dice)):''}</button>
+  </div>`;
+  return html;
+};
+function snakesRoll(){
+  const st=BRD.local;if(!st||!st.data)return;
+  const D=st.data;if(D.winner>=0)return;
+  const turn=st.turn!=null?st.turn:D.turn;
+  if(BRD.mode!=='local'&&BRD.room&&uid){
+    const seat=(st.players||[]).findIndex(p=>p.uid===String(uid));
+    if(seat>=0&&seat!==turn){say('نوبت تو نیست');return}
+  }
+  const dice=1+(Math.random()*6|0);
+  D.dice=dice;sfx.tap();
+  let np=D.pos[turn]+dice;
+  if(np>100)np=D.pos[turn];
+  else{
+    D.pos[turn]=np;
+    if(LADDERS[np]){D.pos[turn]=LADDERS[np];say('نردبان! 🪜');sfx.ok()}
+    else if(SNAKES[np]){D.pos[turn]=SNAKES[np];say('مار! 🐍');sfx.no()}
+  }
+  if(D.pos[turn]>=100){D.winner=turn;D.done=1;sfx.win();say('برد!')}
+  else{st.turn=D.turn=(turn+1)%D.np}
+  if(BRD.room)brdSaveRoom(st);
+  show('snP');
+}
+
+// ----- منچ (ساده شده) -----
+function ludoNew(np){
+  // each player 2 tokens for speed (quick mode), path 0 = home, 1-52 track, 53+ finish
+  const tokens=[];
+  for(let p=0;p<np;p++)tokens.push([0,0]); // 2 tokens at yard
+  return {tokens:tokens,np:np,turn:0,dice:0,extra:0,winner:-1,starts:[0,13,26,39]};
+}
+function ludoPos(p,tokenVal,starts){
+  if(tokenVal<=0)return null;
+  if(tokenVal>=53)return {finish:tokenVal-52};
+  const track=(starts[p]+tokenVal-1)%52;
+  return {track:track};
+}
+V.ludo=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🏠</div>
+<h3>منچ (حالت سریع)</h3><p>هر بازیکن ۲ مهره. با ۶ از خانه بیا بیرون. اول هر دو مهره را به خانه برسان.</p>
+<button class="btn" data-a="ld2" style="--c:#ef5350;width:100%">۲ نفره محلی</button>
+<button class="btn" data-a="ld4" style="--c:#e53935;width:100%;margin-top:8px">۴ نفره محلی</button>
+<button class="btn" data-a="ldO" style="--c:#5c6bc0;width:100%;margin-top:8px">آنلاین با کد اتاق</button>
+${BK}</div>`;
+ACT.ld2=()=>{BRD.kind='ludo';BRD.mode='local';BRD.local={phase:'play',players:[{name:'آبی'},{name:'قرمز'}],data:ludoNew(2),turn:0};show('ldP')};
+ACT.ld4=()=>{BRD.kind='ludo';BRD.mode='local';BRD.local={phase:'play',players:[{name:'آبی'},{name:'قرمز'},{name:'زرد'},{name:'سبز'}],data:ludoNew(4),turn:0};show('ldP')};
+ACT.ldO=()=>show('ldL');
+V.ldL=()=>`<div class="card" style="text-align:center"><h3>منچ آنلاین</h3>
+<button class="btn" data-a="ldC2" style="--c:#ef5350;width:100%">اتاق ۲ نفره</button>
+<button class="btn" data-a="ldC4" style="--c:#e53935;width:100%;margin-top:6px">اتاق ۴ نفره</button>
+<input id="lc" placeholder="کد اتاق" maxlength="6" style="text-transform:uppercase;text-align:center;margin-top:10px">
+<button class="btn" data-a="ldJ" style="--c:#3ee0a3;width:100%">پیوستن</button>${BK}</div>`;
+ACT.ldC2=async()=>{const st=await brdCreateRoom('ludo',2);st.data=ludoNew(2);BRD.local=st;show('ldW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('ldP');else show('ldW')})};
+ACT.ldC4=async()=>{const st=await brdCreateRoom('ludo',4);st.data=ludoNew(4);BRD.local=st;show('ldW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('ldP');else show('ldW')})};
+ACT.ldJ=async()=>{const st=await brdJoinRoom((($('#lc')&&$('#lc').value)||''),'ludo');if(!st)return;BRD.local=st;show('ldW');brdStartPoll(s=>{BRD.local=s;if(s.phase==='play')show('ldP');else show('ldW')})};
+V.ldW=()=>{const st=BRD.local||{players:[]};const code=(BRD.room&&BRD.room.code)||'';return `<div class="card" style="text-align:center"><h3>اتاق ${esc(code)}</h3>
+<p>${fa((st.players||[]).length)}/${fa(st.max||2)}</p>
+${(st.players||[]).map(p=>`<div>${esc(p.name)}</div>`).join('')}
+${(st.players||[]).length>=2&&BRD.room&&BRD.room.host?`<button class="btn" data-a="ldGo" style="--c:#ef5350;width:100%">شروع</button>`:'<small>منتظر…</small>'}
+${BK}</div>`};
+ACT.ldGo=async()=>{const st=BRD.local;st.phase='play';st.data=ludoNew(st.players.length);st.turn=0;await brdSaveRoom(st);show('ldP')};
+V.ldP=()=>{
+  const st=BRD.local;if(!st)return V.ludo();
+  const D=st.data;const turn=st.turn!=null?st.turn:D.turn;
+  const names=(st.players||[]).map(p=>p.name);
+  let html=`<div class="bar"><span class="chip">نوبت: ${esc(names[turn]||'')}</span><button class="chip" data-a="boards">✖️</button></div>`;
+  if(D.winner>=0){html+=`<div class="card" style="text-align:center"><h2>🏆 ${esc(names[D.winner])}</h2>${BK}</div>`;return html}
+  html+=`<div class="card">`;
+  for(let p=0;p<D.np;p++){
+    html+=`<div style="margin:6px 0;padding:8px;border-radius:10px;background:${SN_COL[p]}33"><b style="color:${SN_COL[p]}">${esc(names[p]||'')}</b> · مهره‌ها: `;
+    D.tokens[p].forEach((v,ti)=>{
+      const label=v===0?'خانه':v>=53?('پایان '+fa(v-52)):fa(v);
+      html+=`<button class="chip" data-a="lt${p}_${ti}" style="${p===turn?'border-color:#fff':''}">${fa(ti+1)}:${label}</button> `;
+    });
+    html+=`</div>`;
+  }
+  html+=`<button class="btn" data-a="ldRoll" style="--c:#ef5350;width:100%">🎲 تاس${D.dice?(' · '+fa(D.dice)):''}</button>
+  <small>با ۶ مهره از خانه خارج می‌شود. مهره را بعد از تاس لمس کن.</small></div>`;
+  return html;
+};
+function ludoRoll(){
+  const st=BRD.local;if(!st||!st.data)return;
+  const D=st.data;if(D.winner>=0)return;
+  const turn=st.turn!=null?st.turn:D.turn;
+  if(BRD.mode!=='local'&&BRD.room&&uid){
+    const seat=(st.players||[]).findIndex(p=>p.uid===String(uid));
+    if(seat>=0&&seat!==turn){say('نوبت تو نیست');return}
+  }
+  if(D.dice&&D.extra){say('اول مهره را حرکت بده');return}
+  D.dice=1+(Math.random()*6|0);D.extra=1;sfx.tap();say('تاس: '+fa(D.dice));
+  // auto if no move
+  const moves=[];
+  D.tokens[turn].forEach((v,ti)=>{
+    if(v===0&&D.dice===6)moves.push(ti);
+    if(v>0&&v<53&&v+D.dice<=57)moves.push(ti);
+  });
+  if(!moves.length){D.dice=0;D.extra=0;st.turn=D.turn=(turn+1)%D.np;say('حرکت ممکن نیست')}
+  if(BRD.room)brdSaveRoom(st);
+  show('ldP');
+}
+function ludoTok(p,ti){
+  const st=BRD.local;if(!st||!st.data)return;
+  const D=st.data;const turn=st.turn!=null?st.turn:D.turn;
+  if(p!==turn){say('نوبت این بازیکن نیست');return}
+  if(!D.dice||!D.extra){say('اول تاس بزن');return}
+  const v=D.tokens[p][ti];
+  if(v===0){
+    if(D.dice!==6){say('برای خروج ۶ لازم است');return}
+    D.tokens[p][ti]=1;
+  }else if(v>0&&v<53){
+    const nv=v+D.dice;
+    if(nv>57){say('بیش از حد');return}
+    D.tokens[p][ti]=nv>=53?53+(nv-53>4?4:nv-53):nv;
+    if(D.tokens[p][ti]>57)D.tokens[p][ti]=57;
+    // capture: opponent on same track cell
+    const myStart=D.starts[p];
+    const abs=(myStart+D.tokens[p][ti]-1)%52;
+    if(D.tokens[p][ti]<53){
+      for(let op=0;op<D.np;op++)if(op!==p){
+        D.tokens[op].forEach((ov,oi)=>{
+          if(ov>0&&ov<53){
+            const oabs=(D.starts[op]+ov-1)%52;
+            if(oabs===abs){D.tokens[op][oi]=0;say('زد!');sfx.ok()}
+          }
+        });
+      }
+    }
+  }else return;
+  sfx.ok();
+  const finished=D.tokens[p].every(x=>x>=53);
+  if(finished){D.winner=p;sfx.win()}
+  const again=D.dice===6&&!finished;
+  D.dice=0;D.extra=0;
+  if(!again&&D.winner<0)st.turn=D.turn=(turn+1)%D.np;
+  if(BRD.room)brdSaveRoom(st);
+  show('ldP');
+}
+
+
+Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),daily:()=>show('daily'),escape:()=>show('escape'),shop:()=>show('shop'),team:()=>show('team'),hourly:()=>show('hourly'),vote:()=>show('vote'),boards:()=>show('boards'),dots:()=>show('dots'),snakes:()=>show('snakes'),ludo:()=>show('ludo'),snRoll:()=>snakesRoll(),ldRoll:()=>ludoRoll(),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(a.slice(0,4)=='buy_'){sfx.tap();buyUp(a.slice(4))}else if(a.slice(0,2)=='dy'){sfx.tap();dailyAns(+a.slice(2))}else if(a.slice(0,2)=='hy'){sfx.tap();hourlyAns(+a.slice(2))}else if(a.slice(0,2)=='nx'){sfx.tap();nightHunt(+a.slice(2))}else if(a.slice(0,2)=='dH'){const p=a.slice(2).split('_');dotsMove('H',+p[0],+p[1])}else if(a.slice(0,2)=='dV'){const p=a.slice(2).split('_');dotsMove('V',+p[0],+p[1])}else if(a.slice(0,2)=='lt'){const p=a.slice(2).split('_');ludoTok(+p[0],+p[1])}else if(a.slice(0,2)=='nq'){sfx.tap();nightQuizAns(+a.slice(2))}else if(a.slice(0,2)=='np'){sfx.tap();nightPuzzle(+a.slice(2))}else if(a.slice(0,2)=='nw'){sfx.tap();nightWatt(+a.slice(2))}else if(a.slice(0,2)=='tj'){sfx.tap();teamVsAns(+a.slice(2))}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
 // لمس وسیله‌ها: انتخاب با مختصات روی صفحه (مستقل از hit-test سه‌بعدی مرورگر)
 document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
 function boot(){
