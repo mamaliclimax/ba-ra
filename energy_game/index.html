@@ -96,6 +96,7 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 </div></div>
 <div id="m"><i>🤖</i><p>سلام!</p></div>
 <script>
+
 'use strict';
 // ⚙️ این مقادیر را ربات هنگام «دریافت فایل بازی» خودکار پر می‌کند
 const STORIES=[{"url": "https://dl.sevilmusics.com/cdn/music/srvrt/Baby%20Story%20_Olagh%20Namard%20%5BSevilMusic%5D.mp3", "title": "الاغ قدر نشناس", "cover": "https://mzn.wikipedia.org/wiki/%D9%BE%D8%B1%D9%88%D9%86%D8%AF%D9%87:Donkey_in_Clovelly,_North_Devon,_England.jpg"}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "پت مت", "cover": "https://istanama.com/wp-content/uploads/2021/04/Pat-and-Mat3.jpg"}],SB_URL="https://bfzreeyyhmygpnfzczwn.supabase.co",SB_KEY="sb_publishable_9OcON2qika5bnRt-mO0cDg_cRJ_OXUF",NQ=354,QT=20,QD=15,K='barghi1';
@@ -245,7 +246,60 @@ const tree=()=>{const g=S.pts+2*Object.values(S.lv).reduce((a,b)=>a+b,0);return 
 const B=(a,e,t,s,c)=>`<button class="btn" data-a="${a}" style="--c:${c}"><b>${e}</b>${t}<small>${s}</small></button>`;
 const BK='<button class="btn" data-a="home" style="--c:#b99cff;margin-top:8px">🏠 برگشت</button>';
 const V={},post={},ACT={};window.ACT=ACT;window.V=V;let cur,arg,G=null,Q=null,lastOk=0,rot=0;
-function show(n,a){try{if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;var fn=V[n];if(typeof fn!=='function'){n='reg';fn=V.reg}var el=$('#v');if(el)el.innerHTML=fn(a);var h=$('#h');if(h)h.style.display=(n=='reg'||n=='game'||n=='dq')?'none':'';try{window.scrollTo(0,0)}catch(e){}try{post[n]&&post[n](a)}catch(e){}try{hud()}catch(e){}try{if(MS[n])say(MS[n])}catch(e){}}catch(err){console.error('show',n,err);try{var v=$('#v');if(v)v.innerHTML='<div class="card" style="text-align:center;margin-top:30px"><h3>خطا</h3><p style="direction:ltr;font-size:12px">'+String(err&&err.message||err)+'</p><button class="btn" data-a="home" style="--c:#3ee0a3">خانه</button></div>'}catch(e2){}}}
+function bindActions(root){
+  try{
+    root=root||document;
+    var nodes=root.querySelectorAll('[data-a]');
+    for(var i=0;i<nodes.length;i++){
+      (function(node){
+        var a=node.getAttribute('data-a');
+        if(!a) return;
+        node.onclick=function(ev){
+          try{if(ev){ev.preventDefault();ev.stopPropagation();}}catch(x){}
+          if(window.__runAction) window.__runAction(a);
+        };
+        node.ontouchend=function(ev){
+          try{if(ev){ev.preventDefault();ev.stopPropagation();}}catch(x){}
+          var now=Date.now();
+          if(window.__uiLock && (now-window.__uiLock)<350) return;
+          window.__uiLock=now;
+          if(window.__runAction) window.__runAction(a);
+        };
+      })(nodes[i]);
+    }
+  }catch(err){console.error('bind',err)}
+}
+function show(n,a){
+  try{
+    if(G&&n!='game') try{clearInterval(G.h)}catch(e){}
+    if(!S.p) n='reg';
+    cur=n; arg=a;
+    var fn=V[n];
+    if(typeof fn!=='function'){ n='reg'; fn=V.reg; }
+    var el=document.getElementById('v');
+    if(!el) el=document.querySelector('#v');
+    if(el){
+      el.innerHTML=fn(a);
+      bindActions(el);
+    }
+    var h=document.getElementById('h');
+    if(h) h.style.display=(n==='reg'||n==='game'||n==='dq')?'none':'';
+    try{window.scrollTo(0,0)}catch(e){}
+    try{if(post[n]) post[n](a)}catch(e){console.error('post',n,e)}
+    try{hud()}catch(e){}
+    try{if(MS[n]) say(MS[n])}catch(e){}
+  }catch(err){
+    console.error('show',n,err);
+    try{
+      var v=document.getElementById('v');
+      if(v){
+        v.innerHTML='<div class="card" style="text-align:center;margin-top:30px"><h3>خطا در نمایش</h3><p style="direction:ltr;font-size:12px">'+String(err&&err.message||err)+'</p><button type="button" class="btn" data-a="reg" style="--c:#3ee0a3">تلاش دوباره</button></div>';
+        bindActions(v);
+      }
+    }catch(e2){}
+  }
+}
+
 V.reg=function(){
   var avs='';
   for(var i=0;i<AVS.length;i++){
@@ -488,7 +542,9 @@ function boot(){
     }catch(e2){}
   }
 }
-try{if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();}catch(e){try{boot()}catch(e2){console.error(e2)}}
+function __start(){try{boot()}catch(e){console.error(e)}try{bindActions(document)}catch(e){}}
+try{if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', __start); else __start();}catch(e){try{__start()}catch(e2){console.error(e2)}}
+
 </script>
 </body>
 </html>
