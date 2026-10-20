@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v4</title>
+<title>برقی و خانهٔ هوشمند v5</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -91,7 +91,7 @@ const D=[['💡','لامپ',60,'چراغِ اتاقِ خالی را خاموش �
 const R=[['هال','🛋️','#ff9a8b','#e3b778',[0,1,2,3]],['آشپزخانه','🍳','#7be0b5','#d8d0bd',[0,6,10,11]],['اتاق بازی','🧸','#ffd36e','#cfa6ff',[0,3,4,5]],['حمام','🛁','#7ed6ff','#bfe9ff',[0,7,9,11]],['خواب','🛏️','#b9a7ff','#e6c9a8',[0,8,5,1]],['مطالعه','📚','#ffb3d1','#dcc7a1',[0,4,5,2]],['حیاط','🌳','#8fe388','#a7d67a',[0,11,2,8]],['انباری','🔧','#a0b4ff','#c9c1b3',[0,6,7,9]]];
 const P=[[-62,64,-95],[-60,64,78],[82,64,-31],[42,64,91]];
 const PR=['آفرین!','عالی بود!','تو قهرمان انرژی‌ای! ⚡','دمت گرم!','چه باهوشی! 🌟'];
-const MS={duel:'رقابت واقعی؛ آماده‌ای؟ ⚔️',dwait:'منتظر حریف باش… آماده شو! 🔥',dq:'سریع و دقیق جواب بده! ⚡',home:'سلام! بیا برق را هوشمندانه مصرف کنیم ⚡',map:'یک اتاق انتخاب کن؛ هر مرحله سخت‌تر می‌شود!',game:'قرمز 💸 = برق هدر می‌رود، لمسش کن. سبز 🙂 = دارند استفاده می‌کنند. کلیک اشتباه −۱',quiz:'فکر کن و جواب بده؛ اشتباه هم یاد گرفتن است 💛',wheel:'شانست را امتحان کن! 🍀',media:'راحت بنشین و لذت ببر 🌙',lb:'تلاش کن، جایزه منتظر توست! 🎁',daily:'چالش امروز؛ سریع و درست جواب بده! 📅',escape:'هدررفت‌های پنهان را پیدا کن! 🔍',shop:'با امتیاز، خانه را هوشمند کن 🏠',team:'با دوستانت یک تیم بساز 👨‍👩‍👧‍👦',hourly:'کوییز این ساعت؛ همه یک سؤال می‌بینند ⏰',vote:'رأی بده و فردا نتیجه را ببین 🗳️'};
+const MS={duel:'رقابت واقعی؛ آماده‌ای؟ ⚔️',dwait:'منتظر حریف باش… آماده شو! 🔥',dq:'سریع و دقیق جواب بده! ⚡',home:'سلام! بیا برق را هوشمندانه مصرف کنیم ⚡',map:'یک اتاق انتخاب کن؛ هر مرحله سخت‌تر می‌شود!',game:'قرمز 💸 = برق هدر می‌رود، لمسش کن. سبز 🙂 = دارند استفاده می‌کنند. کلیک اشتباه −۱',quiz:'فکر کن و جواب بده؛ اشتباه هم یاد گرفتن است 💛',wheel:'شانست را امتحان کن! 🍀',media:'راحت بنشین و لذت ببر 🌙',lb:'تلاش کن، جایزه منتظر توست! 🎁',daily:'چالش امروز؛ سریع و درست جواب بده! 📅',escape:'فرار شبانه؛ ۴ مرحله تا آزادی 🌙',shop:'با امتیاز، خانه را هوشمند کن 🏠',team:'با دوستانت یک تیم بساز 👨‍👩‍👧‍👦',hourly:'کوییز این ساعت؛ همه یک سؤال می‌بینند ⏰',vote:'رأی بده و فردا نتیجه را ببین 🗳️'};
 const AVS=['🦊','🐼','🐯','🦁','🐸','🐙','🦄','🐧'];let av=AVS[0];
 const mb=a=>()=>{let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
 const me=()=>(S.p.a||'🙂')+' '+S.p.f+' '+S.p.l[0]+'.';
@@ -100,7 +100,7 @@ const dk=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),today=()=>dk(ne
 const wkey=o=>{const d=new Date();return dk(new Date(d.getFullYear(),d.getMonth(),d.getDate()-(d.getDay()+1)%7-7*(o||0)))};
 let S=null;try{S=JSON.parse(localStorage.getItem(K)||'null')}catch(e){S=null}
 if(!S||typeof S!=='object')S={};
-S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1,dch:'',dchOk:0,esc:{},up:{},team:null,hq:'',hqOk:0,voteD:'',voteC:''},S);if(!S.esc||typeof S.esc!=='object')S.esc={};if(!S.up||typeof S.up!=='object')S.up={};
+S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1,dch:'',dchOk:0,esc:{},up:{},team:null,hq:'',hqOk:0,voteD:'',voteC:'',phrases:[],nightDone:''},S);if(!S.esc||typeof S.esc!=='object')S.esc={};if(!S.up||typeof S.up!=='object')S.up={};if(!Array.isArray(S.phrases))S.phrases=[];
 if(!S.lv||typeof S.lv!=='object')S.lv={};if(!Array.isArray(S.seen))S.seen=[];
 if(S.wk!=wkey()){S.wk=wkey();S.wp=0}
 function _wa(){return (window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null}
@@ -174,7 +174,7 @@ setInterval(()=>{if(AC&&!document.hidden)tone([392,440,523,587,659][rnd(5)],1,'s
 function say(t){const p=$('#m p');p.textContent=t;p.style.animation='none';p.offsetWidth;p.style.animation='pop .35s'}
 $('#m i').onclick=()=>{try{const u=new SpeechSynthesisUtterance($('#m p').textContent);u.lang='fa-IR';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
 const hud=()=>{$('#h').innerHTML=`<button class="chip" data-a="home">🏠</button><span class="chip">⭐ ${fa(S.pts)}</span><span class="chip">📅 ${fa(S.wp)}</span><button class="chip" data-a="snd">${S.snd?'🔊':'🔇'}</button>`};
-function add(n){if(S.wk!=wkey()){S.wk=wkey();S.wp=0}S.pts+=n;S.wp+=n;if(S.team){if(S.team.wk!==wkey()){S.team.wk=wkey();S.team.wp=0}S.team.wp=(S.team.wp||0)+n}save();hud()}
+function add(n){if(S.wk!=wkey()){S.wk=wkey();S.wp=0}S.pts+=n;S.wp+=n;if(S.team){if(S.team.wk!==wkey()){S.team.wk=wkey();S.team.wp=0}S.team.wp=(S.team.wp||0)+n;publishTeamScore()}save();hud()}
 const wl=()=>{if(S.wd!=today()){S.wd=today();S.wl=3;save()}return S.wl};
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return fa(s/60|0)+':'+fa(s%60).padStart(2,'۰')};
 const tree=()=>{const g=S.pts+2*Object.values(S.lv).reduce((a,b)=>a+b,0);return g<10?'🌱':g<30?'🌿':g<60?'🪴':g<100?'🌳':'🌳🍎'};
@@ -184,7 +184,7 @@ const V={},post={},ACT={};let cur,arg,G=null,Q=null,lastOk=0,rot=0;
 function show(n,a){if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;$('#v').innerHTML=V[n](a);$('#h').style.display=n=='reg'||n=='game'||n=='dq'?'none':'';window.scrollTo(0,0);post[n]&&post[n](a);hud();if(MS[n])say(MS[n])}
 V.reg=()=>`<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">${AVS.map((a,i)=>`<button class="avb${i?'':' on'}" data-a="v${i}">${a}</button>`).join('')}</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>`;
 ACT.reg=()=>{const v=i=>$('#'+i).value.replace(/[<>&"'`]/g,'').trim(),f=v('f'),l=v('l'),c=v('c');if(f.length<2||l.length<2||c.length<2){$('#er').textContent='لطفاً نام، نام خانوادگی و شهر را کامل بنویس 🙂';return}S.p={f,l,c,a:av};save();show('home')};
-V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length,dDone=S.dch===today(),hKey=hourKey(),hDone=S.hq===hKey,vDone=S.voteD===today(),upN=Object.keys(S.up||{}).filter(k=>S.up[k]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small>${upN?`<br><small>🏠 ارتقاها: ${fa(upN)}</small>`:''}${S.team?`<br><small>👥 تیم ${esc(S.team.name||S.team.code)}</small>`:''}</div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div><div class="card" style="margin-top:12px"><b>🎮 بخش‌های جدید</b></div><div class="grid">${B('daily','📅','چالش امروز',dDone?('✅ '+fa(S.dchOk)+' درست'):'۵ سؤال · جایزه','#ff8a65')}${B('escape','🔍','اتاق فرار',fa(S.esc[today()]||0)+' ★ امروز','#7e57c2')}${B('shop','🏡','خانه هوشمند',fa(upN)+' ارتقا','#26a69a')}${B('team','👥','تیم و کلاس',S.team?(esc(S.team.code)):'بساز / بپیوند','#42a5f5')}${B('hourly','⏰','کوییز ساعتی',hDone?('✅ '+fa(S.hqOk)):'۱۰ سؤال این ساعت','#ec407a')}${B('vote','🗳️','رأی امروز',vDone?'رأی دادی ✅':'یک رأی · نتیجه فردا','#ab47bc')}</div>`};
+V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length,dDone=S.dch===today(),hKey=hourKey(),hDone=S.hq===hKey,vDone=S.voteD===today(),upN=Object.keys(S.up||{}).filter(k=>S.up[k]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small>${upN?`<br><small>🏠 ارتقاها: ${fa(upN)}</small>`:''}${S.team?`<br><small>👥 تیم ${esc(S.team.name||S.team.code)}</small>`:''}</div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div><div class="card" style="margin-top:12px"><b>🎮 بخش‌های جدید</b></div><div class="grid">${B('daily','📅','چالش امروز',dDone?('✅ '+fa(S.dchOk)+' درست'):'۵ سؤال · جایزه','#ff8a65')}${B('escape','🌙','فرار شبانه ۲۲', (S.nightDone===today()?'✅ تمام':'۲۲:۰۰ · ۴ مرحله'),'#7e57c2')}${B('shop','🏡','خانه هوشمند',fa(upN)+' ارتقا · ببین اثر','#26a69a')}${B('team','👥','تیم و کلاس',S.team?(esc(S.team.code)):'بساز / بپیوند','#42a5f5')}${B('hourly','⏰','کوییز ساعتی',hDone?('✅ '+fa(S.hqOk)):'۱۰ سؤال این ساعت','#ec407a')}${B('vote','✍️','جمله هفته',vDone?'نوشتی ✅':'یک جمله بنویس','#ab47bc')}</div>${teamBoardHtml()}`};
 V.map=()=>{let h='<div class="house">';for(let t=0;t<3;t++){h+=`<div class="card"><b>طبقهٔ ${fa(t+1)}</b><div class="g4">`;for(let i=0;i<8;i++){const L=t*8+i,r=R[i],st=S.lv[L]||0,lk=L>0&&!S.lv[L-1];h+=`<button class="lv${lk?' lk':''}" data-a="L${L}" style="--c:${r[2]}"><b>${lk?'🔒':r[1]}</b>${r[0]}<br>${'⭐'.repeat(st)||'·'}</button>`}h+='</div></div>'}return h+'</div>'};
 function play(L,seed){const du=seed!=null;if(du)L=16+seed%8;else if(L>23||L>0&&!S.lv[L-1])return;const r=R[L%8],t=L/8|0,T=du?35:30+t*5,d=r[4].map(i=>({e:D[i][0],nm:D[i][1],w:D[i][2],tip:D[i][3],n:i==6,s:i==6?1:0})),f=d.filter(x=>!x.n),sum=f.reduce((a,x)=>a+x.w,0);f[0].s=2;G={L,t:T,d,E:0,k:0,cb:0,bn:0,du,r:du?mb(seed):Math.random,sp:1.2,iv:du?1:Math.max(.75,2.2-.08*L)*S.ad,pw:du?.5:.3+.1*t,mx:sum*T,cap:sum,m:sum*T*.03,over:0,st:1,h:0};show('game')}
 V.game=()=>{const r=R[G.L%8];return `<div class="bar">${G.du?'':'<button class="chip" data-a="map">🗺️</button>'}<span class="chip">⏱ <b id="t">${fa(G.t)}</b></span><span class="chip">⚡ <b id="w">۰</b> وات</span><span class="chip">✅ <b id="k">۰</b></span>${G.du?'<span class="chip" id="oq">👤 ۰</span>':''}</div><div class="meter"><i id="mb"></i></div><h3 style="text-align:center;margin:6px 0 0">${r[1]} ${r[0]} · ${G.du?'⚔️ دوئل':'مرحلهٔ '+fa(G.L+1)}</h3><div class="sc" style="--w:${r[2]};--fl:${r[3]};--k:${Math.min(.82,(innerWidth-24)/428).toFixed(2)}"><div class="rm"><div class="f bw"></div><div class="f lw"></div><div class="f fl"></div>${G.d.map((d,i)=>`<div class="dv s${d.s}" id="d${i}" style="--x:${P[i][0]}px;--y:${P[i][1]}px;--z:${P[i][2]}px"><u></u><span>${d.e}</span><em>${d.nm}</em></div>`).join('')}</div></div>`};
@@ -282,86 +282,366 @@ post.dres=()=>{if(DL&&DL.r.st=='done')fin()};
 V.dlb=k=>`<div class="card"><h3 style="margin:0">🏆 ${k=='quiz'?'جدول کوییز دوئل':'جدول دوئل خانه'}</h3><small>برنده = بیشترین تعداد برد در هفته (شنبه تا جمعه)</small></div><div class="card"><b>این هفته</b><div id="dl0">در حال بارگیری…</div></div><div class="card"><b>👑 هفتهٔ قبل</b><div id="dl1">در حال بارگیری…</div></div>${BK}`;
 post.dlb=k=>[0,1].forEach(o=>{const e=$('#dl'+o);if(!sb()){e.textContent='فقط داخل بله فعال است.';return}rpc('egame_duel_top',{p_wk:wkey(o),p_kind:k}).then(a=>{e.innerHTML=a.map((x,i)=>`<div>${fa(i+1)}. ${esc(x.n)} — ${fa(x.w)} برد از ${fa(x.g)}</div>`).join('')||'هنوز مسابقه‌ای ثبت نشده'}).catch(()=>{e.textContent='اتصال به جدول برقرار نشد.'})});
 Object.assign(ACT,{duel:()=>show('duel'),dq:()=>duelStart('quiz',''),dh:()=>duelStart('house',''),dnq:()=>duelStart('quiz','NEW'),dnh:()=>duelStart('house','NEW'),dj:()=>{const c=(($('#rc')&&$('#rc').value)||'').trim().toUpperCase();if(c.length<4){say('کد اتاق را بنویس 🙂');return}duelStart('quiz',c)},tq:()=>show('dlb','quiz'),th:()=>show('dlb','house'),dbot:()=>{const k=(DL&&DL.kind)||'quiz';if(DL&&DL.r&&DL.r.id&&DL.r.id!=='BOT'&&sb())rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});botStart(k)},dx:()=>{if(DL&&DL.r&&DL.r.id&&DL.r.id!=='BOT'&&sb()&&(DL.ph=='wait'||cur=='dwait'||cur=='dload'))rpc('egame_duel_cancel',{p_id:DL.r.id,p_uid:String(uid)}).catch(()=>{});DL=null;show('duel')}});
-// ========== بخش‌های جدید (چالش روزانه، اتاق فرار، خانه هوشمند، تیم، کوییز ساعتی، رأی) ==========
-function hourKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'-'+d.getHours()}
+
+// ========== بخش‌های جدید v5 ==========
+function iranParts(){
+  try{
+    const fmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tehran',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',hour12:false});
+    const o={};fmt.formatToParts(new Date()).forEach(p=>{if(p.type!=='literal')o[p.type]=p.value});
+    return {y:+o.year,m:+o.month,d:+o.day,h:+o.hour,mi:+o.minute};
+  }catch(e){const n=new Date();return {y:n.getFullYear(),m:n.getMonth()+1,d:n.getDate(),h:n.getHours(),mi:n.getMinutes()}}
+}
+function hourKey(){const p=iranParts();return p.y+'-'+p.m+'-'+p.d+'-'+p.h}
 function daySeed(){const t=today();let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return h||1}
 function hourSeed(){const t=hourKey();let h=0;for(let i=0;i<t.length;i++)h=(h*33+t.charCodeAt(i))>>>0;return h||1}
 function seededPick(seed,n,mod){const out=[];let x=seed||1;while(out.length<n){x=(Math.imul(x,1664525)+1013904223)>>>0;const v=x%mod;if(out.indexOf(v)<0)out.push(v)}return out}
+function nightOpen(){const p=iranParts();return p.h===22||(p.h===21&&p.mi>=55)||(p.h===23&&p.mi<30)}
+function upBonus(){const u=S.up||{};let b={time:0,hint:0,score:0};if(u.led)b.score+=1;if(u.curtain)b.time+=5;if(u.smart)b.hint+=1;if(u.insul)b.time+=5;if(u.solar)b.score+=2;if(u.tree)b.hint+=1;return b}
+
+function teamBoardHtml(){
+  try{
+    const raw=localStorage.getItem('barghi_teams_week')||'{}';
+    const data=JSON.parse(raw);
+    const wk=wkey();
+    const rows=(data[wk]||[]).slice(0,5);
+    if(!rows.length) return '';
+    return `<div class="card"><b>👥 جدول تیم‌های هفته</b><div style="margin-top:6px;font-size:14px">${rows.map((r,i)=>`<div>${fa(i+1)}. ${esc(r.name||r.code)} — ${fa(r.wp)} امتیاز</div>`).join('')}</div><small>تیم خودت با بازی کردن این‌جا بالا می‌آید</small></div>`;
+  }catch(e){return ''}
+}
+function publishTeamScore(){
+  if(!S.team)return;
+  try{
+    const wk=wkey();
+    const raw=localStorage.getItem('barghi_teams_week')||'{}';
+    const data=JSON.parse(raw);
+    if(!data[wk])data[wk]=[];
+    const code=S.team.code;
+    let row=data[wk].find(x=>x.code===code);
+    if(!row){row={code:code,name:S.team.name||code,wp:0};data[wk].push(row)}
+    row.name=S.team.name||code;
+    row.wp=Math.max(row.wp||0,S.team.wp||0);
+    data[wk].sort((a,b)=>(b.wp||0)-(a.wp||0));
+    data[wk]=data[wk].slice(0,30);
+    localStorage.setItem('barghi_teams_week',JSON.stringify(data));
+  }catch(e){}
+}
 
 // --- چالش روزانه ---
 function dailyQs(){const ids=seededPick(daySeed(),5,NQ);return ids.map(id=>mk(id,mb(daySeed()+id)))}
 V.daily=()=>{if(S.dch===today())return `<div class="card" style="text-align:center"><div style="font-size:56px">✅</div><h2>چالش امروز تمام شد</h2><p>${fa(S.dchOk)} از ۵ درست · امتیازش به هفته اضافه شده</p>${BK}</div>`;if(!window.__DQ||!window.__DQ.length){window.__DQ=dailyQs();window.__DI=0;window.__DOK=0}const Qd=window.__DQ[window.__DI];if(!Qd)return `<div class="card">خطا</div>${BK}`;return `<div class="card"><small>چالش امروز · سؤال ${fa(window.__DI+1)} از ۵</small><h3>${Qd.q}</h3>${Qd.o.map((o,j)=>`<button class="opt" data-a="dy${j}">${o}</button>`).join('')}<div id="dfb"></div></div>`};
 function dailyAns(j){const Qd=window.__DQ&&window.__DQ[window.__DI];if(!Qd||Qd._d)return;Qd._d=1;const ok=Qd.o[j]===Qd.c;document.querySelectorAll('.opt').forEach((x,i)=>{x.disabled=true;if(Qd.o[i]===Qd.c)x.classList.add('ok');else if(i===j&&!ok)x.classList.add('no')});if(ok){window.__DOK++;sfx.ok();say(PR[rnd(PR.length)])}else{sfx.no();say(Qd.ex||'اشکال نداره!')}const last=window.__DI>=4;const fb=$('#dfb');if(fb)fb.innerHTML=`<p>${ok?'✅':'💡'} ${Qd.ex||''}</p><button class="btn" data-a="dn" style="--c:#ffd54a;width:100%">${last?'دیدن نتیجه':'سؤال بعدی'}</button>`}
-ACT.dn=()=>{if(window.__DI<4){window.__DI++;show('daily')}else{const ok=window.__DOK|0;S.dch=today();S.dchOk=ok;const bonus=ok>=4?5:ok>=2?3:1;add(bonus);window.__DQ=null;sfx.win();show('daily');say(fa(bonus)+' امتیاز چالش امروز!')}};
+ACT.dn=()=>{if(window.__DI<4){window.__DI++;show('daily')}else{const ok=window.__DOK|0;S.dch=today();S.dchOk=ok;const bonus=(ok>=4?5:ok>=2?3:1)+upBonus().score;add(bonus);window.__DQ=null;sfx.win();show('daily');say(fa(bonus)+' امتیاز چالش امروز!')}};
 
-// --- اتاق فرار انرژی ---
-const ESC_ITEMS=[
-  {e:'💡',t:'چراغ روشن در اتاق خالی',w:1},
-  {e:'📺',t:'تلویزیون بدون بیننده',w:1},
-  {e:'🔌',t:'شارژر در پریز',w:1},
-  {e:'🪟',t:'پنجره باز و کولر روشن',w:1},
-  {e:'🧊',t:'در یخچال کمی باز',w:1},
-  {e:'💻',t:'لپ‌تاپ روشن رهاشده',w:1},
-  {e:'🪴',t:'گلدان (بی‌خطر)',w:0},
-  {e:'📚',t:'کتاب روی میز',w:0},
-  {e:'🧸',t:'عروسک',w:0},
-  {e:'🖼️',t:'قاب عکس',w:0}
+// ========== فرار شبانه ۲۲:۰۰ — ۴ مرحله ==========
+const POOL=[
+  {e:'💡',t:'چراغ اتاق خالی',w:1},{e:'📺',t:'تلویزیون بدون بیننده',w:1},{e:'🔌',t:'شارژر در پریز',w:1},
+  {e:'🪟',t:'پنجره باز + کولر',w:1},{e:'🧊',t:'در یخچال باز',w:1},{e:'💻',t:'لپ‌تاپ رهاشده',w:1},
+  {e:'🎮',t:'کنسول روشن',w:1},{e:'🌀',t:'پنکه اتاق خالی',w:1},{e:'🛁',t:'آبگرمکن بی‌مصرف',w:1},
+  {e:'🫖',t:'کتری جوشانده اضافه',w:1},{e:'吹风机',t:'سشوار روشن',w:1},{e:'🧹',t:'جاروبرقی بی‌کار',w:1},
+  {e:'🧺',t:'لباسشویی نیمه‌پر',w:1},{e:'📻',t:'رادیو روشن بیهوده',w:1},{e:'🔋',t:'باتری در شارژ دائم',w:1},
+  {e:'🕯️',t:'لامپ راهرو روز',w:1},{e:'🖥️',t:'مانیتور دوم خاموش‌نشده',w:1},{e:'📱',t:'چند شارژر همزمان',w:1},
+  {e:'🚪',t:'در باز و کولر',w:1},{e:'🔥',t:'بخاری برقی + پنجره',w:1},{e:'🌡️',t:'ترموستات خیلی سرد',w:1},
+  {e:'🔦',t:'چراغ قوه روشن',w:1},{e:'🛎️',t:'دستگاه آماده‌به‌کار',w:1},{e:'🧯',t:'هیتر اضافه',w:1},
+  {e:'🎥',t:'دوربین بی‌نیاز روشن',w:1},
+  {e:'🪴',t:'گلدان',w:0},{e:'📚',t:'کتاب',w:0},{e:'🧸',t:'عروسک',w:0},{e:'🖼️',t:'قاب عکس',w:0},
+  {e:'🪑',t:'صندلی',w:0},{e:'🛏️',t:'بالش',w:0},{e:'🪞',t:'آینه',w:0},{e:'🧥',t:'لباس آویز',w:0},
+  {e:'🧹',t:'جارو دستی',w:0},{e:'🧵',t:'نخ و سوزن',w:0},{e:'🧩',t:'پازل چوبی',w:0},{e:'🎨',t:'مداد رنگی',w:0},
+  {e:'⚽',t:'توپ',w:0},{e:'🎸',t:'گیتار',w:0},{e:'🕰️',t:'ساعت دیواری',w:0},{e:'🧴',t:'شیشه خالی',w:0},
+  {e:'🧺',t:'سبد لباس',w:0},{e:'🧂',t:'نمکدان',w:0},{e:'🥄',t:'قاشق',w:0},{e:'🧻',t:'دستمال',w:0},
+  {e:'🧢',t:'کلاه',w:0},{e:'🧦',t:'جوراب',w:0},{e:'🎁',t:'جعبه کادو',w:0},{e:'🧱',t:'آجر تزئینی',w:0},
+  {e:'🪨',t:'سنگ دکور',w:0}
 ];
-function escapeDeal(){const g=mb(daySeed()+99);const order=ESC_ITEMS.map((_,i)=>i);for(let i=order.length-1;i>0;i--){const j=g()*(i+1)|0;const tmp=order[i];order[i]=order[j];order[j]=tmp}const pick=order.slice(0,8);return pick.map(i=>({...ESC_ITEMS[i],id:i,found:0}))}
-let EG=null;
-V.escape=()=>{const st=S.esc[today()]||0;return `<div class="card" style="text-align:center"><div style="font-size:52px">🔍</div><h3 style="margin:0">اتاق فرار انرژی</h3><p>هدررفت‌های پنهان را در ۶۰ ثانیه پیدا کن. وسیله‌های بی‌خطر را لمس نکن!</p><p>بهترین امروز: ${'★'.repeat(st)||'—'}</p><button class="btn" data-a="escgo" style="--c:#7e57c2;width:100%">شروع جست‌وجو</button>${BK}</div>`};
-ACT.escgo=()=>{EG={items:escapeDeal(),t:60,found:0,need:0,over:0,h:0};EG.need=EG.items.filter(x=>x.w).length;show('esrun')};
-V.esrun=()=>{if(!EG)return V.escape();return `<div class="bar"><span class="chip">⏱ <b id="et">${fa(EG.t)}</b></span><span class="chip">🔍 <b id="ef">${fa(EG.found)}</b>/${fa(EG.need)}</span><button class="chip" data-a="escape">✖️</button></div><div class="card"><b>آشپزخانه و هال</b><p style="font-size:13px;opacity:.85">روی وسیله‌هایی که برق هدر می‌دهند بزن</p><div class="g4" style="margin-top:8px">${EG.items.map((it,i)=>`<button class="lv" data-a="ex${i}" style="--c:${it.found?(it.w?'#3ee0a3':'#ff5d7a'):'#ffffff22'};min-height:72px"><b style="font-size:28px">${it.e}</b>${it.found?(it.w?'✅':'❌'):'؟'}</button>`).join('')}</div></div>`};
-function escTick(){if(!EG||EG.over||cur!=='esrun')return;EG.t-=1;const el=$('#et');if(el)el.textContent=fa(Math.max(0,EG.t));if(EG.t<=0)escEnd()}
-setInterval(escTick,1000);
-function escTap(i){if(!EG||EG.over)return;const it=EG.items[i];if(!it||it.found)return;it.found=1;if(it.w){EG.found++;sfx.ok();fxEsc(i,'+');say(it.t)}else{EG.t=Math.max(0,EG.t-5);sfx.no();say('این بی‌خطر بود! −۵ ثانیه');}const ef=$('#ef');if(ef)ef.textContent=fa(EG.found);if(EG.found>=EG.need)escEnd();else show('esrun')}
-function fxEsc(i,t){try{const e=document.querySelector('[data-a=ex'+i+']');if(!e)return;const r=e.getBoundingClientRect(),n=document.createElement('b');n.className='fx';n.textContent=t;n.style.left=r.left+r.width/2+'px';n.style.top=r.top+'px';document.body.appendChild(n);setTimeout(()=>n.remove(),700)}catch(e){}}
-function escEnd(){if(!EG||EG.over)return;EG.over=1;const ratio=EG.found/Math.max(1,EG.need);const stars=ratio>=1&&EG.t>20?3:ratio>=1?2:EG.found>=EG.need-1?1:0;const prev=S.esc[today()]||0;if(stars>prev){S.esc[today()]=stars;if(stars>=2)add(stars);save()}sfx.win();EG._stars=stars;show('esres');say(stars?('آفرین! '+stars+' ستاره'):'دفعه بعد بیشتر پیدا کن!')}
-V.esres=()=>{const s=EG&&EG._stars||0;return `<div class="card" style="text-align:center"><div style="font-size:48px">${'★'.repeat(s)}${'☆'.repeat(3-s)}</div><h2>${fa(EG?EG.found:0)} از ${fa(EG?EG.need:0)} هدررفت</h2><p>${s>=2?'امتیاز هفته هم گرفتی!':'دوباره تلاش کن'}</p><button class="btn" data-a="escgo" style="--c:#7e57c2">🔁 دوباره</button>${BK}</div>`};
+// fix emoji-only labels that used Persian as e
+POOL[10]={e:'💨',t:'سشوار روشن',w:1};
 
-// --- خانه هوشمند (فروشگاه ارتقا) ---
+let NG=null; // night game state
+function nightSeed(){return daySeed()*17+22}
+function dealNightBoard(){
+  const g=mb(nightSeed()+(NG?NG.shuffle:0));
+  const idxs=POOL.map((_,i)=>i);
+  for(let i=idxs.length-1;i>0;i--){const j=g()*(i+1)|0;const t=idxs[i];idxs[i]=idxs[j];idxs[j]=t}
+  const pick=idxs.slice(0,15).map(i=>({...POOL[i],id:i,found:0,key:i+'-'+((NG&&NG.shuffle)|0)}));
+  return pick;
+}
+V.escape=()=>{
+  const open=nightOpen();
+  const done=S.nightDone===today();
+  return `<div class="card" style="text-align:center"><div style="font-size:52px">🌙</div><h3 style="margin:0">فرار شبانه انرژی</h3>
+  <p>هر شب حدود <b>۲۲:۰۰</b> (به‌وقت ایران) · ۴ مرحله · ۲ دقیقه<br>
+  ۱) شکار ۱۵ هدررفت از بین وسایل · ۲) کوییز · ۳) پازل وسیله · ۴) حدس توان<br>
+  کلیک اشتباه = −۱ · هرکس زودتر تمام کند رتبه بهتری می‌گیرد</p>
+  <p>${open?'🟢 رویداد الان باز است!':done?'✅ امروز شرکت کردی':'⏰ فعلاً بسته — حدود ۲۲:۰۰ بیا'}</p>
+  <button class="btn" data-a="nightgo" style="--c:#7e57c2;width:100%" ${(!open&&!done)?'disabled':''}>${done?'دیدن راهنما / تمرین':(open?'شروع فرار شبانه':'منتظر ۲۲:۰۰')}</button>
+  <button class="btn" data-a="nightpractice" style="--c:#5c6bc0;width:100%;margin-top:8px">تمرین آفلاین (بدون رتبه)</button>
+  ${BK}</div>`;
+};
+function startNight(practice){
+  const bonus=upBonus();
+  NG={practice:!!practice,stage:'hunt',t:120+bonus.time,score:0,need:15,found:0,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
+  NG.board=dealNightBoard();
+  show('nrun');
+  if(NG._iv)clearInterval(NG._iv);
+  NG._iv=setInterval(nightTick,1000);
+  if(NG._sh)clearInterval(NG._sh);
+  NG._sh=setInterval(()=>{if(!NG||NG.over||NG.stage!=='hunt')return;NG.shuffle++;const kept=NG.board.filter(x=>x.found);const fresh=dealNightBoard();const need=15-kept.length;NG.board=kept.concat(fresh.filter(x=>!kept.some(k=>k.id===x.id)).slice(0,need));show('nrun');say('جای وسیله‌ها عوض شد!')},8000);
+}
+ACT.nightgo=()=>{if(S.nightDone===today()&&!nightOpen()){say('امروز تمام کردی');show('escape');return}startNight(false)};
+ACT.nightpractice=()=>startNight(true);
+function nightTick(){
+  if(!NG||NG.over)return;
+  NG.t-=1;
+  const el=$('#nt');if(el)el.textContent=fa(Math.max(0,NG.t));
+  if(NG.t<=0){nightFail('وقت تمام شد ⏰');}
+}
+function nightFail(msg){
+  if(!NG||NG.over)return;NG.over=1;clearInterval(NG._iv);clearInterval(NG._sh);
+  sfx.no();say(msg||'تمام');
+  show('nres');
+}
+function nightWin(){
+  if(!NG||NG.over)return;NG.over=1;clearInterval(NG._iv);clearInterval(NG._sh);
+  const elapsed=Math.max(1,Math.round((Date.now()-NG.started)/1000));
+  NG.elapsed=elapsed;
+  if(!NG.practice){
+    S.nightDone=today();
+    const pts=Math.max(3,12-Math.floor(elapsed/15))+Math.floor(NG.score/5)+upBonus().score;
+    add(pts);NG.pts=pts;
+    // local night ranking
+    try{
+      const k='barghi_night_'+today();
+      const arr=JSON.parse(localStorage.getItem(k)||'[]');
+      arr.push({n:me(),s:NG.score,t:elapsed,pts:pts});
+      arr.sort((a,b)=>a.t-b.t||b.s-a.s);
+      localStorage.setItem(k,JSON.stringify(arr.slice(0,20)));
+      NG.rank=arr.findIndex(x=>x.t===elapsed&&x.n===me())+1;
+    }catch(e){}
+  }
+  sfx.win();show('nres');
+}
+V.nrun=()=>{
+  if(!NG)return V.escape();
+  const bar=`<div class="bar"><span class="chip">⏱ <b id="nt">${fa(NG.t)}</b></span><span class="chip">⭐ ${fa(NG.score)}</span><span class="chip">${NG.stage==='hunt'?'🔍 '+fa(NG.found)+'/'+fa(NG.need):NG.stage}</span><button class="chip" data-a="escape">✖️</button></div>`;
+  if(NG.stage==='hunt'){
+    return bar+`<div class="card"><b>مرحله ۱ — شکار هدررفت</b><p style="font-size:13px">۱۵ وسیلهٔ پرمصرف را پیدا کن. بی‌خطرها را نزن (−۱). هر ۸ ثانیه جایشان عوض می‌شود.</p>
+    <div class="g4">${NG.board.map((it,i)=>`<button class="lv" data-a="nx${i}" style="--c:${it.found?(it.w?'#3ee0a3':'#ff5d7a'):'#ffffff22'};min-height:70px"><b style="font-size:26px">${it.e}</b><br><small>${it.found?(it.w?'✅':'❌'):'؟'}</small></button>`).join('')}</div></div>`;
+  }
+  if(NG.stage==='quiz'){
+    const Q=NG.q;if(!Q)return bar+'<div class="card">...</div>';
+    return bar+`<div class="card"><b>مرحله ۲ — کوییز</b><h3>${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="nq${j}">${o}</button>`).join('')}</div>`;
+  }
+  if(NG.stage==='puzzle'){
+    const p=NG.puzzle;
+    return bar+`<div class="card"><b>مرحله ۳ — پازل وسیله</b><p>حروف به‌هم‌ریخته را به ترتیب درست لمس کن:</p>
+    <div style="font-size:28px;letter-spacing:4px;margin:8px 0">${esc(p.shown)}</div>
+    <div class="g4">${p.letters.map((ch,i)=>`<button class="lv" data-a="np${i}" style="--c:#7e57c2;min-height:56px;font-size:22px" ${p.used[i]?'disabled':''}>${ch}</button>`).join('')}</div>
+    <p>ساخته‌شده: <b>${esc(p.build)}</b></p></div>`;
+  }
+  if(NG.stage==='watt'){
+    const w=NG.watt;
+    return bar+`<div class="card"><b>مرحله ۴ — توان وسیله</b><div style="font-size:56px">${w.e}</div><p>${esc(w.t)}</p><p>تقریباً چند وات؟</p>
+    ${w.opts.map((o,j)=>`<button class="opt" data-a="nw${j}">${fa(o)} وات</button>`).join('')}</div>`;
+  }
+  return bar;
+};
+function nightHunt(i){
+  if(!NG||NG.over||NG.stage!=='hunt')return;
+  const it=NG.board[i];if(!it||it.found)return;
+  it.found=1;
+  if(it.w){NG.found++;NG.score+=2;sfx.ok();say(it.t)}
+  else{NG.score=Math.max(0,NG.score-1);sfx.no();say('بی‌خطر بود! −۱')}
+  if(NG.found>=NG.need){nightToQuiz();return}
+  show('nrun');
+}
+function nightToQuiz(){
+  NG.stage='quiz';NG.qi=0;
+  const id=seededPick(nightSeed()+3,1,NQ)[0];
+  NG.q=mk(id,mb(nightSeed()+9));
+  say('مرحله کوییز!');show('nrun');
+}
+function nightQuizAns(j){
+  if(!NG||NG.stage!=='quiz'||!NG.q||NG.q._d)return;
+  NG.q._d=1;
+  const ok=NG.q.o[j]===NG.q.c;
+  if(ok){NG.score+=3;sfx.ok();nightToPuzzle()}
+  else{NG.score=Math.max(0,NG.score-1);sfx.no();say(NG.q.ex||'اشتباه');NG.q._d=0;const id=seededPick(nightSeed()+3+NG.qi+1,1,NQ)[0];NG.q=mk(id,mb(nightSeed()+11+NG.qi));NG.qi++;show('nrun')}
+}
+function nightToPuzzle(){
+  NG.stage='puzzle';
+  const names=['یخچال','تلویزیون','لپ‌تاپ','کولر','جاروبرقی','مایکروویو','پنکه','اتو'];
+  const name=names[nightSeed()%names.length];
+  const letters=name.split('');
+  const g=mb(nightSeed()+21);
+  const order=letters.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){const j=g()*(i+1)|0;const t=order[i];order[i]=order[j];order[j]=t}
+  NG.puzzle={target:name,letters:order.map(i=>letters[i]),used:order.map(()=>0),build:'',shown:order.map(i=>letters[i]).join(' ')};
+  say('پازل وسیله!');show('nrun');
+}
+function nightPuzzle(i){
+  if(!NG||NG.stage!=='puzzle')return;
+  const p=NG.puzzle;if(p.used[i])return;
+  p.used[i]=1;p.build+=p.letters[i];
+  if(p.build===p.target){NG.score+=4;sfx.ok();nightToWatt();return}
+  if(p.target.indexOf(p.build)!==0){NG.score=Math.max(0,NG.score-1);sfx.no();p.build='';p.used=p.used.map(()=>0);say('از اول! −۱')}
+  show('nrun');
+}
+function nightToWatt(){
+  NG.stage='watt';
+  const items=[['💡','لامپ LED',10],[ '📺','تلویزیون',100],[ '🧊','یخچال',150],[ '💨','سشوار',1800],[ '🧺','لباسشویی',500],[ '💻','لپ‌تاپ',65]];
+  const it=items[nightSeed()%items.length];
+  const correct=it[2];
+  const opts=[correct,Math.max(5,correct-40),correct+80,Math.round(correct*1.5)];
+  const g=mb(nightSeed()+33);
+  for(let i=3;i>0;i--){const j=g()*(i+1)|0;const t=opts[i];opts[i]=opts[j];opts[j]=t}
+  NG.watt={e:it[0],t:it[1],c:correct,opts:opts};
+  say('حدس توان!');show('nrun');
+}
+function nightWatt(j){
+  if(!NG||NG.stage!=='watt')return;
+  const w=NG.watt;
+  if(w.opts[j]===w.c){NG.score+=5;sfx.ok();nightWin()}
+  else{NG.score=Math.max(0,NG.score-1);sfx.no();say('نه، حدود '+fa(w.c)+' وات');}
+  show('nrun');
+}
+V.nres=()=>{
+  if(!NG)return V.escape();
+  const rank=NG.rank?('رتبه محلی تقریبی: '+fa(NG.rank)): '';
+  return `<div class="card" style="text-align:center"><div style="font-size:52px">${NG.over&&NG.elapsed?'🏆':'⏰'}</div>
+  <h2>${NG.elapsed?'فرار موفق!':'تمام شد'}</h2>
+  <p>امتیاز مرحله: ${fa(NG.score)}${NG.elapsed?' · زمان: '+fa(NG.elapsed)+' ثانیه':''}</p>
+  <p>${NG.practice?'حالت تمرین (رتبه ثبت نشد)':(NG.pts?('+'+fa(NG.pts)+' امتیاز هفته'):'')}</p>
+  <p><small>${rank}</small></p>
+  <button class="btn" data-a="escape" style="--c:#7e57c2">بازگشت</button>${BK}</div>`;
+};
+
+// --- خانه هوشمند (واضح‌تر) ---
 const UPS=[
-  {id:'led',e:'💡',n:'لامپ LED',c:8,d:'نور کمتر با روشنایی بهتر'},
-  {id:'curtain',e:'🪟',n:'پرده هوشمند',c:12,d:'روزها نور طبیعی به‌جای چراغ'},
-  {id:'smart',e:'📱',n:'پریز هوشمند',c:15,d:'قطع خودکار وسایل آماده‌به‌کار'},
-  {id:'insul',e:'🧱',n:'عایق پنجره',c:20,d:'کمتر روشن ماندن بخاری/کولر'},
-  {id:'solar',e:'☀️',n:'پنل کوچک',c:35,d:'کمک به تأمین برق خانه'},
-  {id:'tree',e:'🌳',n:'درخت حیاط',c:10,d:'سایه و خنکای طبیعی'}
+  {id:'led',e:'💡',n:'لامپ LED',c:8,d:'+۱ امتیاز پاداش در چالش و فرار'},
+  {id:'curtain',e:'🪟',n:'پرده هوشمند',c:12,d:'+۵ ثانیه وقت در فرار شبانه'},
+  {id:'smart',e:'📱',n:'پریز هوشمند',c:15,d:'یک کمک اضافه در راهنما (ستاره بیشتر)'},
+  {id:'insul',e:'🧱',n:'عایق پنجره',c:20,d:'+۵ ثانیه دیگر در فرار'},
+  {id:'solar',e:'☀️',n:'پنل کوچک',c:35,d:'+۲ امتیاز پاداش دائمی'},
+  {id:'tree',e:'🌳',n:'درخت حیاط',c:10,d:'کمک نمایشی روی درخت انرژی'}
 ];
-V.shop=()=>{const list=UPS.map(u=>{const owned=!!(S.up&&S.up[u.id]);return `<div class="card" style="display:flex;gap:10px;align-items:center"><div style="font-size:36px">${u.e}</div><div style="flex:1;text-align:right"><b>${u.n}</b><br><small>${u.d}</small><br><small>${owned?'✅ خریداری شده':'هزینه: '+fa(u.c)+' امتیاز'}</small></div>${owned?'':`<button class="btn" data-a="buy_${u.id}" style="--c:#26a69a;padding:8px 12px">خرید</button>`}</div>`}).join('');return `<div class="card" style="text-align:center"><h3 style="margin:0">🏡 خانه هوشمند</h3><p>امتیاز کل: ${fa(S.pts)} · با امتیاز، خانه را بهتر کن</p></div>${list}${BK}`};
-function buyUp(id){const u=UPS.find(x=>x.id===id);if(!u)return;if(S.up[id]){say('قبلاً خریدی');return}if(S.pts<u.c){say('امتیاز کافی نیست');sfx.no();return}S.pts-=u.c;S.up[id]=1;save();hud();sfx.win();say(u.n+' اضافه شد! 🎉');show('shop')}
+function shopEffects(){
+  const b=upBonus();
+  const owned=UPS.filter(u=>S.up&&S.up[u.id]);
+  if(!owned.length)return '<p>هنوز چیزی نخریده‌ای. با امتیاز هفته/کل، وسیله بخر تا در بازی‌ها قوی‌تر شوی.</p>';
+  return `<div class="card" style="background:#ffffff14"><b>اثر الان روی بازی تو</b><br>
+  <small>وقت اضافه فرار: ${fa(b.time)} ثانیه<br>پاداش امتیاز: +${fa(b.score)}<br>وسایل خریده‌شده: ${owned.map(u=>u.e).join(' ')}</small></div>`;
+}
+V.shop=()=>{
+  const list=UPS.map(u=>{
+    const owned=!!(S.up&&S.up[u.id]);
+    return `<div class="card" style="display:flex;gap:10px;align-items:center"><div style="font-size:36px">${u.e}</div>
+    <div style="flex:1;text-align:right"><b>${u.n}</b><br><small>${u.d}</small><br>
+    <small>${owned?'✅ فعال است':'هزینه: '+fa(u.c)+' از امتیاز کل ('+fa(S.pts)+')'}</small></div>
+    ${owned?'':`<button class="btn" data-a="buy_${u.id}" style="--c:#26a69a;padding:8px 12px">خرید</button>`}</div>`;
+  }).join('');
+  return `<div class="card" style="text-align:center"><h3 style="margin:0">🏡 خانه هوشمند</h3>
+  <p>امتیازت را خرج کن تا <b>مزیت واقعی</b> در چالش و فرار شبانه بگیری — فقط ظاهر نیست.</p></div>
+  ${shopEffects()}${list}${BK}`;
+};
+function buyUp(id){
+  const u=UPS.find(x=>x.id===id);if(!u)return;
+  if(S.up[id]){say('قبلاً خریدی');return}
+  if(S.pts<u.c){say('امتیاز کافی نیست (امتیاز کل)');sfx.no();return}
+  S.pts-=u.c;S.up[id]=1;save();hud();sfx.win();say(u.n+' فعال شد! '+u.d);show('shop');
+}
 
-// --- تیم / کلاس ---
-V.team=()=>{const t=S.team;if(t)return `<div class="card" style="text-align:center"><div style="font-size:48px">👥</div><h3 style="margin:0">تیم ${esc(t.name||'')}</h3><p>کد تیم: <b style="letter-spacing:4px">${esc(t.code)}</b></p><p>امتیاز تیمی این هفته: ${fa(t.wp||0)}</p><small>کد را به هم‌تیمی‌ها بده تا بپیوندند. با بازی کردن، امتیاز تیم بالا می‌رود.</small><button class="btn" data-a="teamx" style="--c:#ff9aa8;margin-top:10px">ترک تیم</button>${BK}</div>`;return `<div class="card" style="text-align:center"><div style="font-size:48px">👥</div><h3 style="margin:0">تیم و کلاس</h3><p>یک تیم بساز یا با کد به تیم دوست/هم‌کلاسی بپیوند.</p><input id="tn" placeholder="نام تیم (برای ساخت)" maxlength="20"><button class="btn" data-a="teamc" style="--c:#42a5f5;width:100%">ساخت تیم</button><hr style="border:none;border-top:1px solid #fff3;margin:14px 0"><input id="tc" placeholder="کد تیم" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="teamj" style="--c:#3ee0a3;width:100%">پیوستن با کد</button>${BK}</div>`};
-function teamCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';const g=Math.random;for(let i=0;i<5;i++)s+=c[g()*c.length|0];return s}
-ACT.teamc=()=>{const n=(($('#tn')&&$('#tn').value)||'').replace(/[<>]/g,'').trim();if(n.length<2){say('نام تیم را بنویس');return}S.team={code:teamCode(),name:n,wp:0,wk:wkey()};save();sfx.win();show('team');say('تیم ساخته شد!')};
-ACT.teamj=()=>{const code=(($('#tc')&&$('#tc').value)||'').trim().toUpperCase();if(code.length<4){say('کد را کامل بنویس');return}S.team={code:code,name:'تیم '+code,wp:0,wk:wkey()};save();sfx.ok();show('team');say('به تیم پیوستی!')};
+// --- تیم و کلاس + مسابقه تیمی ---
+V.team=()=>{
+  const t=S.team;
+  if(t)return `<div class="card" style="text-align:center"><div style="font-size:48px">👥</div>
+  <h3 style="margin:0">تیم ${esc(t.name||'')}</h3>
+  <p>کد تیم (لمس برای کپی):</p>
+  <button class="btn" data-a="teamcopy" style="--c:#42a5f5;letter-spacing:6px;font-size:22px">${esc(t.code)}</button>
+  <p>امتیاز تیمی این هفته: <b>${fa(t.wp||0)}</b></p>
+  <div class="card" style="text-align:right"><b>⚔️ مسابقه تیمی</b><br><small>کد تیم حریف را بزنید؛ هر دو تیم با چالش ۵ سؤالی رقابت می‌کنند (امتیاز به تیم برنده).</small>
+  <input id="tr" placeholder="کد تیم حریف" maxlength="6" style="text-transform:uppercase;text-align:center">
+  <button class="btn" data-a="teamvs" style="--c:#ff8a65;width:100%">شروع مسابقه با این کد</button></div>
+  <button class="btn" data-a="teamx" style="--c:#ff9aa8;margin-top:10px">ترک تیم</button>${BK}</div>`;
+  return `<div class="card" style="text-align:center"><div style="font-size:48px">👥</div><h3 style="margin:0">تیم و کلاس</h3>
+  <p>تیم بساز یا با کد بپیوند. امتیاز بازی‌هایت به تیم هم اضافه می‌شود و در جدول هفته دیده می‌شود.</p>
+  <input id="tn" placeholder="نام تیم" maxlength="20">
+  <button class="btn" data-a="teamc" style="--c:#42a5f5;width:100%">ساخت تیم</button>
+  <hr style="border:none;border-top:1px solid #fff3;margin:14px 0">
+  <input id="tc" placeholder="کد تیم" maxlength="6" style="text-transform:uppercase;text-align:center">
+  <button class="btn" data-a="teamj" style="--c:#3ee0a3;width:100%">پیوستن با کد</button>${BK}</div>`;
+};
+function teamCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[Math.random()*c.length|0];return s}
+ACT.teamc=()=>{const n=(($('#tn')&&$('#tn').value)||'').replace(/[<>]/g,'').trim();if(n.length<2){say('نام تیم را بنویس');return}S.team={code:teamCode(),name:n,wp:0,wk:wkey()};save();publishTeamScore();sfx.win();show('team');say('تیم ساخته شد — کد را کپی کن')};
+ACT.teamj=()=>{const code=(($('#tc')&&$('#tc').value)||'').trim().toUpperCase();if(code.length<4){say('کد را کامل بنویس');return}S.team={code:code,name:'تیم '+code,wp:0,wk:wkey()};save();publishTeamScore();sfx.ok();show('team');say('به تیم پیوستی!')};
 ACT.teamx=()=>{S.team=null;save();show('team')};
-// when add() points, also bump team weekly
-/* team points hooked in add */
+ACT.teamcopy=()=>{if(!S.team)return;const c=S.team.code;try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c);else{const i=document.createElement('input');i.value=c;document.body.appendChild(i);i.select();document.execCommand('copy');i.remove()}}catch(e){}say('کد کپی شد: '+c)};
+ACT.teamvs=()=>{
+  if(!S.team){say('اول در یک تیم باش');return}
+  const code=(($('#tr')&&$('#tr').value)||'').trim().toUpperCase();
+  if(code.length<4){say('کد حریف را بنویس');return}
+  if(code===S.team.code){say('کد تیم خودت را نزن');return}
+  window.__TV={foe:code,i:0,ok:0,qs:dailyQs()};
+  show('tvs');
+};
+V.tvs=()=>{
+  const T=window.__TV;if(!T)return V.team();
+  if(T.i>=5){
+    const win=T.ok>=3;
+    if(win){add(4);if(S.team){S.team.wp=(S.team.wp||0)+4;publishTeamScore();save()}}
+    return `<div class="card" style="text-align:center"><h2>${win?'برد تیم شما! 🏆':'این بار کمتر آوردید'}</h2><p>${fa(T.ok)} از ۵ در برابر تیم ${esc(T.foe)}</p>${BK}</div>`;
+  }
+  const Q=T.qs[T.i];
+  return `<div class="card"><small>مسابقه تیمی · ${fa(T.i+1)}/۵ · حریف: ${esc(T.foe)}</small><h3>${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="tj${j}">${o}</button>`).join('')}</div>`;
+};
+function teamVsAns(j){
+  const T=window.__TV;if(!T||T.i>=5)return;
+  const Q=T.qs[T.i];if(Q._d)return;Q._d=1;
+  if(Q.o[j]===Q.c){T.ok++;sfx.ok()}else sfx.no();
+  T.i++;show('tvs');
+}
 
 // --- کوییز ساعتی ---
 function hourlyQs(){const ids=seededPick(hourSeed(),10,NQ);return ids.map(id=>mk(id,mb(hourSeed()+id*3)))}
-V.hourly=()=>{const hk=hourKey();if(S.hq===hk)return `<div class="card" style="text-align:center"><div style="font-size:52px">⏰</div><h2>این ساعت شرکت کردی</h2><p>${fa(S.hqOk)} از ۱۰ درست</p><small>ساعت بعد دوباره باز می‌شود</small>${BK}</div>`;if(!window.__HQ||window.__HK!==hk){window.__HQ=hourlyQs();window.__HI=0;window.__HOK=0;window.__HK=hk}const Qh=window.__HQ[window.__HI];if(!Qh)return `<div class="card">خطا</div>${BK}`;return `<div class="card"><small>کوییز ساعتی · ${fa(window.__HI+1)}/۱۰ · برای همه یکسان در این ساعت</small><h3>${Qh.q}</h3>${Qh.o.map((o,j)=>`<button class="opt" data-a="hy${j}">${o}</button>`).join('')}<div id="hfb"></div></div>`};
+V.hourly=()=>{const hk=hourKey();if(S.hq===hk)return `<div class="card" style="text-align:center"><div style="font-size:52px">⏰</div><h2>این ساعت شرکت کردی</h2><p>${fa(S.hqOk)} از ۱۰ درست</p>${BK}</div>`;if(!window.__HQ||window.__HK!==hk){window.__HQ=hourlyQs();window.__HI=0;window.__HOK=0;window.__HK=hk}const Qh=window.__HQ[window.__HI];if(!Qh)return `<div class="card">خطا</div>${BK}`;return `<div class="card"><small>کوییز ساعتی · ${fa(window.__HI+1)}/۱۰</small><h3>${Qh.q}</h3>${Qh.o.map((o,j)=>`<button class="opt" data-a="hy${j}">${o}</button>`).join('')}<div id="hfb"></div></div>`};
 function hourlyAns(j){const Qh=window.__HQ&&window.__HQ[window.__HI];if(!Qh||Qh._d)return;Qh._d=1;const ok=Qh.o[j]===Qh.c;document.querySelectorAll('.opt').forEach((x,i)=>{x.disabled=true;if(Qh.o[i]===Qh.c)x.classList.add('ok');else if(i===j&&!ok)x.classList.add('no')});if(ok){window.__HOK++;sfx.ok()}else sfx.no();const last=window.__HI>=9;const fb=$('#hfb');if(fb)fb.innerHTML=`<p>${ok?'✅':'💡'} ${Qh.ex||''}</p><button class="btn" data-a="hn" style="--c:#ec407a;width:100%">${last?'نتیجه':'بعدی'}</button>`}
-ACT.hn=()=>{if(window.__HI<9){window.__HI++;show('hourly')}else{const ok=window.__HOK|0;S.hq=hourKey();S.hqOk=ok;const bonus=ok>=8?6:ok>=5?3:1;add(bonus);window.__HQ=null;sfx.win();show('hourly');say(fa(bonus)+' امتیاز کوییز ساعتی!')}};
+ACT.hn=()=>{if(window.__HI<9){window.__HI++;show('hourly')}else{const ok=window.__HOK|0;S.hq=hourKey();S.hqOk=ok;const bonus=(ok>=8?6:ok>=5?3:1)+upBonus().score;add(bonus);window.__HQ=null;sfx.win();show('hourly');say(fa(bonus)+' امتیاز!')}};
 
-// --- رأی امروز ---
-const VOTES=[
-  {q:'کدام کار بیشتر در خانه برق صرفه‌جویی می‌کند؟',a:'خاموش کردن چراغ اتاق خالی',b:'شارژر را در پریز گذاشتن'},
-  {q:'برای خنک شدن بهتر است؟',a:'پرده را کنار بزنی و پنکه',b:'کولر با پنجره باز'},
-  {q:'کدام لامپ کم‌مصرف‌تر است؟',a:'لامپ LED',b:'لامپ رشته‌ای قدیمی'},
-  {q:'بعد از شارژ گوشی چه کار کنیم؟',a:'شارژر را از پریز بکشیم',b:'همان‌جا بماند'},
-  {q:'لباسشویی کی روشن شود بهتر است؟',a:'وقتی پر است',b:'با دو سه لباس'},
-  {q:'تلویزیون را وقتی کسی نگاه نمی‌کند؟',a:'خاموش کنیم',b:'روشن بماند برای صدا'}
-];
-function voteToday(){return VOTES[daySeed()%VOTES.length]}
-V.vote=()=>{const v=voteToday();if(S.voteD===today())return `<div class="card" style="text-align:center"><div style="font-size:52px">🗳️</div><h3>رأی امروز ثبت شد</h3><p>${esc(v.q)}</p><p>انتخاب تو: <b>${esc(S.voteC==='a'?v.a:v.b)}</b></p><small>فردا سؤال جدید می‌آید. انتخاب درست آموزشی است؛ امتیاز رقابتی ندارد.</small>${BK}</div>`;return `<div class="card" style="text-align:center"><div style="font-size:52px">🗳️</div><h3 style="margin:0">رأی امروز</h3><p>${esc(v.q)}</p><button class="btn" data-a="va" style="--c:#ab47bc;width:100%;margin:8px 0">${esc(v.a)}</button><button class="btn" data-a="vb" style="--c:#7e57c2;width:100%">${esc(v.b)}</button>${BK}</div>`};
-function castVote(c){if(S.voteD===today())return;S.voteD=today();S.voteC=c;save();sfx.ok();show('vote');say('رأی‌ات ثبت شد 🗳️')}
+// --- جمله هفته (جای رأی) ---
+V.vote=()=>{
+  const weekP=(S.phrases||[]).filter(p=>p.wk===wkey());
+  if(S.voteD===today()){
+    return `<div class="card" style="text-align:center"><div style="font-size:52px">✍️</div><h3>امروز نوشتی</h3>
+    <p>${esc((weekP[weekP.length-1]||{}).t||'')}</p>
+    <small>هر روز یک جمله درباره مدیریت مصرف برق بنویس. آخر هفته مالک بهترین‌ها را می‌بیند و جایزه می‌دهد.</small>
+    <div style="text-align:right;margin-top:10px"><b>جمله‌های این هفته تو</b>${weekP.map((p,i)=>`<div style="margin:4px 0">${fa(i+1)}. ${esc(p.t)}</div>`).join('')||'<div>خالی</div>'}</div>
+    ${BK}</div>`;
+  }
+  return `<div class="card" style="text-align:center"><div style="font-size:52px">✍️</div><h3 style="margin:0">جمله هفته</h3>
+  <p>یک جمله کوتاه و مفید درباره <b>صرفه‌جویی برق</b> بنویس (حداکثر ۱۲۰ حرف).</p>
+  <input id="ph" maxlength="120" placeholder="مثال: چراغ اتاق خالی را خاموش کنیم">
+  <button class="btn" data-a="phsend" style="--c:#ab47bc;width:100%">ثبت جمله امروز</button>
+  <small>در پایان هفته، مالک از پنل ربات خروجی اکسل می‌گیرد و به بهترین جمله جایزه می‌دهد.</small>${BK}</div>`;
+};
+ACT.phsend=()=>{
+  if(S.voteD===today()){say('امروز ثبت کردی');return}
+  const t=(($('#ph')&&$('#ph').value)||'').replace(/[<>]/g,'').trim();
+  if(t.length<8){say('جمله را کامل‌تر بنویس');return}
+  if(t.length>120){say('کوتاه‌تر بنویس');return}
+  S.voteD=today();
+  S.phrases=S.phrases||[];
+  S.phrases.push({t:t,d:today(),wk:wkey(),n:me(),uid:String(uid||'')});
+  // keep last 40
+  if(S.phrases.length>40)S.phrases=S.phrases.slice(-40);
+  save();
+  // try push to supabase for owner export
+  try{
+    if(sb()){
+      fetch((SB_URL||'')+'/rest/v1/egame_phrases',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json',apikey:SB_KEY,Authorization:SB_KEY.slice(0,3)==='eyJ'?('Bearer '+SB_KEY):undefined,Prefer:'return=minimal'},body:JSON.stringify({uid:String(uid||''),name:me(),wk:wkey(),day:today(),phrase:t})}).catch(()=>{});
+    }
+  }catch(e){}
+  sfx.ok();show('vote');say('جمله‌ات ثبت شد ✍️');
+};
 
-
-Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),daily:()=>show('daily'),escape:()=>show('escape'),shop:()=>show('shop'),team:()=>show('team'),hourly:()=>show('hourly'),vote:()=>show('vote'),va:()=>castVote('a'),vb:()=>castVote('b'),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(a.slice(0,4)=='buy_'){sfx.tap();buyUp(a.slice(4))}else if(a.slice(0,2)=='dy'){sfx.tap();dailyAns(+a.slice(2))}else if(a.slice(0,2)=='hy'){sfx.tap();hourlyAns(+a.slice(2))}else if(a.slice(0,2)=='ex'){sfx.tap();escTap(+a.slice(2))}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
+Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),daily:()=>show('daily'),escape:()=>show('escape'),shop:()=>show('shop'),team:()=>show('team'),hourly:()=>show('hourly'),vote:()=>show('vote'),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(a.slice(0,4)=='buy_'){sfx.tap();buyUp(a.slice(4))}else if(a.slice(0,2)=='dy'){sfx.tap();dailyAns(+a.slice(2))}else if(a.slice(0,2)=='hy'){sfx.tap();hourlyAns(+a.slice(2))}else if(a.slice(0,2)=='nx'){sfx.tap();nightHunt(+a.slice(2))}else if(a.slice(0,2)=='nq'){sfx.tap();nightQuizAns(+a.slice(2))}else if(a.slice(0,2)=='np'){sfx.tap();nightPuzzle(+a.slice(2))}else if(a.slice(0,2)=='nw'){sfx.tap();nightWatt(+a.slice(2))}else if(a.slice(0,2)=='tj'){sfx.tap();teamVsAns(+a.slice(2))}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
 // لمس وسیله‌ها: انتخاب با مختصات روی صفحه (مستقل از hit-test سه‌بعدی مرورگر)
 document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
 function boot(){
