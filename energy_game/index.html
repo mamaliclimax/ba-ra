@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v6.3</title>
+<title>برقی و خانهٔ هوشمند v6.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -78,20 +78,20 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 .dice-box{width:56px;height:56px;border-radius:12px;background:linear-gradient(145deg,#fff,#e0e0e0);box-shadow:0 4px 12px #0005,inset 0 -3px 0 #bbb;display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#333;border:2px solid #ccc;position:relative}
 .dice-box.rolling{animation:diceShake .5s ease-in-out infinite}
 .dice-face{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:40px;height:40px;gap:2px}
-.dice-face i{width:8px;height:8px;border-radius:50%;background:#222;margin:auto;opacity:0}
-.dice-face[data-n="1"] i:nth-child(5){opacity:1}
-.dice-face[data-n="2"] i:nth-child(1),.dice-face[data-n="2"] i:nth-child(9){opacity:1}
-.dice-face[data-n="3"] i:nth-child(1),.dice-face[data-n="3"] i:nth-child(5),.dice-face[data-n="3"] i:nth-child(9){opacity:1}
-.dice-face[data-n="4"] i:nth-child(1),.dice-face[data-n="4"] i:nth-child(3),.dice-face[data-n="4"] i:nth-child(7),.dice-face[data-n="4"] i:nth-child(9){opacity:1}
-.dice-face[data-n="5"] i:nth-child(1),.dice-face[data-n="5"] i:nth-child(3),.dice-face[data-n="5"] i:nth-child(5),.dice-face[data-n="5"] i:nth-child(7),.dice-face[data-n="5"] i:nth-child(9){opacity:1}
-.dice-face[data-n="6"] i:nth-child(1),.dice-face[data-n="6"] i:nth-child(3),.dice-face[data-n="6"] i:nth-child(4),.dice-face[data-n="6"] i:nth-child(6),.dice-face[data-n="6"] i:nth-child(7),.dice-face[data-n="6"] i:nth-child(9){opacity:1}
+.dice-face i{width:9px;height:9px;border-radius:50%;background:#222;margin:auto;opacity:0}
+.dice-face[data-n="1"] i:nth-child(5){opacity:1!important}
+.dice-face[data-n="2"] i:nth-child(1),.dice-face[data-n="2"] i:nth-child(9){opacity:1!important}
+.dice-face[data-n="3"] i:nth-child(1),.dice-face[data-n="3"] i:nth-child(5),.dice-face[data-n="3"] i:nth-child(9){opacity:1!important}
+.dice-face[data-n="4"] i:nth-child(1),.dice-face[data-n="4"] i:nth-child(3),.dice-face[data-n="4"] i:nth-child(7),.dice-face[data-n="4"] i:nth-child(9){opacity:1!important}
+.dice-face[data-n="5"] i:nth-child(1),.dice-face[data-n="5"] i:nth-child(3),.dice-face[data-n="5"] i:nth-child(5),.dice-face[data-n="5"] i:nth-child(7),.dice-face[data-n="5"] i:nth-child(9){opacity:1!important}
+.dice-face[data-n="6"] i:nth-child(1),.dice-face[data-n="6"] i:nth-child(3),.dice-face[data-n="6"] i:nth-child(4),.dice-face[data-n="6"] i:nth-child(6),.dice-face[data-n="6"] i:nth-child(7),.dice-face[data-n="6"] i:nth-child(9){opacity:1!important}
 .pawn{width:18px;height:22px;position:relative;display:inline-block}
 .pawn:before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:12px;height:12px;border-radius:50%;background:var(--pc,#42a5f5);border:2px solid #fff;box-shadow:0 1px 3px #0006}
 .pawn:after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:14px;height:12px;background:var(--pc,#42a5f5);border-radius:40% 40% 30% 30%;border:2px solid #fff;border-top:none}
 .board-wrap{display:flex;justify-content:center;align-items:center;width:100%;padding:4px 0}
-.player-hud{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.player-card{border-radius:14px;padding:8px 10px;display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;box-shadow:0 3px 10px #0003}
-.player-card .av{width:36px;height:36px;border-radius:50%;background:#fff3;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.player-hud{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0}
+.player-card{border-radius:10px;padding:4px 8px;display:flex;align-items:center;gap:6px;color:#fff;font-size:12px;box-shadow:0 2px 6px #0003}
+.player-card .av{width:28px;height:28px;border-radius:50%;background:#fff3;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:14px}
 .player-card.active{box-shadow:0 0 0 3px #fff,0 4px 14px #0004}
 
 </style>
@@ -433,11 +433,12 @@ V.escape=()=>{
   <button class="btn" data-a="nightpractice" style="--c:#5c6bc0;width:100%;margin-top:8px">🎮 تمرین آفلاین (همیشه باز)</button>
   ${BK}</div>`;
 };
+var NG=null;
 function startNight(practice){
   try{
     const bonus=(typeof upBonus==='function')?upBonus():{time:0,score:0};
-    if(NG&&NG._iv)clearInterval(NG._iv);
-    if(NG&&NG._sh)clearInterval(NG._sh);
+    if(typeof NG!=='undefined'&&NG&&NG._iv)clearInterval(NG._iv);
+    if(typeof NG!=='undefined'&&NG&&NG._sh)clearInterval(NG._sh);
     NG={practice:!!practice,stage:'hunt',t:120+(bonus.time||0),score:0,need:5,found:0,foundIds:{},targets:null,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
     NG.board=dealNightBoard();
     if(!NG.board||NG.board.length<10){say('خطا در چیدن صفحه');return}
@@ -935,8 +936,8 @@ function snPathSvg(){
   return s;
 }
 function diceHtml(n,rolling){
-  const v=n||1;
-  return `<div class="dice-box${rolling?' rolling':''}"><div class="dice-face" data-n="${v}">${'<i></i>'.repeat(9)}</div></div>`;
+  const v=(n>=1&&n<=6)?n:1;
+  return `<div class="dice-box${rolling?' rolling':''}" title="${v}"><div class="dice-face" data-n="${v}"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>`;
 }
 V.snakes=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🐍</div>
 <h3>مار و پله</h3><p>صفحه کلاسیک با مارهای رنگی و نردبان. اول به ۱۰۰ برس.</p>
@@ -994,7 +995,7 @@ V.snP=()=>{
   <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px;align-items:center">
   ${D.pos.map((p,i)=>`<span class="chip" style="border:2px solid ${SN_COL[i]};background:${SN_COL[i]}33;color:#fff">${esc(names[i])}: <b>${fa(p)}</b></span>`).join('')}
   </div>
-  <div style="text-align:center;margin:12px 0 4px">${diceHtml(D.dice||1,D.rolling)}</div>
+  <div style="text-align:center;margin:12px 0 4px">${diceHtml(D.dice||0,D.rolling)}${D.dice&&!D.rolling?`<div style="color:#fff;font-size:15px;font-weight:800;margin-top:4px">عدد تاس: ${fa(D.dice)}</div>`:''}</div>
   <button class="btn" data-a="snRoll" style="--c:#66bb6a;width:100%;font-size:17px" ${D.rolling?'disabled':''}>🎲 ${D.rolling?'تاس می‌چرخد…':'تاس بینداز'}</button>
   </div>`;
   return html;
@@ -1036,7 +1037,7 @@ function ludoBoardSvg(D,names,turn){
   const PC=SN_COL;
   const step=5.6, origin=12.5, R=2.85;
   const xy=(r,c)=>[origin+c*step, origin+r*step];
-  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:290px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
+  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:270px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
   s+='<rect x="3" y="3" width="94" height="94" rx="8" fill="#e8d5b7" stroke="#5d4037" stroke-width="1.6"/>';
   // yards: TL red, TR yellow, BL blue, BR green
   s+='<rect x="5" y="5" width="33" height="33" rx="5" fill="#e53935" opacity="0.2"/>';
@@ -1051,10 +1052,10 @@ function ludoBoardSvg(D,names,turn){
       if((r<6||r>8)&&(c<6||c>8))continue;
       const [x,y]=xy(r,c);
       let fill='#ffffff';
-      if(c===7&&r>=8&&r<=12)fill='#1e88e5';
-      if(r===7&&c>=2&&c<=6)fill='#e53935';
-      if(c===7&&r>=2&&r<=6)fill='#fdd835';
-      if(r===7&&c>=8&&c<=12)fill='#43a047';
+      if(c===7&&r>=9&&r<=13)fill='#1e88e5';
+      if(r===7&&c>=1&&c<=5)fill='#e53935';
+      if(c===7&&r>=1&&r<=5)fill='#fdd835';
+      if(r===7&&c>=9&&c<=13)fill='#43a047';
       s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+fill+'" stroke="#5d4037" stroke-width="0.65"/>';
     }
   }
@@ -1091,10 +1092,10 @@ function ludoBoardSvg(D,names,turn){
       else if(v>0&&v<53){const pt=path[(D.starts[p]+v-1)%52];x=pt[0];y=pt[1];}
       else{
         const k=Math.min(5,v-52);
-        if(p===0){const q=xy(13-k,7);x=q[0];y=q[1]}
-        else if(p===1){const q=xy(7,1+k);x=q[0];y=q[1]}
-        else if(p===2){const q=xy(1+k,7);x=q[0];y=q[1]}
-        else{const q=xy(7,13-k);x=q[0];y=q[1]}
+        if(p===0){const q=xy(14-k,7);x=q[0];y=q[1]}
+        else if(p===1){const q=xy(7,k);x=q[0];y=q[1]}
+        else if(p===2){const q=xy(k,7);x=q[0];y=q[1]}
+        else{const q=xy(7,14-k);x=q[0];y=q[1]}
       }
       const col=PC[p%4];
       s+='<g transform="translate('+x+','+y+')"><circle cx="0" cy="-1.2" r="2.6" fill="'+col+'" stroke="#fff" stroke-width="0.7"/><ellipse cx="0" cy="2.2" rx="2.7" ry="2.2" fill="'+col+'" stroke="#fff" stroke-width="0.55"/></g>';
@@ -1147,9 +1148,9 @@ V.ldP=()=>{
     </div>`;
   }
   html+=`</div>`;
-  html+=`<div class="card" style="padding:10px;background:linear-gradient(180deg,#5c6bc0,#3949ab)">
+  html+=`<div class="card" style="padding:6px;background:linear-gradient(180deg,#5c6bc0,#3949ab)">
   <div class="board-wrap">${ludoBoardSvg(D,names,turn)}</div>
-  <div style="text-align:center;margin:10px 0">${diceHtml(D.dice||1,D.rolling)}</div>
+  <div style="text-align:center;margin:10px 0">${diceHtml(D.dice||0,D.rolling)}${D.dice&&!D.rolling?`<div style="color:#fff;font-size:15px;font-weight:800;margin-top:4px">عدد تاس: ${fa(D.dice)}</div>`:''}</div>
   <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:8px">`;
   D.tokens[turn].forEach((v,ti)=>{
     const label=v===0?'خانه':v>=53?('پایان'):fa(v);
