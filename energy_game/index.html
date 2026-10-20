@@ -91,7 +91,7 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 <input id="l" placeholder="نام خانوادگی" maxlength="25">
 <input id="c" placeholder="شهر" maxlength="25">
 <p id="er" style="color:#ff9aa8;margin:4px 0"></p>
-<button type="button" class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button>
+<button type="button" class="btn" style="--c:#3ee0a3;width:100%" onclick="try{if(window.__doReg){window.__doReg()};else alert('صبر کن…')}">شروع ماجراجویی ⚡</button>
 </div>
 </div></div>
 <div id="m"><i>🤖</i><p>سلام!</p></div>
@@ -254,10 +254,17 @@ function bindActions(root){
       (function(node){
         var a=node.getAttribute('data-a');
         if(!a) return;
-        // فقط یک مسیر رویداد داریم: listener سراسری document.
-        // نصب هم‌زمان click و touchend روی خود دکمه باعث اجرای تکراری/قفل‌شدن لمس می‌شد.
-        node.onclick=null;
-        node.ontouchend=null;
+        node.onclick=function(ev){
+          try{if(ev){ev.preventDefault();ev.stopPropagation();}}catch(x){}
+          if(window.__runAction) window.__runAction(a);
+        };
+        node.ontouchend=function(ev){
+          try{if(ev){ev.preventDefault();ev.stopPropagation();}}catch(x){}
+          var now=Date.now();
+          if(window.__uiLock && (now-window.__uiLock)<350) return;
+          window.__uiLock=now;
+          if(window.__runAction) window.__runAction(a);
+        };
       })(nodes[i]);
     }
   }catch(err){console.error('bind',err)}
