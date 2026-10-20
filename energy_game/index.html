@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>برقی و خانهٔ هوشمند</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
-<script src="https://tapi.bale.ai/miniapp.js" defer onerror="console.warn('bale miniapp.js failed')"></script>
+<script src="https://tapi.bale.ai/miniapp.js" onerror="console.warn('bale miniapp.js failed')"></script>
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;min-height:100%;min-height:100dvh;scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -81,7 +81,7 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 <script>
 'use strict';
 // ⚙️ این مقادیر را ربات هنگام «دریافت فایل بازی» خودکار پر می‌کند
-const STORIES=[{"url": "https://dl.sevilmusics.com/cdn/music/srvrt/Baby%20Story%20_Olagh%20Namard%20%5BSevilMusic%5D.mp3", "title": "الاغ قدر نشناس", "cover": "https://mzn.wikipedia.org/wiki/%D9%BE%D8%B1%D9%88%D9%86%D8%AF%D9%87:Donkey_in_Clovelly,_North_Devon,_England.jpg"}],ANIMS=[{"url": "https://dl.yasdl.com/Arash/2020/Media/Pat_and_Mat/Pat.and.Mat.01-Tinkers-%28HD-720p%29_YasDL.com.mp4", "title": "پت مت", "cover": "https://istanama.com/wp-content/uploads/2021/04/Pat-and-Mat3.jpg"}],SB_URL="https://bfzreeyyhmygpnfzczwn.supabase.co",SB_KEY="sb_publishable_9OcON2qika5bnRt-mO0cDg_cRJ_OXUF",NQ=354,QT=20,QD=15,K='barghi1';
+const STORIES=[],ANIMS=[],SB_URL='',SB_KEY='',NQ=354,QT=20,QD=15,K='barghi1';
 // سازگاری با نسخه‌های قدیمی تک‌لینک
 (function(){function norm(a){if(!a)return[];if(typeof a==='string')return a?[{url:a,title:'',cover:''}]:[];if(Array.isArray(a))return a.filter(x=>x&&x.url).map(x=>({url:String(x.url||''),title:String(x.title||''),cover:String(x.cover||'')}));return[]}window.__STORIES=norm(STORIES);window.__ANIMS=norm(ANIMS)})();
 const $=s=>document.querySelector(s),fa=n=>(+n).toLocaleString('fa-IR'),rnd=n=>Math.random()*n|0;
@@ -104,44 +104,56 @@ if(!S||typeof S!=='object')S={};
 S=Object.assign({p:null,pts:0,wp:0,wk:'',lv:{},seen:[],qs:null,nq:0,wd:'',wl:0,ms:'',ma:'',snd:1,ad:1},S);
 if(!S.lv||typeof S.lv!=='object')S.lv={};if(!Array.isArray(S.seen))S.seen=[];
 if(S.wk!=wkey()){S.wk=wkey();S.wp=0}
-const W=(window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null;
-function _expandWA(){try{if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}refreshUid()}catch(e){}}
-_expandWA();setTimeout(_expandWA,300);setTimeout(_expandWA,1000);
+function _wa(){return (window.Bale&&Bale.WebApp)||(window.Telegram&&Telegram.WebApp)||null}
+function _expandWA(){try{const W=_wa();if(W){W.ready&&W.ready();W.expand&&W.expand();if(W.setHeaderColor)W.setHeaderColor('#1c1550');if(W.setBackgroundColor)W.setBackgroundColor('#0e0a2c')}refreshUid()}catch(e){}}
 let uid=0;
+function _parseUserFromRaw(raw){
+  if(!raw||typeof raw!=='string') return 0;
+  try{
+    let m=raw.match(/(?:^|[&#?])(?:tgWebAppData|baleWebAppData|WebAppData)=([^&#]+)/i);
+    if(m){try{raw=decodeURIComponent(m[1])}catch(e){raw=m[1]}}
+    let js='';
+    m=raw.match(/user%3D([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}
+    if(!js){m=raw.match(/(?:^|&)user=([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=m[1]}}}
+    if(js){try{const u=JSON.parse(js);if(u&&u.id)return +u.id}catch(e){}}
+    m=raw.match(/"id"\s*:\s*(\d{3,20})/);if(m)return +m[1];
+  }catch(e){}
+  return 0;
+}
 function refreshUid(){
   try{
-    const apps=[W, window.Bale&&Bale.WebApp, window.Telegram&&Telegram.WebApp];
+    if(uid) return uid;
+    const apps=[_wa(), window.Bale&&Bale.WebApp, window.Telegram&&Telegram.WebApp];
     for(const app of apps){
       if(!app) continue;
+      try{if(app.ready)app.ready()}catch(e){}
       try{
         const u=app.initDataUnsafe&&app.initDataUnsafe.user;
-        if(u&&u.id){uid=u.id;return uid}
+        if(u&&u.id){uid=+u.id;return uid}
       }catch(e){}
       try{
-        const raw=app.initData||'';
-        if(raw){
-          let m=raw.match(/user%3D([^&]+)/);
-          let js='';
-          if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}
-          if(!js){m=raw.match(/user=([^&]+)/);if(m){try{js=decodeURIComponent(m[1])}catch(e){js=''}}}
-          if(js){
-            try{
-              const u=JSON.parse(js);
-              if(u&&u.id){uid=u.id;return uid}
-            }catch(e){}
-          }
-          m=raw.match(/"id"\s*:\s*(\d{3,20})/);
-          if(m){uid=+m[1];return uid}
-        }
+        const id=_parseUserFromRaw(app.initData||'');
+        if(id){uid=id;return uid}
       }catch(e){}
     }
+    try{
+      const id=_parseUserFromRaw((location.hash||'').replace(/^#/,'')+'&'+(location.search||'').replace(/^\?/,''));
+      if(id){uid=id;return uid}
+    }catch(e){}
+    try{
+      if(window.Telegram&&Telegram.WebView&&Telegram.WebView.initParams){
+        const p=Telegram.WebView.initParams;
+        const id=_parseUserFromRaw(p.tgWebAppData||p.baleWebAppData||'');
+        if(id){uid=id;return uid}
+      }
+    }catch(e){}
   }catch(e){}
   return uid;
 }
-try{refreshUid()}catch(e){}
-setTimeout(refreshUid,200);
-setTimeout(refreshUid,800);
-setTimeout(refreshUid,2000);
+_expandWA();
+[0,100,300,600,1000,2000,4000,7000].forEach(t=>setTimeout(function(){_expandWA();refreshUid()},t));
+try{document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshUid()})}catch(e){}
+try{window.addEventListener('focus',function(){refreshUid()})}catch(e){}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const rpc=(f,b)=>{const h={'Content-Type':'application/json','Accept':'application/json',apikey:SB_KEY};if(SB_KEY.slice(0,3)=='eyJ')h.Authorization='Bearer '+SB_KEY;return fetch(SB_URL+'/rest/v1/rpc/'+f,{method:'POST',headers:h,body:JSON.stringify(b)}).then(async r=>{let j=null;try{j=await r.json()}catch(e){}if(!r.ok){const err=new Error((j&&(j.message||j.error||j.hint))||('HTTP '+r.status));err.status=r.status;err.body=j;throw err}return j})};
 const sb=()=>{refreshUid();return !!(SB_URL&&SB_KEY&&uid)};
