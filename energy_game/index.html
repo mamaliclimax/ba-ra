@@ -3,9 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند</title>
+<title>برقی و خانهٔ هوشمند v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
-<script src="https://tapi.bale.ai/miniapp.js" onerror="console.warn('bale miniapp.js failed')"></script>
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;min-height:100%;min-height:100dvh;scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -76,7 +75,7 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 </style>
 </head>
 <body>
-<div id="app"><div class="bar" id="h"></div><div id="v"></div></div>
+<div id="app"><div class="bar" id="h"></div><div id="v"><div class="card" style="text-align:center;margin-top:24px"><div style="font-size:48px">⚡</div><h2 style="margin:8px 0">در حال بارگذاری…</h2><p style="opacity:.85">اگر این پیام ماند، صفحه را ببندید و دوباره از دکمهٔ داخل بله باز کنید.</p></div></div></div>
 <div id="m"><i>🤖</i><p>سلام!</p></div>
 <script>
 'use strict';
@@ -290,14 +289,14 @@ document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;le
 function boot(){
   try{
     show('home');
-    // اگر بعد از show هنوز محتوا خالی بود، یک پیام اضطراری نشان بده
     setTimeout(function(){
       var v=document.getElementById('v');
-      if(v && !v.innerHTML.trim()){
-        v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:48px">⚡</div><h2>سلام! من برقی‌ام</h2><p>اگر این پیام را می‌بینی، روی دکمه بزن تا بازی شروع شود.</p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%" onclick="try{show(\'reg\')}catch(e){alert(e)}">شروع</button></div>';
-        say('سلام! بیا شروع کنیم ⚡');
+      if(v && (!v.innerHTML.trim() || v.innerHTML.indexOf('در حال بارگذاری')>=0)){
+        try{show(S&&S.p?'home':'reg')}catch(e2){
+          v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:48px">⚡</div><h2>سلام! من برقی‌ام</h2><p>اگر این پیام را می‌بینی، روی دکمه بزن تا بازی شروع شود.</p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع</button></div>';
+        }
       }
-    }, 400);
+    }, 120);
   }catch(e){
     console.error('BOOT ERROR', e);
     var v=document.getElementById('v');
@@ -307,5 +306,6 @@ function boot(){
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
 </script>
+<script src="https://tapi.bale.ai/miniapp.js" async onerror="console.warn('bale miniapp.js failed')"></script>
 </body>
 </html>
