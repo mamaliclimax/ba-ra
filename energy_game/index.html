@@ -226,8 +226,11 @@ const tree=()=>{const g=S.pts+2*Object.values(S.lv).reduce((a,b)=>a+b,0);return 
 const B=(a,e,t,s,c)=>`<button class="btn" data-a="${a}" style="--c:${c}"><b>${e}</b>${t}<small>${s}</small></button>`;
 const BK='<button class="btn" data-a="home" style="--c:#b99cff;margin-top:8px">🏠 برگشت</button>';
 const V={},post={},ACT={};let cur,arg,G=null,Q=null,lastOk=0,rot=0;
-function show(n,a){if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;$('#v').innerHTML=V[n](a);$('#h').style.display=n=='reg'||n=='game'||n=='dq'?'none':'';window.scrollTo(0,0);post[n]&&post[n](a);hud();if(MS[n])say(MS[n])}
-V.reg=()=>`<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">${AVS.map((a,i)=>`<button class="avb${i?'':' on'}" data-a="v${i}">${a}</button>`).join('')}</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>`;
+function show(n,a){try{if(G&&n!='game')clearInterval(G.h);if(!S.p)n='reg';cur=n;arg=a;var fn=V[n];if(typeof fn!=='function'){n='reg';fn=V.reg}var el=$('#v');if(el)el.innerHTML=fn(a);var h=$('#h');if(h)h.style.display=(n=='reg'||n=='game'||n=='dq')?'none':'';try{window.scrollTo(0,0)}catch(e){}try{post[n]&&post[n](a)}catch(e){}try{hud()}catch(e){}try{if(MS[n])say(MS[n])}catch(e){}}catch(err){console.error('show',n,err);try{var v=$('#v');if(v)v.innerHTML='<div class="card" style="text-align:center;margin-top:30px"><h3>خطا</h3><p style="direction:ltr;font-size:12px">'+String(err&&err.message||err)+'</p><button class="btn" data-a="home" style="--c:#3ee0a3">خانه</button></div>'}catch(e2){}}}
+V.reg=()=>{
+  const avs=AVS.map(function(a,i){return '<button class="avb'+(i?'':' on')+'" data-a="v'+i+'">'+a+'</button>'}).join('');
+  return '<div class="card"><div style="font-size:64px;text-align:center">🤖</div><h2 style="text-align:center;margin:0">سلام! من برقی‌ام</h2><p>قبل از شروع، خودت را معرفی کن و یک آواتار انتخاب کن:</p><div style="text-align:center;margin-bottom:6px">'+avs+'</div><input id="f" placeholder="نام" maxlength="20"><input id="l" placeholder="نام خانوادگی" maxlength="25"><input id="c" placeholder="شهر" maxlength="25"><p id="er" style="color:#ff9aa8;margin:4px 0"></p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%">شروع ماجراجویی ⚡</button></div>';
+};
 ACT.reg=()=>{const v=i=>$('#'+i).value.replace(/[<>&"'`]/g,'').trim(),f=v('f'),l=v('l'),c=v('c');if(f.length<2||l.length<2||c.length<2){$('#er').textContent='لطفاً نام، نام خانوادگی و شهر را کامل بنویس 🙂';return}S.p={f,l,c,a:av};save();show('home')};
 V.home=()=>{const q=S.qs?'ادامه بده':S.nq>Date.now()?'منتظر نوبت بعد ⏳':'۴ سؤال آماده ✨',l=wl(),ns=(window.__STORIES||[]).length,na=(window.__ANIMS||[]).length;return `<div class="card" style="text-align:center"><div style="font-size:70px;line-height:1.2">${tree()}</div><b>${S.p.a||'🙂'} درخت انرژیِ ${S.p.f}</b><br><small>هر چه برق را بهتر مدیریت کنی، بزرگ‌تر می‌شود!</small></div><button class="btn big" data-a="duel">⚔️ رقابت آنلاین دونفره<small>با حریف واقعی بازی کن و برندهٔ هفته شو!</small></button><div class="grid" style="margin-top:12px">${B('map','🏠','مراحل خانه',fa(Object.keys(S.lv).length)+' از ۲۴','#ffb44a')}${B('quiz','❓','کوییز',q,'#5ec8ff')}${B('wheel','🎡','گردونه شانس',l?fa(l)+' بار شانس':'فردا دوباره','#ff9aa8')}${B('story','🌙','قصه شب',(ns?(fa(ns)+' قصه · '):'')+(S.ms==today()?'✅':'۵⭐'),'#b99cff')}${B('anim','🎬','انیمیشن',(na?(fa(na)+' فیلم · '):'')+(S.ma==today()?'✅':'۵⭐'),'#3ee0a3')}${B('lb','🏆','جدول هفته',fa(S.wp)+' امتیاز','#ffd54a')}</div>`};
 V.map=()=>{let h='<div class="house">';for(let t=0;t<3;t++){h+=`<div class="card"><b>طبقهٔ ${fa(t+1)}</b><div class="g4">`;for(let i=0;i<8;i++){const L=t*8+i,r=R[i],st=S.lv[L]||0,lk=L>0&&!S.lv[L-1];h+=`<button class="lv${lk?' lk':''}" data-a="L${L}" style="--c:${r[2]}"><b>${lk?'🔒':r[1]}</b>${r[0]}<br>${'⭐'.repeat(st)||'·'}</button>`}h+='</div></div>'}return h+'</div>'};
@@ -264,15 +267,15 @@ V.media=k=>{
     const it=list[ix];
     const cov=it.cover?`<img class="mcov" src="${esc(it.cover)}" alt="" onerror="this.style.display='none'">`:'';
     const player=k=='s'
-      ?`<audio id="md" src="${esc(it.url)}" controls style="width:100%"></audio>`
-      :`<video id="md" src="${esc(it.url)}" controls playsinline poster="${esc(it.cover||'')}" style="width:100%;border-radius:16px;background:#000"></video>`;
+      ?('<audio id="md" src="'+esc(it.url)+'" controls style="width:100%"></audio>')
+      :('<video id="md" src="'+esc(it.url)+'" controls playsinline poster="'+esc(it.cover||'')+'" style="width:100%;border-radius:16px;background:#000"></video>');
     return `<div class="card" style="text-align:center"><div style="font-size:40px">${emoji}</div><h3 style="margin:0">${esc(it.title||t)}</h3>${cov}${player}<p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':'تا آخر '+(k=='s'?'گوش کن':'تماشا کن')+' و ۵ امتیاز بگیر!'}</p><button class="btn" data-a="${k=='s'?'story':'anim'}" style="--c:#b99cff;margin-top:8px">📚 بازگشت به فهرست</button>${BK}</div>`;
   }
   if(!list.length){
     return `<div class="card" style="text-align:center"><div style="font-size:60px">${emoji}</div><h3 style="margin:0">${t}</h3><p>هنوز موردی اضافه نشده است.</p><button class="btn" data-a="demo" style="--c:#5ec8ff">پخش آزمایشی (۶ ثانیه)</button><p id="mm">${doneDay?'امروز ۵ امتیاز گرفتی ✅':''}</p>${BK}</div>`;
   }
   const items=list.map((it,i)=>{
-    const cov=it.cover?`<img src="${esc(it.cover)}" alt="" onerror="this.outerHTML='<div class=mph>${emoji}</div>'">`:`<div class="mph">${emoji}</div>`;
+    const cov=it.cover?('<img src="'+esc(it.cover)+'" alt="" onerror="this.style.display=\'none\'">'):('<div class="mph">'+emoji+'</div>');
     return `<button class="mitem" data-a="mp${k}${i}">${cov}<span style="flex:1;min-width:0"><b>${esc(it.title||(t+' '+(i+1)))}</b><small>${k=='s'?'صوتی':'ویدیو'} · پخش</small></span><span style="font-size:22px">▶️</span></button>`;
   }).join('');
   return `<div class="card" style="text-align:center"><div style="font-size:48px">${emoji}</div><h3 style="margin:0">${t}</h3><small>${fa(list.length)} مورد · ${doneDay?'امروز امتیاز گرفتی ✅':'با تماشای کامل ۵ امتیاز'}</small><div class="mlib">${items}</div>${BK}</div>`;
@@ -321,8 +324,23 @@ function duelStart(k,code){
   }).catch(e=>{console.error(e);duelFail('خطای سرور: '+(e&&e.message||'اتصال'),k,!priv)})
 }
 V.dload=()=>`<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">⏳</div><h3>لطفاً صبر کن…</h3><p><small>ارتباط با سرور</small></p><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`
-V.duel=()=>{const on=onlineOk();return `<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>${on?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین خاموش است. می‌توانی با رقیب هوشمند تمرین کنی.'}</small></div><div class="grid">${B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')}${B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')}</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div>${on?'':`<p style="color:#ff9aa8;font-size:13px;margin:8px 0 0;text-align:right">آنلاین خاموش است:<br>• ${onlineWhy().join('<br>• ')||'تنظیم ناقص'}<br><br>مالک باید: ۱) SQL را اجرا کند ۲) GAME_SUPABASE_ANON_KEY را بگذارد ۳) ربات را Restart کند ۴) «دریافت فایل بازی» را بزند و index.html را روی GitHub جایگزین کند.</p>`}</div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>${BK}`};
-V.dwait=()=>{DL.ph='wait';const x=DL.r||{},showBot=!!x.pub||(Date.now()-(DL.t0||0)>25000);return `<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">${x.pub?'🔍':'🏠'}</div><h3>${x.pub?'در حال پیدا کردن حریف…':'اتاق دوستانه ساخته شد'}</h3>${x.pub?'':`<p>این کد را برای دوستت بفرست:</p><h1 style="letter-spacing:6px;margin:0;user-select:all;-webkit-user-select:all">${esc(x.id)}</h1><p><small>دوستت همین کد را در «ورود با کد» بزند</small></p>`}<p><small>${x.kind=='quiz'?'❓ کوییز دوئل':'🏠 دوئل خانه'} · منتظر ورود حریف</small></p><button class="btn" id="bt" data-a="dbot" style="--c:#b99cff;${showBot?'':'display:none'}">🤖 بازی با رقیب هوشمند</button><br><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>`};
+V.duel=()=>{
+  const on=onlineOk();
+  const why=on?'':('<p style="color:#ff9aa8;font-size:13px;margin:8px 0 0;text-align:right">آنلاین خاموش است:<br>• '+(onlineWhy().join('<br>• ')||'تنظیم ناقص')+'<br><br>مالک باید: ۱) SQL را اجرا کند ۲) GAME_SUPABASE_ANON_KEY را بگذارد ۳) ربات را Restart کند ۴) «دریافت فایل بازی» را بزند و index.html را روی GitHub جایگزین کند.</p>');
+  const head=on?'با حریف واقعی هم‌زمان بازی کن؛ برندهٔ هر بخش در جدول هفته ثبت می‌شود.':'🌐 حالت آنلاین خاموش است. می‌توانی با رقیب هوشمند تمرین کنی.';
+  return '<div class="card" style="text-align:center"><div style="font-size:56px;line-height:1.2">⚔️</div><h3 style="margin:0">رقابت آنلاین</h3><small>'+head+'</small></div><div class="grid">'+B('dq','❓','کوییز دوئل','۶ سؤال · ۱۵ ثانیه','#5ec8ff')+B('dh','🏠','دوئل خانه','۳۵ ثانیه · هدررفتِ کمتر برنده است','#ffb44a')+'</div><div class="card"><small>👫 بازی با دوستت (اتاق دوستانه)</small><input id="rc" placeholder="کد اتاق دوستت" maxlength="6" style="text-transform:uppercase;text-align:center"><button class="btn" data-a="dj" style="--c:#3ee0a3;width:100%">ورود با کد</button><div class="grid" style="margin-top:8px"><button class="btn" data-a="dnq" style="--c:#b99cff">ساخت اتاق کوییز</button><button class="btn" data-a="dnh" style="--c:#b99cff">ساخت اتاق خانه</button></div>'+why+'</div><div class="grid"><button class="btn" data-a="tq" style="--c:#ffd54a">🏆 جدول کوییز</button><button class="btn" data-a="th" style="--c:#ffd54a">🏆 جدول خانه</button></div>'+BK;
+};
+V.dwait=()=>{
+  DL.ph='wait';
+  const x=DL.r||{};
+  const showBot=!!x.pub||(Date.now()-(DL.t0||0)>25000);
+  const title=x.pub?'در حال پیدا کردن حریف…':'اتاق دوستانه ساخته شد';
+  const emoji=x.pub?'🔍':'🏠';
+  const codeBlock=x.pub?'':('<p>این کد را برای دوستت بفرست:</p><h1 style="letter-spacing:6px;margin:0;user-select:all;-webkit-user-select:all">'+esc(x.id)+'</h1><p><small>دوستت همین کد را در «ورود با کد» بزند</small></p>');
+  const kind=(x.kind=='quiz'?'❓ کوییز دوئل':'🏠 دوئل خانه')+' · منتظر ورود حریف';
+  const botStyle=showBot?'':'display:none';
+  return '<div class="card" style="text-align:center"><div class="spin" style="font-size:60px">'+emoji+'</div><h3>'+title+'</h3>'+codeBlock+'<p><small>'+kind+'</small></p><button class="btn" id="bt" data-a="dbot" style="--c:#b99cff;'+botStyle+'">🤖 بازی با رقیب هوشمند</button><br><button class="btn" data-a="dx" style="--c:#ff9aa8;margin-top:8px">انصراف</button></div>';
+};
 V.dvs=()=>{const x=DL.r,a=x.me==1?[x.n1,x.n2]:[x.n2,x.n1];return `<div class="card vs"><div class="av">${nm(a[0])}</div><b class="vsb">VS</b><div class="av">${nm(a[1])}</div></div><h1 id="cn" style="text-align:center;font-size:84px;margin:0">۳</h1>`};
 post.dvs=()=>{DL.ph='vs';let n=3;const t=setInterval(()=>{if(cur!='dvs'){clearInterval(t);DL=null;return}n--;const e=$('#cn');if(n>0){if(e)e.textContent=fa(n);sfx.tick()}else{clearInterval(t);sfx.win();dgo()}},900)};
 function dgo(){DL.ph='play';DL.sc=0;if(DL.kind=='quiz'){const g=mb(DL.r.seed),ids=[];while(ids.length<6){const i=g()*NQ|0;if(ids.indexOf(i)<0)ids.push(i)}DL.qs={ids,i:0,t:0};DL.g=mb(DL.r.seed+7);show('dq')}else play(null,DL.r.seed)}
@@ -344,19 +362,24 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t
 document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
 function boot(){
   try{
+    _expandWA();
+    refreshUid();
     show('home');
-    // اگر بعد از show هنوز محتوا خالی بود، یک پیام اضطراری نشان بده
     setTimeout(function(){
-      var v=document.getElementById('v');
-      if(v && !v.innerHTML.trim()){
-        v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:48px">⚡</div><h2>سلام! من برقی‌ام</h2><p>اگر این پیام را می‌بینی، روی دکمه بزن تا بازی شروع شود.</p><button class="btn" data-a="reg" style="--c:#3ee0a3;width:100%" onclick="try{show(\'reg\')}catch(e){alert(e)}">شروع</button></div>';
-        say('سلام! بیا شروع کنیم ⚡');
-      }
-    }, 400);
+      try{
+        var v=document.getElementById('v');
+        if(v && !String(v.innerHTML||'').trim()){
+          v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:48px">⚡</div><h2>سلام! من برقی‌ام</h2><p>صفحه خالی بود؛ برای شروع دکمه را بزن.</p><button class="btn" style="--c:#3ee0a3;width:100%" onclick="try{show(\'reg\')}catch(err){alert(err)}">شروع</button></div>';
+          say('سلام! بیا شروع کنیم ⚡');
+        }
+      }catch(e2){}
+    }, 500);
   }catch(e){
     console.error('BOOT ERROR', e);
-    var v=document.getElementById('v');
-    if(v) v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><h2>خطا در بارگذاری</h2><p style="direction:ltr;font-size:12px;opacity:.8">'+String(e&&e.message||e)+'</p><button class="btn" style="--c:#3ee0a3;width:100%" onclick="location.reload()">تلاش دوباره</button></div>';
+    try{
+      var v=document.getElementById('v');
+      if(v) v.innerHTML='<div class="card" style="text-align:center;margin-top:40px"><h2>خطا در بارگذاری</h2><p style="direction:ltr;font-size:13px">'+String(e&&e.message||e)+'</p><button class="btn" style="--c:#3ee0a3;width:100%" onclick="location.reload()">تلاش دوباره</button></div>';
+    }catch(e3){}
   }
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
