@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v6.1</title>
+<title>برقی و خانهٔ هوشمند v6.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -72,6 +72,28 @@ input{width:100%;margin:6px 0;padding:12px;border-radius:14px;border:2px solid #
 .mplay{margin-top:8px}
 .mcov{width:100%;max-height:180px;object-fit:cover;border-radius:16px;margin:8px 0;background:#0004}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+/* تاس و مهره رومیزی */
+@keyframes diceShake{0%,100%{transform:rotate(0) scale(1)}20%{transform:rotate(-18deg) scale(1.08)}40%{transform:rotate(18deg) scale(1.05)}60%{transform:rotate(-12deg) scale(1.1)}80%{transform:rotate(12deg) scale(1.05)}}
+.dice-box{width:56px;height:56px;border-radius:12px;background:linear-gradient(145deg,#fff,#e0e0e0);box-shadow:0 4px 12px #0005,inset 0 -3px 0 #bbb;display:inline-flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#333;border:2px solid #ccc;position:relative}
+.dice-box.rolling{animation:diceShake .5s ease-in-out infinite}
+.dice-face{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:40px;height:40px;gap:2px}
+.dice-face i{width:8px;height:8px;border-radius:50%;background:#222;margin:auto;opacity:0}
+.dice-face[data-n="1"] i:nth-child(5){opacity:1}
+.dice-face[data-n="2"] i:nth-child(1),.dice-face[data-n="2"] i:nth-child(9){opacity:1}
+.dice-face[data-n="3"] i:nth-child(1),.dice-face[data-n="3"] i:nth-child(5),.dice-face[data-n="3"] i:nth-child(9){opacity:1}
+.dice-face[data-n="4"] i:nth-child(1),.dice-face[data-n="4"] i:nth-child(3),.dice-face[data-n="4"] i:nth-child(7),.dice-face[data-n="4"] i:nth-child(9){opacity:1}
+.dice-face[data-n="5"] i:nth-child(1),.dice-face[data-n="5"] i:nth-child(3),.dice-face[data-n="5"] i:nth-child(5),.dice-face[data-n="5"] i:nth-child(7),.dice-face[data-n="5"] i:nth-child(9){opacity:1}
+.dice-face[data-n="6"] i:nth-child(1),.dice-face[data-n="6"] i:nth-child(3),.dice-face[data-n="6"] i:nth-child(4),.dice-face[data-n="6"] i:nth-child(6),.dice-face[data-n="6"] i:nth-child(7),.dice-face[data-n="6"] i:nth-child(9){opacity:1}
+.pawn{width:18px;height:22px;position:relative;display:inline-block}
+.pawn:before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:12px;height:12px;border-radius:50%;background:var(--pc,#42a5f5);border:2px solid #fff;box-shadow:0 1px 3px #0006}
+.pawn:after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:14px;height:12px;background:var(--pc,#42a5f5);border-radius:40% 40% 30% 30%;border:2px solid #fff;border-top:none}
+.board-wrap{display:flex;justify-content:center;align-items:center;width:100%;padding:4px 0}
+.player-hud{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.player-card{border-radius:14px;padding:8px 10px;display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;box-shadow:0 3px 10px #0003}
+.player-card .av{width:36px;height:36px;border-radius:50%;background:#fff3;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.player-card.active{box-shadow:0 0 0 3px #fff,0 4px 14px #0004}
+
 </style>
 </head>
 <body>
@@ -872,50 +894,49 @@ function dotsMove(type,r,c){
 }
 
 
-// ----- مار و پله (صفحه کلاسیک با مار و نردبان) -----
+
+// ----- مار و پله (گرافیک بالا + تاس متحرک) -----
 const SNAKES={16:6,47:26,49:11,56:53,62:19,64:60,87:24,93:73,95:75,98:78};
 const LADDERS={1:38,4:14,9:31,21:42,28:84,36:44,51:67,71:91,80:100};
 const SN_COL=['#1565c0','#c62828','#f9a825','#2e7d32'];
 const SN_NAME=['آبی','قرمز','زرد','سبز'];
-function snakesNew(np){
-  return {pos:Array(np).fill(0),turn:0,np:np,dice:0,done:0,winner:-1,anim:0};
-}
+const SNAKE_COLORS=['#e53935','#8e24aa','#00897b','#ef6c00','#5e35b1','#c2185b','#00695c','#d84315','#4527a0','#ad1457'];
+function snakesNew(np){return {pos:Array(np).fill(0),turn:0,np:np,dice:0,rolling:0,done:0,winner:-1}}
 function snCellCenter(num){
-  // num 1..100 -> row 0..9 from bottom, col with boustrophedon
-  const row=Math.floor((num-1)/10); // 0 bottom
-  const idx=(num-1)%10;
-  const col=row%2===0?idx:9-idx;
-  const topRow=9-row; // CSS grid row from top
+  const row=Math.floor((num-1)/10),idx=(num-1)%10,col=row%2===0?idx:9-idx,topRow=9-row;
   return {r:topRow,c:col,x:(col+0.5)*10,y:(topRow+0.5)*10};
 }
 function snPathSvg(){
-  // draw snakes (curves) and ladders (lines) on 0..100 viewBox
-  let s='';
+  let s='',si=0;
   Object.keys(LADDERS).forEach(a=>{
     const A=snCellCenter(+a),B=snCellCenter(LADDERS[a]);
-    s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#8d6e63" stroke-width="1.2" opacity="0.85"/>`;
-    s+=`<line x1="${A.x-1.2}" y1="${A.y}" x2="${B.x-1.2}" y2="${B.y}" stroke="#a1887f" stroke-width="0.35"/>`;
-    s+=`<line x1="${A.x+1.2}" y1="${A.y}" x2="${B.x+1.2}" y2="${B.y}" stroke="#a1887f" stroke-width="0.35"/>`;
-    // rungs
-    for(let t=0.15;t<0.9;t+=0.18){
+    s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="#5d4037" stroke-width="1.4" opacity="0.9"/>`;
+    s+=`<line x1="${A.x-1.3}" y1="${A.y}" x2="${B.x-1.3}" y2="${B.y}" stroke="#8d6e63" stroke-width="0.4"/>`;
+    s+=`<line x1="${A.x+1.3}" y1="${A.y}" x2="${B.x+1.3}" y2="${B.y}" stroke="#8d6e63" stroke-width="0.4"/>`;
+    for(let t=0.12;t<0.9;t+=0.16){
       const x1=A.x+(B.x-A.x)*t,y1=A.y+(B.y-A.y)*t;
       const dx=-(B.y-A.y),dy=B.x-A.x;const L=Math.sqrt(dx*dx+dy*dy)||1;
-      s+=`<line x1="${x1-dx/L*1.3}" y1="${y1-dy/L*1.3}" x2="${x1+dx/L*1.3}" y2="${y1+dy/L*1.3}" stroke="#6d4c41" stroke-width="0.5"/>`;
+      s+=`<line x1="${x1-dx/L*1.4}" y1="${y1-dy/L*1.4}" x2="${x1+dx/L*1.4}" y2="${y1+dy/L*1.4}" stroke="#6d4c41" stroke-width="0.55"/>`;
     }
   });
   Object.keys(SNAKES).forEach(a=>{
     const A=snCellCenter(+a),B=snCellCenter(SNAKES[a]);
-    const mx=(A.x+B.x)/2+(A.y>B.y?6:-6),my=(A.y+B.y)/2;
-    s+=`<path d="M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}" fill="none" stroke="#c62828" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>`;
-    s+=`<path d="M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}" fill="none" stroke="#ff8a80" stroke-width="0.6" stroke-dasharray="1.2 1.2" opacity="0.7"/>`;
-    // head
-    s+=`<circle cx="${A.x}" cy="${A.y}" r="1.6" fill="#b71c1c"/>`;
-    s+=`<circle cx="${A.x-0.5}" cy="${A.y-0.4}" r="0.35" fill="#fff"/><circle cx="${A.x+0.5}" cy="${A.y-0.4}" r="0.35" fill="#fff"/>`;
+    const col=SNAKE_COLORS[si++%SNAKE_COLORS.length];
+    const mx=(A.x+B.x)/2+(si%2?8:-8),my=(A.y+B.y)/2+(si%3-1)*4;
+    s+=`<path d="M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linecap="round" opacity="0.92"/>`;
+    s+=`<path d="M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}" fill="none" stroke="#ffffff88" stroke-width="0.7" stroke-dasharray="1.5 1.8"/>`;
+    s+=`<circle cx="${A.x}" cy="${A.y}" r="1.8" fill="${col}" stroke="#fff" stroke-width="0.3"/>`;
+    s+=`<circle cx="${A.x-0.55}" cy="${A.y-0.45}" r="0.4" fill="#fff"/><circle cx="${A.x+0.55}" cy="${A.y-0.45}" r="0.4" fill="#fff"/>`;
+    s+=`<circle cx="${A.x-0.55}" cy="${A.y-0.45}" r="0.18" fill="#111"/><circle cx="${A.x+0.55}" cy="${A.y-0.45}" r="0.18" fill="#111"/>`;
   });
   return s;
 }
+function diceHtml(n,rolling){
+  const v=n||1;
+  return `<div class="dice-box${rolling?' rolling':''}"><div class="dice-face" data-n="${v}">${'<i></i>'.repeat(9)}</div></div>`;
+}
 V.snakes=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🐍</div>
-<h3>مار و پله</h3><p>صفحهٔ کلاسیک ۱ تا ۱۰۰ با مار و نردبان. اول به ۱۰۰ برس.</p>
+<h3>مار و پله</h3><p>صفحه کلاسیک با مارهای رنگی و نردبان. اول به ۱۰۰ برس.</p>
 <button class="btn" data-a="sn2" style="--c:#66bb6a;width:100%">۲ نفره محلی</button>
 <button class="btn" data-a="sn4" style="--c:#43a047;width:100%;margin-top:8px">۴ نفره محلی</button>
 <button class="btn" data-a="snO" style="--c:#5c6bc0;width:100%;margin-top:8px">آنلاین با کد اتاق</button>
@@ -943,73 +964,186 @@ V.snP=()=>{
   const names=(st.players||[]).map((p,i)=>p.name||SN_NAME[i]);
   let html=`<div class="bar"><span class="chip">نوبت: <b style="color:${SN_COL[turn]}">${esc(names[turn]||'')}</b></span><button class="chip" data-a="boards">✖️</button></div>`;
   if(D.winner>=0){
-    html+=`<div class="card" style="text-align:center"><div style="font-size:56px">🏆</div><h2 style="color:${SN_COL[D.winner]}">${esc(names[D.winner])}</h2><p>به ۱۰۰ رسید!</p>${BK}</div>`;
+    html+=`<div class="card" style="text-align:center"><div style="font-size:56px">🏆</div><h2 style="color:${SN_COL[D.winner]}">${esc(names[D.winner])}</h2>${BK}</div>`;
     return html;
   }
-  // board
-  html+=`<div class="card" style="padding:8px;background:linear-gradient(180deg,#efebe9,#d7ccc8)">
-  <div style="position:relative;width:100%;max-width:360px;margin:0 auto;aspect-ratio:1;direction:ltr">
-  <div style="display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:100%;height:100%;border:3px solid #5d4037;border-radius:6px;overflow:hidden;box-shadow:0 6px 20px #0005">`;
+  html+=`<div class="card" style="padding:10px;background:linear-gradient(180deg,#5d4037,#3e2723)">
+  <div class="board-wrap"><div style="position:relative;width:100%;max-width:340px;aspect-ratio:1;direction:ltr">
+  <div style="display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:100%;height:100%;border:4px solid #ffd54f;border-radius:8px;overflow:hidden;box-shadow:0 8px 28px #0007">`;
   for(let topRow=0;topRow<10;topRow++){
     const row=9-topRow;
     for(let col=0;col<10;col++){
-      const c=row%2===0?col:9-col;
-      const num=row*10+c+1;
-      let bg=((row+col)%2===0)?'#fff8e1':'#ffe0b2';
-      if(SNAKES[num])bg='#ffcdd2';
-      if(LADDERS[num])bg='#c8e6c9';
-      if(num===100)bg='#ffd54f';
-      if(num===1)bg='#b3e5fc';
+      const c=row%2===0?col:9-col;const num=row*10+c+1;
+      let bg=((row+col)%2===0)?'#fffde7':'#ffe0b2';
+      if(SNAKES[num])bg='#ffcdd2';if(LADDERS[num])bg='#c8e6c9';
+      if(num===100)bg='#ffd54f';if(num===1)bg='#b3e5fc';
       const tokens=D.pos.map((p,i)=>p===num?i:-1).filter(i=>i>=0);
-      html+=`<div style="background:${bg};border:0.5px solid #a1887f55;position:relative;font-size:9px;font-weight:700;color:#4e342e;display:flex;align-items:flex-start;justify-content:flex-start;padding:1px">
-        <span style="opacity:.75;line-height:1">${fa(num)}</span>
-        <div style="position:absolute;inset:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px;padding:2px">
-        ${tokens.map(i=>`<span style="width:12px;height:12px;border-radius:50%;background:${SN_COL[i]};border:1.5px solid #fff;box-shadow:0 1px 3px #0006"></span>`).join('')}
+      html+=`<div style="background:${bg};border:0.5px solid #8d6e6355;position:relative;font-size:8px;font-weight:800;color:#4e342e;padding:1px">
+        <span style="opacity:.7">${fa(num)}</span>
+        <div style="position:absolute;inset:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px">
+        ${tokens.map(i=>`<span style="width:13px;height:13px;border-radius:50%;background:${SN_COL[i]};border:2px solid #fff;box-shadow:0 2px 4px #0006"></span>`).join('')}
         </div></div>`;
     }
   }
   html+=`</div>
   <svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">${snPathSvg()}</svg>
+  </div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px;align-items:center">
+  ${D.pos.map((p,i)=>`<span class="chip" style="border:2px solid ${SN_COL[i]};background:${SN_COL[i]}33;color:#fff">${esc(names[i])}: <b>${fa(p)}</b></span>`).join('')}
   </div>
-  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px">
-  ${D.pos.map((p,i)=>`<span class="chip" style="border:2px solid ${SN_COL[i]};background:${SN_COL[i]}22">${esc(names[i])}: <b>${fa(p)}</b></span>`).join('')}
-  </div>
-  <button class="btn" data-a="snRoll" style="--c:#66bb6a;width:100%;margin-top:10px;font-size:18px">🎲 تاس بینداز${D.dice?(' — '+fa(D.dice)):''}</button>
-  <p style="font-size:11px;text-align:center;opacity:.8;margin:6px 0 0">🟥 خانه مار · 🟩 خانه نردبان · مسیر مار و نردبان روی صفحه کشیده شده</p>
+  <div style="text-align:center;margin:12px 0 4px">${diceHtml(D.dice||1,D.rolling)}</div>
+  <button class="btn" data-a="snRoll" style="--c:#66bb6a;width:100%;font-size:17px" ${D.rolling?'disabled':''}>🎲 ${D.rolling?'تاس می‌چرخد…':'تاس بینداز'}</button>
   </div>`;
   return html;
 };
 function snakesRoll(){
   const st=BRD.local;if(!st||!st.data)return;
-  const D=st.data;if(D.winner>=0)return;
+  const D=st.data;if(D.winner>=0||D.rolling)return;
   const turn=st.turn!=null?st.turn:D.turn;
   if(BRD.mode!=='local'&&BRD.room&&uid){
     const seat=(st.players||[]).findIndex(p=>p.uid===String(uid));
     if(seat>=0&&seat!==turn){say('نوبت تو نیست');return}
   }
+  D.rolling=1;show('snP');sfx.tap();
   const dice=1+(Math.random()*6|0);
-  D.dice=dice;sfx.tap();
-  let np=D.pos[turn]+dice;
-  if(np>100){say('باید دقیق به ۱۰۰ برسی');st.turn=D.turn=(turn+1)%D.np}
-  else{
-    D.pos[turn]=np;
-    if(LADDERS[np]){D.pos[turn]=LADDERS[np];say('نردبان! برو خانهٔ '+fa(LADDERS[np]));sfx.ok()}
-    else if(SNAKES[np]){D.pos[turn]=SNAKES[np];say('مار! برو خانهٔ '+fa(SNAKES[np]));sfx.no()}
-    if(D.pos[turn]>=100){D.winner=turn;D.done=1;sfx.win();say('برد!')}
-    else{st.turn=D.turn=(turn+1)%D.np}
-  }
-  if(BRD.room)brdSaveRoom(st);
-  show('snP');
+  setTimeout(()=>{
+    if(!BRD.local||!BRD.local.data)return;
+    const D2=BRD.local.data;D2.rolling=0;D2.dice=dice;
+    let np=D2.pos[turn]+dice;
+    if(np>100){say('باید دقیق ۱۰۰');BRD.local.turn=D2.turn=(turn+1)%D2.np}
+    else{
+      D2.pos[turn]=np;
+      if(LADDERS[np]){D2.pos[turn]=LADDERS[np];say('نردبان! → '+fa(LADDERS[np]));sfx.ok()}
+      else if(SNAKES[np]){D2.pos[turn]=SNAKES[np];say('مار! → '+fa(SNAKES[np]));sfx.no()}
+      if(D2.pos[turn]>=100){D2.winner=turn;D2.done=1;sfx.win()}
+      else{BRD.local.turn=D2.turn=(turn+1)%D2.np}
+    }
+    if(BRD.room)brdSaveRoom(BRD.local);
+    show('snP');
+  },900);
 }
 
-// ----- منچ کلاسیک (صفحه چهاررنگ) -----
+// ----- منچ شبیه اپ کلاسیک (صفحه صلیبی دایره‌ای) -----
 function ludoNew(np){
-  const tokens=[];
-  for(let p=0;p<np;p++)tokens.push([0,0,0,0]); // 4 tokens in yard (0)
-  return {tokens:tokens,np:np,turn:0,dice:0,extra:0,winner:-1,starts:[0,13,26,39]};
+  const tokens=[];for(let p=0;p<np;p++)tokens.push([0,0,0,0]);
+  return {tokens:tokens,np:np,turn:0,dice:0,rolling:0,extra:0,winner:-1,starts:[0,13,26,39]};
+}
+// مختصات دایره‌های مسیر روی viewBox 0..100 (صلیب)
+function ludoTrackXY(){
+  // 52 cells around cross - approximate classic layout
+  const pts=[];
+  // bottom arm upward-left side then around — simplified ring of 52
+  // Horizontal bottom row (left to right) cells near bottom of cross
+  const push= (x,y)=>pts.push([x,y]);
+  // Start blue (bottom): go left along bottom arm top edge then counterclockwise
+  // We'll place 52 points along the cross path
+  // Bottom arm (6 cells up the center column area from bottom)
+  for(let i=0;i<6;i++)push(50-6, 88-i*5.5);
+  for(let i=0;i<6;i++)push(38-i*5.2, 55);
+  for(let i=0;i<3;i++)push(8, 55-i*5.5);
+  for(let i=0;i<6;i++)push(8+i*5.2, 38);
+  for(let i=0;i<6;i++)push(44, 38-i*5.2);
+  for(let i=0;i<3;i++)push(44+i*5.5, 8);
+  for(let i=0;i<6;i++)push(62, 8+i*5.2);
+  for(let i=0;i<6;i++)push(62+i*5.2, 38);
+  for(let i=0;i<3;i++)push(92, 38+i*5.5);
+  for(let i=0;i<6;i++)push(92-i*5.2, 55);
+  for(let i=0;i<6;i++)push(56, 55+i*5.5);
+  for(let i=0;i<3;i++)push(56-i*5.5, 88);
+  // pad/trim to 52
+  while(pts.length<52)pts.push(pts[pts.length-1]||[50,50]);
+  return pts.slice(0,52);
+}
+const LUDO_PATH=null; // filled at runtime first call
+function getLudoPath(){
+  if(window.__LUDO_PATH)return window.__LUDO_PATH;
+  window.__LUDO_PATH=ludoTrackXY();
+  return window.__LUDO_PATH;
+}
+function ludoBoardSvg(D,names,turn){
+  const C=SN_COL;
+  const path=getLudoPath();
+  // Home yard centers
+  const yards=[[22,78],[22,22],[78,22],[78,78]]; // p0 blue BL, p1 red TL, p2 yellow TR, p3 green BR — match image-ish: green TL, blue TR, red BL, yellow BR
+  // Image: green top-left, blue top-right, red bottom-left, yellow bottom-right
+  const yardPos=[
+    [[14,70],[22,70],[14,78],[22,78]], // p0
+    [[14,14],[22,14],[14,22],[22,22]], // p1
+    [[78,14],[86,14],[78,22],[86,22]], // p2
+    [[78,70],[86,70],[78,78],[86,78]]  // p3
+  ];
+  // Recolor to match image: 0 green, 1 blue, 2 red, 3 yellow for display when 4p — map SN_COL order
+  // Keep SN_COL: 0 blue, 1 red, 2 yellow, 3 green — place: blue bottom, red left-ish...
+  // Image order seats: TL green, TR blue, BL red, BR yellow
+  // Our p0=blue, p1=red, p2=yellow, p3=green
+  const seatYard=[1,0,2,3]; // not needed if we fix yardPos to p index
+
+  let s=`<svg viewBox="0 0 100 100" style="width:100%;max-width:340px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 8px 20px #0005)">`;
+  // board background
+  s+=`<rect x="2" y="2" width="96" height="96" rx="4" fill="#d7b899" stroke="#8d6e63" stroke-width="1.2"/>`;
+  // soft center
+  s+=`<rect x="35" y="35" width="30" height="30" fill="#c4a574" opacity="0.5"/>`;
+
+  // Draw path circles
+  path.forEach((pt,i)=>{
+    const [x,y]=pt;
+    let fill='#f5f5f5',stroke='#5d4037';
+    // color home stretches roughly
+    s+=`<circle cx="${x}" cy="${y}" r="3.1" fill="${fill}" stroke="${stroke}" stroke-width="0.55"/>`;
+  });
+
+  // Colored home columns into center (visual only)
+  const arms=[
+    {pts:[[50,72],[50,66],[50,60],[50,54],[50,48]],c:C[0]}, // bottom blue
+    {pts:[[28,50],[34,50],[40,50],[46,50]],c:C[1]}, // left red
+    {pts:[[50,28],[50,34],[50,40],[50,46]],c:C[2]}, // top yellow
+    {pts:[[72,50],[66,50],[60,50],[54,50]],c:C[3]}  // right green — adjust
+  ];
+  // Fix arm colors to match players 0-3
+  arms[0].c=C[0];arms[1].c=C[1];arms[2].c=C[2];arms[3].c=C[3];
+  arms.forEach(a=>a.pts.forEach(p=>{s+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.1" fill="${a.c}" stroke="#fff" stroke-width="0.4" opacity="0.95"/>`}));
+
+  // Center star-ish
+  s+=`<circle cx="50" cy="50" r="5" fill="#fff8e1" stroke="#5d4037" stroke-width="0.6"/>`;
+  s+=`<text x="50" y="52" text-anchor="middle" font-size="4" fill="#5d4037">★</text>`;
+
+  // Yard bases (rounded squares)
+  const yardColors=[C[0],C[1],C[2],C[3]];
+  const yardBoxes=[[6,62,28,32],[6,6,28,32],[66,6,28,32],[66,62,28,32]];
+  yardBoxes.forEach((b,i)=>{
+    if(i>=D.np)return;
+    s+=`<rect x="${b[0]}" y="${b[1]}" width="${b[2]}" height="${b[3]}" rx="3" fill="${yardColors[i]}" opacity="0.25" stroke="${yardColors[i]}" stroke-width="0.8"/>`;
+  });
+
+  // Tokens
+  for(let p=0;p<D.np;p++){
+    D.tokens[p].forEach((v,ti)=>{
+      let x,y;
+      if(v===0){
+        const slot=yardPos[p][ti];x=slot[0];y=slot[1];
+      }else if(v>0&&v<53){
+        const abs=(D.starts[p]+v-1)%52;const pt=path[abs];x=pt[0];y=pt[1];
+      }else{
+        // home stretch
+        const step=Math.min(5,v-52);
+        if(p===0){x=50;y=72-step*5.5}
+        else if(p===1){x=28+step*5.5;y=50}
+        else if(p===2){x=50;y=28+step*5.5}
+        else{x=72-step*5.5;y=50}
+      }
+      // pawn shape
+      s+=`<g transform="translate(${x},${y})">
+        <circle cx="0" cy="-1.2" r="2.3" fill="${C[p]}" stroke="#fff" stroke-width="0.55"/>
+        <ellipse cx="0" cy="2" rx="2.4" ry="2" fill="${C[p]}" stroke="#fff" stroke-width="0.4"/>
+        <circle cx="-0.7" cy="-1.5" r="0.45" fill="#fff8"/><circle cx="0.7" cy="-1.5" r="0.45" fill="#fff8"/>
+      </g>`;
+    });
+  }
+  s+=`</svg>`;
+  return s;
 }
 V.ludo=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🏠</div>
-<h3>منچ کلاسیک</h3><p>صفحهٔ چهاررنگ استاندارد. هر بازیکن ۴ مهره. با ۶ از خانه بیرون بیا. اول هر ۴ مهره را به مرکز برسان.</p>
+<h3>منچ کلاسیک</h3><p>صفحه صلیبی رنگی مثل بازی واقعی. هر نفر ۴ مهره. با ۶ بیرون بیا.</p>
 <button class="btn" data-a="ld2" style="--c:#ef5350;width:100%">۲ نفره محلی</button>
 <button class="btn" data-a="ld4" style="--c:#e53935;width:100%;margin-top:8px">۴ نفره محلی</button>
 <button class="btn" data-a="ldO" style="--c:#5c6bc0;width:100%;margin-top:8px">آنلاین با کد اتاق</button>
@@ -1031,108 +1165,6 @@ ${(st.players||[]).map(p=>`<div>${esc(p.name)}</div>`).join('')}
 ${(st.players||[]).length>=2&&BRD.room&&BRD.room.host?`<button class="btn" data-a="ldGo" style="--c:#ef5350;width:100%">شروع</button>`:'<small>منتظر…</small>'}
 ${BK}</div>`};
 ACT.ldGo=async()=>{const st=BRD.local;st.phase='play';st.data=ludoNew(st.players.length);st.turn=0;await brdSaveRoom(st);show('ldP')};
-
-// مسیر اصلی منچ: 52 خانه. ورود بازیکن p از starts[p]
-// خانه نهایی: بعد از یک دور کامل وارد مسیر رنگی ۵خانه‌ای می‌شود (مقادیر 53..57 = تمام)
-function ludoBoardHtml(D,names,turn){
-  // 15x15 grid classic look
-  const C=SN_COL;
-  const cell=(bg,extra='')=>`<div style="background:${bg};border:0.5px solid #ffffff44;aspect-ratio:1;position:relative;${extra}"></div>`;
-  // Map track index 0..51 to grid positions (simplified ring on 15x15)
-  // Using standard visual: corners are 6x6 yards
-  const yardBg=['#bbdefb','#ffcdd2','#fff9c4','#c8e6c9'];
-  const pathSoft=['#e3f2fd','#ffebee','#fffde7','#e8f5e9'];
-  let g='';
-  // Build 15x15
-  const N=15;
-  const grid=Array.from({length:N},()=>Array(N).fill(null));
-  // yards
-  for(let r=0;r<6;r++)for(let c=0;c<6;c++)grid[r][c]={bg:yardBg[1]}; // red top-left? classic: green NL, red NR, blue SL, yellow SR - use: 0 blue bottom-left style
-  // Assign yards: P0 blue bottom-left, P1 red top-left, P2 yellow top-right, P3 green bottom-right
-  for(let r=0;r<6;r++)for(let c=0;c<6;c++){grid[r][c]={bg:yardBg[1]};grid[r][c+9]={bg:yardBg[2]};grid[r+9][c]={bg:yardBg[0]};grid[r+9][c+9]={bg:yardBg[3]}}
-  // center cross path white/cream
-  for(let i=0;i<15;i++){
-    for(let j=6;j<=8;j++){
-      grid[i][j]={bg:'#fafafa',path:1};
-      grid[j][i]={bg:'#fafafa',path:1};
-    }
-  }
-  // colored home columns toward center
-  for(let i=1;i<=5;i++){
-    grid[7][i]={bg:C[1],home:1}; // left arm red-ish toward center from left - simplify
-    grid[i][7]={bg:C[2],home:1};
-    grid[7][14-i]={bg:C[3],home:1};
-    grid[14-i][7]={bg:C[0],home:1};
-  }
-  grid[7][7]={bg:'#fff',center:1};
-  // start cells highlight
-  grid[13][6]={bg:C[0],start:1};
-  grid[1][8]={bg:C[1],start:1};
-  grid[6][1]={bg:C[2],start:1};
-  grid[8][13]={bg:C[3],start:1};
-
-  // place tokens: yard positions
-  const yardSlots=[
-    [[10,1],[10,2],[11,1],[11,2]], // p0 blue
-    [[1,1],[1,2],[2,1],[2,2]],     // p1 red
-    [[1,10],[1,11],[2,10],[2,11]], // p2 yellow
-    [[10,10],[10,11],[11,10],[11,11]] // p3 green
-  ];
-  // track mapping 0..51 approximate around board (clockwise from blue start)
-  const trackRC=[];
-  for(let c=6;c<=8;c++)trackRC.push([13,c]); // bottom mid row up... simplified ring
-  // Better explicit 52-cell path (common Ludo path coords on 15 grid)
-  const PATH=[
-    // bottom row left to right from blue start area
-    [13,6],[12,6],[11,6],[10,6],[9,6],[8,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0],
-    [6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[0,8],
-    [1,8],[2,8],[3,8],[4,8],[5,8],[6,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[7,14],[8,14],
-    [8,13],[8,12],[8,11],[8,10],[8,9],[8,8],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6]
-  ];
-  // ensure path cells painted
-  PATH.forEach((rc,i)=>{if(grid[rc[0]]&&grid[rc[0]][rc[1]]){grid[rc[0]][rc[1]]={bg:grid[rc[0]][rc[1]].bg||'#fafafa',path:1,idx:i}}});
-
-  // tokens on board
-  const tokenAt={};
-  for(let p=0;p<D.np;p++){
-    D.tokens[p].forEach((v,ti)=>{
-      if(v===0){
-        const sl=yardSlots[p][ti];
-        const k=sl[0]+','+sl[1];
-        if(!tokenAt[k])tokenAt[k]=[];
-        tokenAt[k].push(p);
-      }else if(v>0&&v<53){
-        const abs=(D.starts[p]+v-1)%52;
-        const rc=PATH[abs%PATH.length];
-        if(rc){const k=rc[0]+','+rc[1];if(!tokenAt[k])tokenAt[k]=[];tokenAt[k].push(p)}
-      }else if(v>=53){
-        // on colored home stretch
-        const step=Math.min(5,v-52);
-        let rc=null;
-        if(p===0)rc=[14-step,7];
-        if(p===1)rc=[7,step];
-        if(p===2)rc=[step,7];
-        if(p===3)rc=[7,14-step];
-        if(rc){const k=rc[0]+','+rc[1];if(!tokenAt[k])tokenAt[k]=[];tokenAt[k].push(p)}
-      }
-    });
-  }
-
-  let html=`<div style="width:100%;max-width:360px;margin:0 auto;aspect-ratio:1;display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);border:3px solid #37474f;border-radius:8px;overflow:hidden;box-shadow:0 8px 24px #0005;direction:ltr">`;
-  for(let r=0;r<15;r++){
-    for(let c=0;c<15;c++){
-      const cell=grid[r][c]||{bg:'#eceff1'};
-      const k=r+','+c;
-      const toks=tokenAt[k]||[];
-      html+=`<div style="background:${cell.bg};border:0.3px solid #90a4ae55;position:relative">
-        <div style="position:absolute;inset:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px">
-        ${toks.map(p=>`<span style="width:10px;height:10px;border-radius:50%;background:${C[p]};border:1px solid #fff;box-shadow:0 1px 2px #0005"></span>`).join('')}
-        </div></div>`;
-    }
-  }
-  html+=`</div>`;
-  return html;
-}
 V.ldP=()=>{
   const st=BRD.local;if(!st)return V.ludo();
   const D=st.data;const turn=st.turn!=null?st.turn:D.turn;
@@ -1142,55 +1174,69 @@ V.ldP=()=>{
     html+=`<div class="card" style="text-align:center"><div style="font-size:56px">🏆</div><h2 style="color:${SN_COL[D.winner]}">${esc(names[D.winner])}</h2>${BK}</div>`;
     return html;
   }
-  html+=`<div class="card" style="padding:8px;background:#37474f">
-  ${ludoBoardHtml(D,names,turn)}
-  <div style="margin-top:10px">`;
+  // player cards top
+  html+=`<div class="player-hud">`;
   for(let p=0;p<D.np;p++){
-    html+=`<div style="display:flex;align-items:center;gap:6px;margin:4px 0;padding:6px;border-radius:10px;background:${SN_COL[p]}33;border:1px solid ${SN_COL[p]}66">
-    <b style="color:${SN_COL[p]};min-width:40px">${esc(names[p])}</b>`;
-    D.tokens[p].forEach((v,ti)=>{
-      const label=v===0?'خانه':v>=53?('پایان'+fa(Math.min(5,v-52))):fa(v);
-      html+=`<button class="chip" data-a="lt${p}_${ti}" style="padding:4px 8px;${p===turn&&D.extra?'box-shadow:0 0 0 2px #fff':''}">${fa(ti+1)}·${label}</button>`;
-    });
-    html+=`</div>`;
+    const done=D.tokens[p].filter(v=>v>=57).length;
+    html+=`<div class="player-card${p===turn?' active':''}" style="background:linear-gradient(135deg,${SN_COL[p]},${SN_COL[p]}cc)">
+      <div class="av">🙂</div>
+      <div style="flex:1;text-align:right"><b>${esc(names[p])}</b><br><small>خانه: ${fa(done)}/۴</small></div>
+      <div style="font-size:11px">⭐</div>
+    </div>`;
   }
-  html+=`<button class="btn" data-a="ldRoll" style="--c:#ef5350;width:100%;margin-top:8px;font-size:18px">🎲 تاس${D.dice?(' — '+fa(D.dice)):''}</button>
-  <p style="font-size:11px;text-align:center;opacity:.85;margin:6px 0 0">با ۶ مهره از خانه خارج می‌شود. بعد از تاس، مهره را لمس کن. زدن مهره حریف او را به خانه برمی‌گرداند.</p>
-  </div></div>`;
+  html+=`</div>`;
+  html+=`<div class="card" style="padding:10px;background:linear-gradient(180deg,#5c6bc0,#3949ab)">
+  <div class="board-wrap">${ludoBoardSvg(D,names,turn)}</div>
+  <div style="text-align:center;margin:10px 0">${diceHtml(D.dice||1,D.rolling)}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:8px">`;
+  D.tokens[turn].forEach((v,ti)=>{
+    const label=v===0?'خانه':v>=53?('پایان'):fa(v);
+    html+=`<button class="chip" data-a="lt${turn}_${ti}" style="background:#fff3;border:2px solid #fff;color:#fff;padding:6px 10px">مهره ${fa(ti+1)} · ${label}</button>`;
+  });
+  html+=`</div>
+  <button class="btn" data-a="ldRoll" style="--c:#ffca28;color:#333;width:100%;font-size:17px" ${D.rolling?'disabled':''}>🎲 ${D.rolling?'تاس می‌چرخد…':(D.extra?'مهره را انتخاب کن':'تاس بینداز')}</button>
+  <p style="font-size:11px;text-align:center;color:#fff9;margin:8px 0 0">با ۶ از خانه خارج شو · مهره حریف را بزن · ۴ مهره را به ★ برسان</p>
+  </div>`;
   return html;
 };
 function ludoRoll(){
   const st=BRD.local;if(!st||!st.data)return;
-  const D=st.data;if(D.winner>=0)return;
+  const D=st.data;if(D.winner>=0||D.rolling)return;
   const turn=st.turn!=null?st.turn:D.turn;
   if(BRD.mode!=='local'&&BRD.room&&uid){
     const seat=(st.players||[]).findIndex(p=>p.uid===String(uid));
     if(seat>=0&&seat!==turn){say('نوبت تو نیست');return}
   }
   if(D.dice&&D.extra){say('اول مهره را حرکت بده');return}
-  D.dice=1+(Math.random()*6|0);D.extra=1;sfx.tap();say('تاس: '+fa(D.dice));
-  const moves=[];
-  D.tokens[turn].forEach((v,ti)=>{
-    if(v===0&&D.dice===6)moves.push(ti);
-    if(v>0&&v<53&&v+D.dice<=57)moves.push(ti);
-    if(v>=53&&v+D.dice<=57)moves.push(ti);
-  });
-  if(!moves.length){D.dice=0;D.extra=0;st.turn=D.turn=(turn+1)%D.np;say('حرکت ممکن نیست')}
-  if(BRD.room)brdSaveRoom(st);
-  show('ldP');
+  D.rolling=1;show('ldP');sfx.tap();
+  const dice=1+(Math.random()*6|0);
+  setTimeout(()=>{
+    if(!BRD.local||!BRD.local.data)return;
+    const D2=BRD.local.data;D2.rolling=0;D2.dice=dice;D2.extra=1;
+    const moves=[];
+    D2.tokens[turn].forEach((v,ti)=>{
+      if(v===0&&dice===6)moves.push(ti);
+      if(v>0&&v<53&&v+dice<=57)moves.push(ti);
+      if(v>=53&&v+dice<=57)moves.push(ti);
+    });
+    if(!moves.length){D2.dice=0;D2.extra=0;BRD.local.turn=D2.turn=(turn+1)%D2.np;say('حرکت ممکن نیست')}
+    else say('تاس: '+fa(dice));
+    if(BRD.room)brdSaveRoom(BRD.local);
+    show('ldP');
+  },900);
 }
 function ludoTok(p,ti){
   const st=BRD.local;if(!st||!st.data)return;
   const D=st.data;const turn=st.turn!=null?st.turn:D.turn;
   if(p!==turn){say('نوبت این بازیکن نیست');return}
-  if(!D.dice||!D.extra){say('اول تاس بزن');return}
+  if(!D.dice||!D.extra||D.rolling){say('اول تاس بزن');return}
   const v=D.tokens[p][ti];
   if(v===0){
     if(D.dice!==6){say('برای خروج ۶ لازم است');return}
     D.tokens[p][ti]=1;
   }else if(v>0&&v<=57){
     const nv=v+D.dice;
-    if(nv>57){say('باید دقیق وارد خانه شوی');return}
+    if(nv>57){say('باید دقیق وارد شوی');return}
     D.tokens[p][ti]=nv;
     if(nv<53){
       const abs=(D.starts[p]+nv-1)%52;
