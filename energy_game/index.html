@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v6.5</title>
+<title>برقی و خانهٔ هوشمند v6.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1031,92 +1031,109 @@ function snakesRoll(){
 // ----- منچ شبیه اپ کلاسیک (صفحه صلیبی دایره‌ای) -----
 function ludoNew(np){
   const tokens=[];for(let p=0;p<np;p++)tokens.push([0,0,0,0]);
-  return {tokens:tokens,np:np,turn:0,dice:0,rolling:0,extra:0,winner:-1,starts:[0,15,30,45],pathLen:60};
+  return {tokens:tokens,np:np,turn:0,dice:0,rolling:0,extra:0,winner:-1,starts:[0,13,26,39],pathLen:52};
 }
 // مختصات دایره‌های مسیر روی viewBox 0..100 (صلیب)
 function ludoBoardSvg(D,names,turn){
   const PC=SN_COL;
-  const step=5.5, origin=13, R=2.65;
+  const step=5.6, origin=12.5, R=2.8;
   const xy=(r,c)=>[origin+c*step, origin+r*step];
-  // دقیقاً ۵۲ خانه مسیر اصلی (ساعت‌گرد از ورودی آبی)
+  // مسیر مرتب ۵۲خانه‌ای دور صلیب کامل (ظاهر کلاسیک)
   if(!window.__LUDO_RC){
-    window.__LUDO_RC=[
-      // بازوی پایین — ستون چپ مسیر، از پایین به بالا
-      [13,6],[12,6],[11,6],[10,6],[9,6],[8,6],
-      // بازوی چپ — ردیف پایین، به چپ
-      [8,5],[8,4],[8,3],[8,2],[8,1],[8,0],
-      // بازوی چپ — ستون چپ، به بالا
-      [7,0],[6,0],[5,0],[4,0],[3,0],[2,0],[1,0],
-      // گوشه و بازوی بالا — ردیف بالا به راست
-      [0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],
-      // بازوی بالا — ستون راست، به پایین تا تقاطع
-      [1,8],[2,8],[3,8],[4,8],[5,8],[6,8],
-      // بازوی راست — ردیف بالا، به راست
-      [6,9],[6,10],[6,11],[6,12],[6,13],[6,14],
-      // بازوی راست — ستون راست، به پایین
-      [7,14],[8,14],[9,14],[10,14],[11,14],[12,14],[13,14],
-      // گوشه پایین‌راست و بازگشت
-      [14,14],[14,13],[14,12],[14,11],[14,10],[14,9],[14,8],
-      // بازوی پایین — ستون راست، به بالا تا نزدیک شروع
-      [13,8],[12,8],[11,8],[10,8],[9,8],[8,8]
-    ];
+    const seq=[];
+    // از ورودی آبی (پایین، کنار حیاط آبی) ساعت‌گرد
+    // پایین: بالا رفتن ستون ۶
+    for(let r=13;r>=8;r--)seq.push([r,6]);
+    // چپ پایین بازو
+    for(let c=5;c>=0;c--)seq.push([8,c]);
+    // چپ بالا
+    for(let r=7;r>=0;r--)seq.push([r,0]);
+    // بالای صفحه به راست
+    for(let c=1;c<=8;c++)seq.push([0,c]);
+    // راستِ بازوی بالا به پایین تا تقاطع
+    for(let r=1;r<=6;r++)seq.push([r,8]);
+    // بازوی راست به راست
+    for(let c=9;c<=14;c++)seq.push([6,c]);
+    // راست به پایین
+    for(let r=7;r<=14;r++)seq.push([r,14]);
+    // پایین به چپ
+    for(let c=13;c>=8;c--)seq.push([14,c]);
+    // ستون ۸ به بالا تا نزدیک شروع
+    for(let r=13;r>=8;r--)seq.push([r,8]);
+    window.__LUDO_RC=seq.slice(0,52);
+    while(window.__LUDO_RC.length<52)window.__LUDO_RC.push(window.__LUDO_RC[window.__LUDO_RC.length-1]);
   }
   const pathRC=window.__LUDO_RC;
-  // مسیر رنگی خانه (۵ خانه تا مرکز، با فاصله از ★)
+  const pathSet={};
+  pathRC.forEach((rc,i)=>{pathSet[rc[0]+','+rc[1]]=i});
+
+  // خانه رنگی (۵ خانه) با فاصله از مرکز
   const homeRC=[
-    [[12,7],[11,7],[10,7],[9,7],[8,7]],
-    [[7,2],[7,3],[7,4],[7,5],[7,6]],
-    [[2,7],[3,7],[4,7],[5,7],[6,7]],
-    [[7,12],[7,11],[7,10],[7,9],[7,8]]
+    [[12,7],[11,7],[10,7],[9,7],[8,7]], // آبی
+    [[7,2],[7,3],[7,4],[7,5],[7,6]],    // قرمز
+    [[2,7],[3,7],[4,7],[5,7],[6,7]],    // زرد
+    [[7,12],[7,11],[7,10],[7,9],[7,8]]  // سبز
   ];
   const homeCol=['#1e88e5','#e53935','#fdd835','#43a047'];
-  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:255px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
+  const homeSet={};
+  homeRC.forEach((arm,pi)=>arm.forEach((rc,k)=>{homeSet[rc[0]+','+rc[1]]=homeCol[pi]}));
+
+  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:280px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
   s+='<rect x="2" y="2" width="96" height="96" rx="8" fill="#e8d5b7" stroke="#5d4037" stroke-width="1.5"/>';
-  s+='<rect x="4" y="4" width="34" height="34" rx="5" fill="#e53935" opacity="0.18"/>';
-  s+='<rect x="62" y="4" width="34" height="34" rx="5" fill="#fdd835" opacity="0.22"/>';
-  s+='<rect x="4" y="62" width="34" height="34" rx="5" fill="#1e88e5" opacity="0.18"/>';
-  s+='<rect x="62" y="62" width="34" height="34" rx="5" fill="#43a047" opacity="0.18"/>';
-  // فقط همان ۵۲ خانه
-  pathRC.forEach(rc=>{
-    const [x,y]=xy(rc[0],rc[1]);
-    s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="#ffffff" stroke="#5d4037" stroke-width="0.65"/>';
-  });
-  homeRC.forEach((arm,pi)=>{
-    arm.forEach(rc=>{
-      const [x,y]=xy(rc[0],rc[1]);
-      s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+homeCol[pi]+'" stroke="#ffffff" stroke-width="0.5"/>';
-    });
-  });
+  // حیاط‌ها: TL قرمز، TR زرد، BL آبی، BR سبز
+  s+='<rect x="5" y="5" width="32" height="32" rx="5" fill="#e53935" opacity="0.2"/>';
+  s+='<rect x="63" y="5" width="32" height="32" rx="5" fill="#fdd835" opacity="0.25"/>';
+  s+='<rect x="5" y="63" width="32" height="32" rx="5" fill="#1e88e5" opacity="0.2"/>';
+  s+='<rect x="63" y="63" width="32" height="32" rx="5" fill="#43a047" opacity="0.2"/>';
+
+  // رسم کامل صلیب ۳×۱۵ (ظاهر قبلی خوب)
+  for(let r=0;r<15;r++){
+    for(let c=0;c<15;c++){
+      const onCross=(r>=6&&r<=8)||(c>=6&&c<=8);
+      if(!onCross)continue;
+      if(r===7&&c===7)continue;
+      const k=r+','+c;
+      let fill='#ffffff';
+      if(homeSet[k])fill=homeSet[k];
+      const [x,y]=xy(r,c);
+      s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+fill+'" stroke="#5d4037" stroke-width="0.65"/>';
+    }
+  }
   const [cx,cy]=xy(7,7);
-  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4.6" fill="#fff8e1" stroke="#5d4037" stroke-width="0.85"/>';
-  s+='<text x="'+cx+'" y="'+(cy+1.4)+'" text-anchor="middle" font-size="5" fill="#5d4037">★</text>';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="#fff8e1" stroke="#5d4037" stroke-width="0.9"/>';
+  s+='<text x="'+cx+'" y="'+(cy+1.6)+'" text-anchor="middle" font-size="5.5" fill="#5d4037">★</text>';
+
+  // مهره‌های حیاط
   const yardSlots=[
-    [[16,70],[26,70],[16,80],[26,80]],
-    [[16,14],[26,14],[16,24],[26,24]],
-    [[74,14],[84,14],[74,24],[84,24]],
-    [[74,70],[84,70],[74,80],[84,80]]
+    [[16,70],[26,70],[16,80],[26,80]], // آبی BL
+    [[16,14],[26,14],[16,24],[26,24]], // قرمز TL
+    [[74,14],[84,14],[74,24],[84,24]], // زرد TR
+    [[74,70],[84,70],[74,80],[84,80]]  // سبز BR
   ];
-  for(let p=0;p<D.np;p++){
+
+  const PL=D.pathLen||52;
+  for(let p=0;p<(D.np||0);p++){
     (D.tokens[p]||[]).forEach((v,ti)=>{
-      let x=50,y=50;
+      let x,y;
       if(v===0){
-        const sl=yardSlots[p][ti]||yardSlots[p][0];x=sl[0];y=sl[1];
-      }else if(v>0&&v<=(D.pathLen||60)){
-        const PL=D.pathLen||60;const abs=((D.starts[p]+(v-1))%PL+PL)%PL;
+        const sl=yardSlots[p][ti];x=sl[0];y=sl[1];
+      }else if(v>0&&v<=PL){
+        const abs=((D.starts[p]+(v-1))%PL+PL)%PL;
         const rc=pathRC[abs];
-        if(rc){const pt=xy(rc[0],rc[1]);x=pt[0];y=pt[1];}
+        const pt=xy(rc[0],rc[1]);x=pt[0];y=pt[1];
       }else{
-        const PL=D.pathLen||60;const k=Math.min(4,Math.max(0,v-(PL+1)));
-        const rc=(homeRC[p]||homeRC[0])[k];
-        if(rc){const pt=xy(rc[0],rc[1]);x=pt[0];y=pt[1];}
+        const k=Math.min(4,Math.max(0,v-(PL+1)));
+        const rc=homeRC[p][k];
+        const pt=xy(rc[0],rc[1]);x=pt[0];y=pt[1];
       }
       const col=PC[p%4];
-      s+='<g transform="translate('+x+','+y+')"><circle cx="0" cy="-1" r="2.4" fill="'+col+'" stroke="#fff" stroke-width="0.65"/><ellipse cx="0" cy="2" rx="2.5" ry="2" fill="'+col+'" stroke="#fff" stroke-width="0.5"/></g>';
+      s+='<g transform="translate('+x+','+y+')"><circle cx="0" cy="-1.1" r="2.5" fill="'+col+'" stroke="#fff" stroke-width="0.7"/><ellipse cx="0" cy="2.1" rx="2.6" ry="2.1" fill="'+col+'" stroke="#fff" stroke-width="0.55"/></g>';
     });
   }
   s+='</svg>';
   return s;
 }
+
 
 
 
@@ -1252,6 +1269,22 @@ Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(a.slice(0,4)=='buy_'){sfx.tap();buyUp(a.slice(4))}else if(a.slice(0,2)=='dy'){sfx.tap();dailyAns(+a.slice(2))}else if(a.slice(0,2)=='hy'){sfx.tap();hourlyAns(+a.slice(2))}else if(a.slice(0,2)=='nx'){sfx.tap();nightHunt(+a.slice(2))}else if(a.slice(0,2)=='dH'){const p=a.slice(2).split('_');dotsMove('H',+p[0],+p[1])}else if(a.slice(0,2)=='dV'){const p=a.slice(2).split('_');dotsMove('V',+p[0],+p[1])}else if(a.slice(0,2)=='lt'){const p=a.slice(2).split('_');ludoTok(+p[0],+p[1])}else if(a.slice(0,2)=='nq'){sfx.tap();nightQuizAns(+a.slice(2))}else if(a.slice(0,2)=='np'){sfx.tap();nightPuzzle(+a.slice(2))}else if(a.slice(0,2)=='nw'){sfx.tap();nightWatt(+a.slice(2))}else if(a.slice(0,2)=='tj'){sfx.tap();teamVsAns(+a.slice(2))}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
 // لمس وسیله‌ها: انتخاب با مختصات روی صفحه (مستقل از hit-test سه‌بعدی مرورگر)
 document.addEventListener('pointerdown',e=>{if(cur!='game'||!G||G.over)return;let b=-1,m=1e9;G.d.forEach((d,i)=>{const el=$('#d'+i);if(!el)return;const r=el.getBoundingClientRect(),p=10;if(e.clientX>=r.left-p&&e.clientX<=r.right+p&&e.clientY>=r.top-p&&e.clientY<=r.bottom+p){const dx=e.clientX-(r.left+r.right)/2,dy=e.clientY-(r.top+r.bottom)/2,q=dx*dx+dy*dy;if(q<m){m=q;b=i}}});if(b>=0)tap(b)});
+// ===== باشگاه کوییز عمومی: پرسش‌های Supabase با امتیازدهی سمت سرور =====
+let GQ={items:[],index:0,category:'همه',score:0,answered:false,loading:false,session:0};
+const GQ_CATS=['همه','جغرافیا','علوم','طبیعت','فرهنگ و تاریخ','مهارت و دانستنی'];
+V.generalQuiz=()=>`<div class="card" style="text-align:center;background:linear-gradient(135deg,#21134f,#134c69);color:#fff"><div style="font-size:54px">🧠✨</div><h2 style="margin:4px 0">باشگاه دانستنی‌ها</h2><p>۵۰۰ پرسش اطلاعات عمومی · یادگیری، امتیاز و جدول برترین‌ها</p></div><div class="card"><b>دسته‌بندی</b><div class="grid" style="margin-top:8px">${GQ_CATS.map(c=>`<button class="btn" data-a="gqc${GQ_CATS.indexOf(c)}" style="--c:${GQ.category===c?'#3ee0a3':'#5ec8ff'}">${c}</button>`).join('')}</div><button class="btn big" data-a="gqstart" style="--c:#ffd54a;margin-top:10px">🚀 شروع ۱۰ سؤال</button><button class="btn" data-a="gqtop" style="--c:#b99cff;margin-top:8px">🏆 جدول برترین‌ها</button></div><div class="card"><small>امتیازها پس از بررسی پاسخ در Supabase ثبت می‌شوند. برای ثبت رکورد، بازی را از داخل بله باز کن.</small></div>${BK}`;
+V.gqplay=()=>{if(GQ.loading)return `<div class="card" style="text-align:center"><div class="spin" style="font-size:54px">⏳</div><h3>در حال دریافت سؤال‌ها…</h3></div>`;if(!GQ.items.length)return `<div class="card"><h3>سؤالی بارگیری نشده است</h3><p>اتصال یا جداول کوییز را بررسی کن.</p><button class="btn" data-a="gqstart" style="--c:#3ee0a3">تلاش دوباره</button>${BK}</div>`;if(GQ.index>=GQ.items.length)return `<div class="card" style="text-align:center"><div style="font-size:64px">${GQ.score>=7?'🏆':'🌟'}</div><h2>آفرین! مسابقه تمام شد</h2><h1>${fa(GQ.score)} از ${fa(GQ.items.length)}</h1><p>امتیاز این دور در جدول ثبت شده است.</p><button class="btn" data-a="gqstart" style="--c:#ffd54a">🔁 دور تازه</button><button class="btn" data-a="gqtop" style="--c:#b99cff">🏆 جدول برترین‌ها</button>${BK}</div>`;const q=GQ.items[GQ.index];return `<div class="card"><div class="bar"><span class="chip">🧠 ${fa(GQ.index+1)} از ${fa(GQ.items.length)}</span><span class="chip">⭐ ${fa(GQ.score)}</span></div><div class="meter"><i style="width:${(GQ.index/GQ.items.length)*100}%;background:#3ee0a3"></i></div><small>${esc(q.category||'اطلاعات عمومی')}</small><h3>${esc(q.question)}</h3>${q.options.map((o,i)=>`<button class="opt" data-a="gqa${i}" ${GQ.answered?'disabled':''}>${esc(o)}</button>`).join('')}<div id="gqfeedback"></div>${GQ.answered?`<button class="btn" data-a="gqnext" style="--c:#ffd54a;width:100%;margin-top:8px">${GQ.index+1===GQ.items.length?'دیدن نتیجه':'سؤال بعدی'} ➜</button>`:''}</div>`};
+V.gqtop=()=>`<div class="card"><h2 style="margin-top:0">🏆 برترین‌های باشگاه دانستنی‌ها</h2><div id="gqboard">در حال دریافت جدول…</div><button class="btn" data-a="gqtop" style="--c:#5ec8ff">🔄 تازه‌سازی</button>${BK}</div>`;
+ACT.gqhome=()=>show('generalQuiz');
+GQ_CATS.forEach((c,i)=>ACT['gqc'+i]=()=>{GQ.category=c;say('دسته انتخاب شد: '+c);show('generalQuiz')});
+ACT.gqstart=()=>{refreshUid();if(!SB_URL||!SB_KEY){say('تنظیم آنلاین ناقص است؛ مالک باید فایل جدید را از ربات دریافت کند.');return}if(!uid){say('مینی‌اپ را از داخل بله باز کن تا شناسه‌ات خوانده شود.');return}GQ={items:[],index:0,category:GQ.category||'همه',score:0,answered:false,loading:true,session:Date.now()};show('gqplay');rpc('egame_quiz_get_questions',{p_uid:String(uid),p_category:GQ.category==='همه'?'':GQ.category,p_limit:10}).then(a=>{if(!Array.isArray(a)||!a.length)throw new Error('سؤال فعالی پیدا نشد');GQ.items=a.map(x=>({...x,options:Array.isArray(x.options)?x.options:[]})).filter(x=>x.id&&x.question&&x.options.length===4);GQ.loading=false;if(!GQ.items.length)throw new Error('ساختار سؤال‌ها نامعتبر است');show('gqplay')}).catch(e=>{console.error('GENERAL QUIZ LOAD',e);GQ.loading=false;GQ.items=[];show('gqplay');say('بارگیری سؤال ناموفق بود؛ SQL و کلید عمومی را بررسی کن')})};
+ACT.gqa0=()=>gqAnswer(0);ACT.gqa1=()=>gqAnswer(1);ACT.gqa2=()=>gqAnswer(2);ACT.gqa3=()=>gqAnswer(3);
+function gqAnswer(i){if(GQ.answered||!GQ.items[GQ.index])return;refreshUid();if(!uid){say('شناسه بله پیدا نشد');return}const q=GQ.items[GQ.index];GQ.answered=true;document.querySelectorAll('.opt').forEach(b=>b.disabled=true);rpc('egame_quiz_submit',{p_uid:String(uid),p_question_id:q.id,p_answer_index:i,p_name:me(),p_category:GQ.category}).then(r=>{if(!r||r.error)throw new Error((r&&r.error)||'پاسخ سرور نامعتبر است');if(r.correct){GQ.score++;sfx.ok()}else sfx.no();const fb=document.getElementById('gqfeedback');if(fb){fb.innerHTML=`<div class="card" style="margin-top:10px;border:1px solid ${r.correct?'#3ee0a3':'#ff9aa8'}"><b>${r.correct?'✅ پاسخ درست!':'💡 پاسخ درست: '+esc(r.correct_answer||'')}</b><p>${esc(r.explanation||'')}</p><small>امتیاز این پاسخ: ${fa(r.points||0)}</small></div>`}document.querySelectorAll('.opt').forEach((b,j)=>{if(q.options[j]===r.correct_answer)b.classList.add('ok');else if(j===i)b.classList.add('no')});const old=GQ.score;GQ.score=old+(r.correct?0:0);const wrap=document.querySelector('.bar .chip:last-child');if(wrap)wrap.textContent='⭐ '+fa(GQ.score);const next=document.createElement('button');next.className='btn';next.dataset.a='gqnext';next.style='--c:#ffd54a;width:100%;margin-top:8px';next.textContent=GQ.index+1===GQ.items.length?'دیدن نتیجه':'سؤال بعدی ➜';document.getElementById('gqfeedback').appendChild(next)}).catch(e=>{console.error('GENERAL QUIZ SUBMIT',e);GQ.answered=false;document.querySelectorAll('.opt').forEach(b=>b.disabled=false);say('پاسخ ثبت نشد؛ دوباره امتحان کن')})}
+ACT.gqnext=()=>{if(!GQ.answered)return;GQ.index++;GQ.answered=false;show('gqplay')};ACT.gqtop=()=>show('gqtop');
+post.gqtop=()=>{const el=document.getElementById('gqboard');if(!el)return;if(!SB_URL||!SB_KEY){el.textContent='تنظیم آنلاین موجود نیست.';return}rpc('egame_quiz_leaderboard',{p_limit:20}).then(a=>{el.innerHTML=Array.isArray(a)&&a.length?a.map((x,i)=>`<div style="padding:9px;border-bottom:1px solid #ffffff22">${['🥇','🥈','🥉'][i]||fa(i+1)+'.'} <b>${esc(x.name||'بازیکن')}</b><span style="float:left">⭐ ${fa(x.points||0)} · ${fa(x.correct_count||0)} درست</span></div>`).join(''):'هنوز رکوردی ثبت نشده.'}).catch(e=>{console.error('GENERAL QUIZ BOARD',e);el.textContent='دریافت جدول ناموفق بود.'})};
+// در صفحهٔ خانه، کارت مستقل باشگاه دانستنی‌ها اضافه می‌شود.
+const _oldHome=V.home;V.home=function(){const html=_oldHome();return html+`<div class="card" style="margin-top:12px;background:linear-gradient(135deg,#24134f,#12536b);color:white"><button class="btn big" data-a="gqhome" style="--c:#ffd54a;width:100%">🧠 باشگاه دانستنی‌ها<small>۵۰۰ پرسش اطلاعات عمومی · امتیاز آنلاین · جدول برترین‌ها</small></button></div>`};
+
 function boot(){
   try{
     show('home');
@@ -1272,6 +1305,7 @@ function boot(){
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
 </script>
-<script src="https://tapi.bale.ai/miniapp.js" async onerror="console.warn('bale miniapp.js failed')"></script>
+<script src="https://tapi.bale.ai/miniapp.js" async onerror="console.warn('bale miniapp.js failed')">
+</script>
 </body>
 </html>
