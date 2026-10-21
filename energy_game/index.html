@@ -1283,7 +1283,7 @@ function gqAnswer(i){if(GQ.answered||!GQ.items[GQ.index])return;refreshUid();if(
 ACT.gqnext=()=>{if(!GQ.answered)return;GQ.index++;GQ.answered=false;show('gqplay')};ACT.gqtop=()=>show('gqtop');
 post.gqtop=()=>{const el=document.getElementById('gqboard');if(!el)return;if(!SB_URL||!SB_KEY){el.textContent='تنظیم آنلاین موجود نیست.';return}rpc('egame_quiz_leaderboard',{p_limit:20}).then(a=>{el.innerHTML=Array.isArray(a)&&a.length?a.map((x,i)=>`<div style="padding:9px;border-bottom:1px solid #ffffff22">${['🥇','🥈','🥉'][i]||fa(i+1)+'.'} <b>${esc(x.name||'بازیکن')}</b><span style="float:left">⭐ ${fa(x.points||0)} · ${fa(x.correct_count||0)} درست</span></div>`).join(''):'هنوز رکوردی ثبت نشده.'}).catch(e=>{console.error('GENERAL QUIZ BOARD',e);el.textContent='دریافت جدول ناموفق بود.'})};
 // در صفحهٔ خانه، کارت مستقل باشگاه دانستنی‌ها اضافه می‌شود.
-const _oldHome=V.home;V.home=function(){const html=_oldHome();return html+`<div class="card" style="margin-top:12px;background:linear-gradient(135deg,#24134f,#12536b);color:white"><button class="btn big" data-a="gqhome" style="--c:#ffd54a;width:100%">🧠 باشگاه دانستنی‌ها<small>۵۰۰ پرسش اطلاعات عمومی · امتیاز آنلاین · جدول برترین‌ها</small></button></div>`};
+const _oldHome=V.home;V.home=function(){const html=_oldHome();const card=`<div class="card" style="margin:12px 0;background:linear-gradient(135deg,#24134f,#12536b);color:white"><button class="btn big" data-a="gqhome" style="--c:#ffd54a;width:100%">🧠 باشگاه دانستنی‌ها<small>۵۰۰ پرسش اطلاعات عمومی · امتیاز آنلاین · جدول برترین‌ها</small></button></div>`;const marker='<button class="btn big" data-a="duel">';return html.includes(marker)?html.replace(marker,card+marker):card+html};
 
 function boot(){
   try{
