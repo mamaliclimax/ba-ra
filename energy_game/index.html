@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v6.7</title>
+<title>برقی و خانهٔ هوشمند v6.8</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -938,8 +938,11 @@ function snPathSvg(){
   return s;
 }
 function diceHtml(n,rolling){
-  const v=(n>=1&&n<=6)?n:1;
-  return `<div class="dice-box${rolling?' rolling':''}" title="${v}"><div class="dice-face" data-n="${v}"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>`;
+  const faces=['\u2680','\u2681','\u2682','\u2683','\u2684','\u2685'];
+  if(rolling)return `<div class="dice-box rolling" style="font-size:40px;line-height:1">🎲</div>`;
+  const v=(n>=1&&n<=6)?n:0;
+  if(!v)return `<div class="dice-box" style="font-size:40px;line-height:1">🎲</div>`;
+  return `<div class="dice-box" style="font-size:48px;line-height:1" title="${v}">${faces[v-1]}</div>`;
 }
 V.snakes=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🐍</div>
 <h3>مار و پله</h3><p>صفحه کلاسیک با مارهای رنگی و نردبان. اول به ۱۰۰ برس.</p>
@@ -997,7 +1000,7 @@ V.snP=()=>{
   <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px;align-items:center">
   ${D.pos.map((p,i)=>`<span class="chip" style="border:2px solid ${SN_COL[i]};background:${SN_COL[i]}33;color:#fff">${esc(names[i])}: <b>${fa(p)}</b></span>`).join('')}
   </div>
-  <div style="text-align:center;margin:12px 0 4px">${diceHtml(D.dice||0,D.rolling)}${D.dice&&!D.rolling?`<div style="color:#fff;font-size:15px;font-weight:800;margin-top:4px">عدد تاس: ${fa(D.dice)}</div>`:''}</div>
+  <div style="text-align:center;margin:12px 0 4px">${diceHtml(D.dice||0,D.rolling)}${(!D.rolling&&D.dice>=1&&D.dice<=6)?`<div style="color:#fff;font-size:16px;font-weight:800;margin-top:6px">عدد تاس: ${fa(D.dice)}</div>`:(D.rolling?`<div style="color:#ffecb3;margin-top:6px">در حال چرخش…</div>`:'')}</div>
   <button class="btn" data-a="snRoll" style="--c:#66bb6a;width:100%;font-size:17px" ${D.rolling?'disabled':''}>🎲 ${D.rolling?'تاس می‌چرخد…':'تاس بینداز'}</button>
   </div>`;
   return html;
@@ -1070,10 +1073,10 @@ function ludoBoardSvg(D,names,turn){
 
   // خانه رنگی (۵ خانه) با فاصله از مرکز
   const homeRC=[
-    [[12,7],[11,7],[10,7],[9,7],[8,7]], // آبی
-    [[7,2],[7,3],[7,4],[7,5],[7,6]],    // قرمز
-    [[2,7],[3,7],[4,7],[5,7],[6,7]],    // زرد
-    [[7,12],[7,11],[7,10],[7,9],[7,8]]  // سبز
+    [[13,7],[12,7],[11,7],[10,7],[9,7]], // آبی — خانه چسبیده به ★ سفید می‌ماند
+    [[7,1],[7,2],[7,3],[7,4],[7,5]],    // قرمز
+    [[1,7],[2,7],[3,7],[4,7],[5,7]],    // زرد
+    [[7,13],[7,12],[7,11],[7,10],[7,9]]  // سبز
   ];
   const homeCol=['#1e88e5','#e53935','#fdd835','#43a047'];
   const homeSet={};
@@ -1183,7 +1186,7 @@ V.ldP=()=>{
   html+=`</div>`;
   html+=`<div class="card" style="padding:6px;background:linear-gradient(180deg,#5c6bc0,#3949ab)">
   <div class="board-wrap">${ludoBoardSvg(D,names,turn)}</div>
-  <div style="text-align:center;margin:10px 0">${diceHtml(D.dice||0,D.rolling)}${D.dice&&!D.rolling?`<div style="color:#fff;font-size:15px;font-weight:800;margin-top:4px">عدد تاس: ${fa(D.dice)}</div>`:''}</div>
+  <div style="text-align:center;margin:10px 0">${diceHtml(D.dice||0,D.rolling)}${(!D.rolling&&D.dice>=1&&D.dice<=6)?`<div style="color:#fff;font-size:16px;font-weight:800;margin-top:6px">عدد تاس: ${fa(D.dice)}</div>`:(D.rolling?`<div style="color:#ffecb3;margin-top:6px">در حال چرخش…</div>`:'')}</div>
   <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:8px">`;
   D.tokens[turn].forEach((v,ti)=>{
     const PL=D.pathLen||60;const label=v===0?'خانه':v>PL?('خانه'+fa(v-PL)):fa(v);
@@ -1216,10 +1219,17 @@ function ludoRoll(){
       else if(v>0&&v<=PL&&v+dice<=HEND)moves.push(ti);
       else if(v>PL&&v+dice<=HEND)moves.push(ti);
     });
-    if(!moves.length){D2.dice=0;D2.extra=0;BRD.local.turn=D2.turn=(turn+1)%D2.np;say('حرکت ممکن نیست')}
-    else say('تاس: '+fa(dice));
-    if(BRD.room)brdSaveRoom(BRD.local);
-    show('ldP');
+    if(!moves.length){
+      D2.extra=0;BRD.local.turn=D2.turn=(turn+1)%D2.np;
+      say('تاس '+fa(dice)+' — حرکت ممکن نیست');
+      if(BRD.room)brdSaveRoom(BRD.local);
+      show('ldP');
+      setTimeout(function(){if(BRD.local&&BRD.local.data){BRD.local.data.dice=0;if(cur==='ldP')show('ldP')}},1500);
+    }else{
+      say('تاس: '+fa(dice));
+      if(BRD.room)brdSaveRoom(BRD.local);
+      show('ldP');
+    }
   },900);
 }
 function ludoTok(p,ti){
