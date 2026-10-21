@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v7.0</title>
+<title>برقی و خانهٔ هوشمند v7.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -396,22 +396,28 @@ const SAFE_POOL=[
 ];
 function deviceFace(it){
   const bg=it.col||'#ffffff22';
-  const border=it.found?(it.w?'#3ee0a3':'#ff5d7a'):(it.w?'#ff8a65':'#ffffff33');
+  const border=it.found?(it.w?'#3ee0a3':'#ff5d7a'):'#ffffff44';
   const mark=it.found?(it.w?'✓':'✗'):'';
   return `<div style="width:100%;height:100%;border-radius:14px;background:linear-gradient(160deg,${bg},#1a1438);border:2px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;min-height:88px;box-shadow:0 4px 12px #0004">
-    <div style="font-size:34px;line-height:1.1">${it.e}</div>
-    <div style="font-size:10px;font-weight:800;margin-top:2px;text-align:center;line-height:1.2;color:#fffde7">${it.found?mark+' ':'💡 '}${esc(it.t.length>18?it.t.slice(0,16)+'…':it.t)}</div>
+    <div style="font-size:34px;line-height:1">${it.e||'📦'}</div>
+    <div style="font-size:11px;opacity:.9;text-align:center;margin-top:2px;line-height:1.2">${esc(it.t||'')}</div>
+    ${mark?`<div style="font-size:16px;margin-top:2px">${mark}</div>`:''}
   </div>`;
 }
+
+function nightRunSeed(){
+  if(NG&&NG.practice){if(!NG._pSeed)NG._pSeed=((Date.now()^Math.random()*1e9)|0)>>>0;return NG._pSeed}
+  return nightSeed();
+}
 function dealNightBoard(){
-  // دقیقاً ۵ پرمصرف + ۱۰ بی‌خطر؛ با shuffle فقط جایشان عوض می‌شود
+  const seed=nightRunSeed();
   if(!NG.targets||!NG.targets.length){
-    const g=mb(nightSeed()+7);
+    const g=mb(seed+7);
     const w=WASTE_POOL.map((_,i)=>i);
     for(let i=w.length-1;i>0;i--){const j=g()*(i+1)|0;const t=w[i];w[i]=w[j];w[j]=t}
     NG.targets=w.slice(0,5).map(i=>({...WASTE_POOL[i]}));
   }
-  const g2=mb(nightSeed()+(NG.shuffle|0)*13+3);
+  const g2=mb(seed+(NG.shuffle|0)*13+3);
   const s=SAFE_POOL.map((_,i)=>i);
   for(let i=s.length-1;i>0;i--){const j=g2()*(i+1)|0;const t=s[i];s[i]=s[j];s[j]=t}
   const safes=s.slice(0,10).map(i=>({...SAFE_POOL[i]}));
@@ -421,6 +427,7 @@ function dealNightBoard(){
   for(let i=board.length-1;i>0;i--){const j=g2()*(i+1)|0;const t=board[i];board[i]=board[j];board[j]=t}
   return board.map((it,idx)=>({...it,found:it.w?!!foundIds[it.id]:!!it.found,_i:idx}));
 }
+
 
 
 V.escape=()=>{
@@ -441,7 +448,7 @@ function startNight(practice){
     const bonus=(typeof upBonus==='function')?upBonus():{time:0,score:0};
     if(typeof NG!=='undefined'&&NG&&NG._iv)clearInterval(NG._iv);
     if(typeof NG!=='undefined'&&NG&&NG._sh)clearInterval(NG._sh);
-    NG={practice:!!practice,stage:'hunt',t:120+(bonus.time||0),score:0,need:5,found:0,foundIds:{},targets:null,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),h:0};
+    NG={practice:!!practice,stage:'hunt',t:120+(bonus.time||0),score:0,penalty:0,need:5,found:0,foundIds:{},targets:null,shuffle:0,board:[],q:null,qi:0,puzzle:null,watt:null,over:0,started:Date.now(),elapsed:0,finalTime:0,_pSeed:0};
     NG.board=dealNightBoard();
     if(!NG.board||NG.board.length<10){say('خطا در چیدن صفحه');return}
     show('nrun');
@@ -459,51 +466,73 @@ function nightTick(){
 }
 function nightFail(msg){
   if(!NG||NG.over)return;NG.over=1;clearInterval(NG._iv);clearInterval(NG._sh);
+  const elapsed=Math.max(1,Math.round((Date.now()-NG.started)/1000));
+  NG.elapsed=elapsed;NG.finalTime=elapsed+(NG.penalty|0);
   sfx.no();say(msg||'تمام');
   show('nres');
 }
 function nightWin(){
-  if(!NG||NG.over)return;NG.over=1;clearInterval(NG._iv);clearInterval(NG._sh);
-  const elapsed=Math.max(1,Math.round((Date.now()-NG.started)/1000));
-  NG.elapsed=elapsed;
-  if(!NG.practice){
-    S.nightDone=today();
-    const pts=Math.max(3,12-Math.floor(elapsed/15))+Math.floor(NG.score/5)+upBonus().score;
-    add(pts);NG.pts=pts;
-    // local night ranking
-    try{
-      const k='barghi_night_'+today();
-      const arr=JSON.parse(localStorage.getItem(k)||'[]');
-      arr.push({n:me(),s:NG.score,t:elapsed,pts:pts});
-      arr.sort((a,b)=>a.t-b.t||b.s-a.s);
-      localStorage.setItem(k,JSON.stringify(arr.slice(0,20)));
-      NG.rank=arr.findIndex(x=>x.t===elapsed&&x.n===me())+1;
-    }catch(e){}
-  }
-  sfx.win();show('nres');
+  if(!NG)return;
+  if(NG.over){show('nres');return}
+  NG.over=1;
+  try{clearInterval(NG._iv)}catch(e){}
+  try{clearInterval(NG._sh)}catch(e){}
+  try{
+    const elapsed=Math.max(1,Math.round((Date.now()-(NG.started||Date.now()))/1000));
+    NG.elapsed=elapsed;
+    NG.finalTime=elapsed+(NG.penalty|0);
+    if(!NG.practice){
+      try{S.nightDone=today()}catch(e){}
+      try{
+        const pts=Math.max(3,15-Math.floor(NG.finalTime/12))+((typeof upBonus==='function'?upBonus():{score:0}).score||0);
+        if(typeof add==='function')add(pts);
+        NG.pts=pts;
+      }catch(e){}
+      try{
+        const k='barghi_night_'+today();
+        const arr=JSON.parse(localStorage.getItem(k)||'[]');
+        arr.push({n:me(),t:NG.finalTime,pen:NG.penalty|0,raw:elapsed});
+        arr.sort((a,b)=>a.t-b.t);
+        localStorage.setItem(k,JSON.stringify(arr.slice(0,30)));
+        NG.rank=arr.findIndex(x=>x.t===NG.finalTime&&x.n===me())+1;
+      }catch(e){}
+    }
+  }catch(e){console.error('nightWin',e)}
+  try{sfx.win()}catch(e){}
+  show('nres');
 }
+
 V.nrun=()=>{
   if(!NG)return V.escape();
-  const bar=`<div class="bar"><span class="chip">⏱ <b id="nt">${fa(NG.t)}</b></span><span class="chip">⭐ ${fa(NG.score)}</span><span class="chip">${NG.stage==='hunt'?'🔍 '+fa(NG.found)+'/'+fa(NG.need):NG.stage}</span><button class="chip" data-a="escape">✖️</button></div>`;
+  const elapsed=Math.max(0,Math.round((Date.now()-NG.started)/1000));
+  const bar=`<div class="bar"><span class="chip">⏱ مانده <b id="nt">${fa(NG.t)}</b></span><span class="chip">⏱ گذشته ${fa(elapsed)}</span><span class="chip">⚠️ جریمه +${fa(NG.penalty|0)}ث</span><span class="chip">${NG.stage==='hunt'?'🔍 '+fa(NG.found)+'/'+fa(NG.need):NG.stage}</span><button class="chip" data-a="escape">✖️</button></div>`;
   if(NG.stage==='hunt'){
-    return bar+`<div class="card"><b>مرحله ۱ — شکار ۵ وسیلهٔ پرمصرف</b><p style="font-size:13px">بین ۱۵ وسیله، فقط <b>۵ تا پرمصرف</b> را پیدا کن. بقیه بی‌خطرند (−۱). هر ۸ ثانیه جایشان عوض می‌شود. با پیدا کردن هر ۵ تا → مرحله بعد.</p>
+    return bar+`<div class="card"><b>مرحله ۱ — شکار ۵ وسیلهٔ پرمصرف</b><p style="font-size:13px">بین ۱۵ وسیله، فقط <b>۵ وسیله پرمصرف</b> را پیدا کن. ظاهر همه اول یکسان است. انتخاب اشتباه <b>+۵ ثانیه جریمه</b> به زمان پایان اضافه می‌کند. هر شب وسایل فرق می‌کنند.</p>
     <div class="g4">${NG.board.map((it,i)=>`<button class="lv" data-a="nx${i}" style="--c:transparent;padding:2px;min-height:92px;background:transparent;box-shadow:none">${deviceFace(it)}</button>`).join('')}</div></div>`;
   }
   if(NG.stage==='quiz'){
     const Q=NG.q;if(!Q)return bar+'<div class="card">...</div>';
-    return bar+`<div class="card"><b>مرحله ۲ — کوییز</b><h3>${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="nq${j}">${o}</button>`).join('')}</div>`;
+    return bar+`<div class="card"><b>مرحله ۲ — کوییز امشب</b><h3>${Q.q}</h3>${Q.o.map((o,j)=>`<button class="opt" data-a="nq${j}">${o}</button>`).join('')}<p style="font-size:12px;opacity:.8">پاسخ اشتباه: +۸ ثانیه جریمه</p></div>`;
   }
   if(NG.stage==='puzzle'){
     const p=NG.puzzle;
-    return bar+`<div class="card"><b>مرحله ۳ — پازل وسیله</b><p>حروف به‌هم‌ریخته را به ترتیب درست لمس کن:</p>
-    <div style="font-size:28px;letter-spacing:4px;margin:8px 0">${esc(p.shown)}</div>
-    <div class="g4">${p.letters.map((ch,i)=>`<button class="lv" data-a="np${i}" style="--c:#7e57c2;min-height:56px;font-size:22px" ${p.used[i]?'disabled':''}>${ch}</button>`).join('')}</div>
-    <p>ساخته‌شده: <b>${esc(p.build)}</b></p></div>`;
+    return bar+`<div class="card" style="text-align:center"><b>مرحله ۳ — پازل شکل وسیله</b>
+    <div style="font-size:64px;margin:8px 0;filter:${p.done?'none':'grayscale(0.3)'}">${p.emoji}</div>
+    <p style="font-size:15px"><b>${esc(p.name)}</b></p>
+    <p style="font-size:13px">خانه‌ها را به ترتیب شماره لمس کن تا شکل کامل شود</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:220px;margin:10px auto">
+    ${p.order.map((num,i)=>`<button class="lv" data-a="np${i}" style="--c:${p.revealed[i]?'#66bb6a':'#5c6bc0'};min-height:56px;font-size:20px" ${p.revealed[i]?'disabled':''}>${p.revealed[i]?'✓':fa(num)}</button>`).join('')}
+    </div>
+    ${p.done?`<div class="card" style="background:#1b5e2033;margin-top:8px;text-align:right"><b>💡 مصرف بهینه:</b><p style="margin:6px 0 0;font-size:14px">${esc(p.tip)}</p></div>
+    <button class="btn" data-a="nnext" style="--c:#7e57c2;width:100%;margin-top:8px">ادامه → توان وسیله</button>`:''}
+    </div>`;
   }
   if(NG.stage==='watt'){
-    const w=NG.watt;
-    return bar+`<div class="card"><b>مرحله ۴ — توان وسیله</b><div style="font-size:56px">${w.e}</div><p>${esc(w.t)}</p><p>تقریباً چند وات؟</p>
-    ${w.opts.map((o,j)=>`<button class="opt" data-a="nw${j}">${fa(o)} وات</button>`).join('')}</div>`;
+    const w=NG.watt||{e:'💡',t:'?',opts:[],c:0};
+    return bar+`<div class="card" style="text-align:center"><b>مرحله ۴ — توان وسیله امشب</b><div style="font-size:56px">${w.e}</div><p style="font-size:18px"><b>${esc(w.t)}</b></p><p>تقریباً چند وات مصرف دارد؟</p>
+    ${(w.opts||[]).map((o,j)=>`<button class="opt" data-a="nw${j}">${fa(o)} وات</button>`).join('')}
+    <p style="font-size:12px;opacity:.8">اشتباه: +۱۰ ثانیه جریمه · بعد از ۳ اشتباه خودکار تمام می‌شود</p>
+    <button class="btn" data-a="nfinish" style="--c:#ffd54a;width:100%;margin-top:10px;color:#333">ثبت و پایان فرار</button></div>`;
   }
   return bar;
 };
@@ -513,69 +542,139 @@ function nightHunt(i){
   it.found=1;
   if(it.w){
     if(!NG.foundIds)NG.foundIds={};
-    if(!NG.foundIds[it.id]){NG.foundIds[it.id]=1;NG.found++;NG.score+=2;sfx.ok();say('پیدا شد: '+it.t)}
+    if(!NG.foundIds[it.id]){NG.foundIds[it.id]=1;NG.found++;sfx.ok();say('پیدا شد: '+it.t)}
     else {show('nrun');return}
-  }else{NG.score=Math.max(0,NG.score-1);sfx.no();say('این پرمصرف نیست! −۱')}
+  }else{NG.penalty=(NG.penalty|0)+5;sfx.no();say('پرمصرف نیست! +۵ ثانیه جریمه')}
   if(NG.found>=NG.need){clearInterval(NG._sh);nightToQuiz();return}
   show('nrun');
 }
 function nightToQuiz(){
   NG.stage='quiz';NG.qi=0;
-  const id=seededPick(nightSeed()+3,1,NQ)[0];
-  NG.q=mk(id,mb(nightSeed()+9));
-  say('مرحله کوییز!');show('nrun');
+  const seed=nightRunSeed();
+  // ترجیح سؤال آموزشی جدید هر شب
+  let id=354+(seed%300);
+  if(typeof EQ==='undefined'||!EQ.length)id=seededPick(seed+3,1,NQ)[0];
+  NG.q=mk(id,mb(seed+9));
+  say('مرحله کوییز امشب!');show('nrun');
 }
 function nightQuizAns(j){
   if(!NG||NG.stage!=='quiz'||!NG.q||NG.q._d)return;
   NG.q._d=1;
   const ok=NG.q.o[j]===NG.q.c;
-  if(ok){NG.score+=3;sfx.ok();nightToPuzzle()}
-  else{NG.score=Math.max(0,NG.score-1);sfx.no();say(NG.q.ex||'اشتباه');NG.q._d=0;const id=seededPick(nightSeed()+3+NG.qi+1,1,NQ)[0];NG.q=mk(id,mb(nightSeed()+11+NG.qi));NG.qi++;show('nrun')}
+  if(ok){sfx.ok();say(NG.q.ex||'درست!');setTimeout(()=>nightToPuzzle(),600)}
+  else{
+    NG.penalty=(NG.penalty|0)+8;sfx.no();say((NG.q.ex||'اشتباه')+' · +۸ ثانیه');
+    NG.q._d=0;NG.qi++;
+    const seed=nightRunSeed();
+    let id=354+((seed+NG.qi*17)%300);
+    if(typeof EQ==='undefined'||!EQ.length)id=seededPick(seed+3+NG.qi,1,NQ)[0];
+    NG.q=mk(id,mb(seed+11+NG.qi));
+    show('nrun');
+  }
 }
+// پازل شکل وسیله + نکته مصرف بهینه
+const NIGHT_DEVICES=[
+  {name:'یخچال',e:'🧊',tip:'دمای یخچال حدود ۴ درجه و فریزر ۱۸- کافی است. در را کوتاه باز کنید و پشت دستگاه گردوغبار نگیرد تا کم‌مصرف بماند.'},
+  {name:'تلویزیون',e:'📺',tip:'روشنایی صفحه را متعادل کنید و وقتی کسی تماشا نمی‌کند خاموش کنید؛ حالت آماده به کار هم برق می‌کشد.'},
+  {name:'کولر گازی',e:'❄️',tip:'دمای ۲۴ تا ۲۶ درجه معمولاً کافی است. فیلتر را تمیز نگه دارید و درز پنجره را ببندید.'},
+  {name:'لباسشویی',e:'🧺',tip:'با ظرفیت کامل و آب سرد یا ولرم بشویید؛ برنامه کوتاه وقتی لباس خیلی کثیف نیست کافی است.'},
+  {name:'سشوار',e:'💨',tip:'قدرت متوسط و زمان کوتاه‌تر مو را خشک می‌کند؛ استفاده طولانی مصرف را خیلی بالا می‌برد.'},
+  {name:'اتو',e:'👔',tip:'لباس‌ها را دسته‌ای اتو کنید و قبل از اتمام، اتو را زودتر خاموش کنید تا از حرارت باقی‌مانده استفاده شود.'},
+  {name:'لپ‌تاپ',e:'💻',tip:'روشنایی صفحه را کم کنید، خواب خودکار بگذارید و شارژر را بعد از پر شدن از پریز بکشید.'},
+  {name:'کتری برقی',e:'🫖',tip:'فقط به اندازه نیاز آب بجوشانید؛ جوشاندن آب اضافه انرژی را هدر می‌دهد.'},
+  {name:'جاروبرقی',e:'🧹',tip:'کیسه یا مخزن را خالی نگه دارید تا موتور کمتر زیر بار باشد و زودتر کار تمام شود.'},
+  {name:'لامپ',e:'💡',tip:'لامپ LED جای رشته‌ای بگذارید و هنگام خروج از اتاق خاموش کنید.'},
+  {name:'بخاری برقی',e:'🔥',tip:'اتاق را درزگیری کنید و دما را معتدل بگذارید؛ بخاری برقی در پیک مصرف فشار زیادی به شبکه می‌آورد.'},
+  {name:'مایکروویو',e:'📡',tip:'برای گرم کردن کم‌حجم مناسب است؛ در را تمیز نگه دارید تا بازده حفظ شود.'}
+];
 function nightToPuzzle(){
   NG.stage='puzzle';
-  const names=['یخچال','تلویزیون','لپ‌تاپ','کولر','جاروبرقی','مایکروویو','پنکه','اتو'];
-  const name=names[nightSeed()%names.length];
-  const letters=name.split('');
-  const g=mb(nightSeed()+21);
-  const order=letters.map((_,i)=>i);
-  for(let i=order.length-1;i>0;i--){const j=g()*(i+1)|0;const t=order[i];order[i]=order[j];order[j]=t}
-  NG.puzzle={target:name,letters:order.map(i=>letters[i]),used:order.map(()=>0),build:'',shown:order.map(i=>letters[i]).join(' ')};
-  say('پازل وسیله!');show('nrun');
+  const seed=nightRunSeed();
+  const dev=NIGHT_DEVICES[seed%NIGHT_DEVICES.length];
+  const nums=[1,2,3,4,5,6,7,8,9];
+  const g=mb(seed+21);
+  for(let i=nums.length-1;i>0;i--){const j=g()*(i+1)|0;const t=nums[i];nums[i]=nums[j];nums[j]=t}
+  NG.puzzle={name:dev.name,emoji:dev.e,tip:dev.tip,order:nums,revealed:nums.map(()=>0),next:1,done:0};
+  say('پازل شکل '+dev.name);show('nrun');
 }
 function nightPuzzle(i){
-  if(!NG||NG.stage!=='puzzle')return;
-  const p=NG.puzzle;if(p.used[i])return;
-  p.used[i]=1;p.build+=p.letters[i];
-  if(p.build===p.target){NG.score+=4;sfx.ok();nightToWatt();return}
-  if(p.target.indexOf(p.build)!==0){NG.score=Math.max(0,NG.score-1);sfx.no();p.build='';p.used=p.used.map(()=>0);say('از اول! −۱')}
+  if(!NG||NG.stage!=='puzzle'||NG.over)return;
+  const p=NG.puzzle;if(!p||p.done||p.revealed[i])return;
+  if(Number(p.order[i])===Number(p.next)){
+    p.revealed[i]=1;p.next++;
+    try{sfx.ok()}catch(e){}
+    if(p.next>9){
+      p.done=1;say('شکل کامل شد! نکته را بخوان');
+      show('nrun');
+      // اگر دکمه زده نشد بعد از ۴ ثانیه خودکار برو
+      setTimeout(function(){if(NG&&NG.stage==='puzzle'&&NG.puzzle&&NG.puzzle.done)nightToWatt()},4000);
+      return;
+    }
+  }else{NG.penalty=(NG.penalty|0)+3;try{sfx.no()}catch(e){}say('ترتیب اشتباه · +۳ ثانیه')}
   show('nrun');
 }
+
+ACT.nfinish=()=>{try{nightWin()}catch(e){show('nres')}};
+ACT.nnext=()=>{try{if(NG&&NG.puzzle&&NG.puzzle.done)nightToWatt();else if(NG&&NG.stage==='watt')nightWin()}catch(e){console.error(e);nightWin()}};
+const NIGHT_WATTS=[
+  ['💡','لامپ LED',10],['💡','لامپ رشته‌ای',60],['📺','تلویزیون',100],['🧊','یخچال',150],
+  ['💨','سشوار',1800],['🧺','لباسشویی',500],['💻','لپ‌تاپ',65],['🔌','شارژر موبایل',5],
+  ['🌀','پنکه',50],['🔥','بخاری برقی',2000],['❄️','کولر گازی',1500],['🫖','کتری برقی',2200],
+  ['🧹','جاروبرقی',1400],['📡','مایکروویو',1000],['👔','اتو',1200],['🎮','کنسول بازی',120]
+];
 function nightToWatt(){
+  if(!NG)return;
   NG.stage='watt';
-  const items=[['💡','لامپ LED',10],[ '📺','تلویزیون',100],[ '🧊','یخچال',150],[ '💨','سشوار',1800],[ '🧺','لباسشویی',500],[ '💻','لپ‌تاپ',65]];
-  const it=items[nightSeed()%items.length];
-  const correct=it[2];
-  const opts=[correct,Math.max(5,correct-40),correct+80,Math.round(correct*1.5)];
-  const g=mb(nightSeed()+33);
-  for(let i=3;i>0;i--){const j=g()*(i+1)|0;const t=opts[i];opts[i]=opts[j];opts[j]=t}
-  NG.watt={e:it[0],t:it[1],c:correct,opts:opts};
-  say('حدس توان!');show('nrun');
-}
-function nightWatt(j){
-  if(!NG||NG.stage!=='watt')return;
-  const w=NG.watt;
-  if(w.opts[j]===w.c){NG.score+=5;sfx.ok();nightWin()}
-  else{NG.score=Math.max(0,NG.score-1);sfx.no();say('نه، حدود '+fa(w.c)+' وات');}
+  const seed=nightRunSeed();
+  const pool=typeof NIGHT_WATTS!=='undefined'?NIGHT_WATTS:[['💡','لامپ LED',10],['📺','تلویزیون',100],['🧊','یخچال',150]];
+  const it=pool[(Math.abs(seed*3+5))%pool.length];
+  const correct=Number(it[2]);
+  let opts=[correct,Math.max(5,correct-Math.round(correct*0.3)||5),correct+Math.round(correct*0.4||10),Math.round(correct*1.8||20)];
+  opts=opts.map(Number);
+  const uniq=[];
+  opts.forEach(function(x){if(uniq.indexOf(x)<0)uniq.push(x)});
+  while(uniq.length<4)uniq.push(correct+10*uniq.length);
+  opts=uniq.slice(0,4);
+  const g=mb(seed+33);
+  for(let i=opts.length-1;i>0;i--){const j=g()*(i+1)|0;const t=opts[i];opts[i]=opts[j];opts[j]=t}
+  NG.watt={e:it[0],t:it[1],c:correct,opts:opts,tries:0};
+  say('حدس توان '+it[1]);
   show('nrun');
 }
+
+function nightWatt(j){
+  if(!NG||NG.stage!=='watt'||NG.over)return;
+  const w=NG.watt;if(!w)return;
+  const pick=Number(w.opts[j]);
+  const correct=Number(w.c);
+  if(pick===correct){
+    try{sfx.ok()}catch(e){}
+    say('درست! پایان فرار');
+    setTimeout(function(){nightWin()},300);
+  }else{
+    NG.penalty=(NG.penalty|0)+10;
+    w.tries=(w.tries|0)+1;
+    try{sfx.no()}catch(e){}
+    say('حدود '+fa(correct)+' وات · +۱۰ ثانیه');
+    if(w.tries>=3){
+      say('۳ تلاش — پایان با جریمه');
+      setTimeout(function(){nightWin()},500);
+      return;
+    }
+    show('nrun');
+  }
+}
+
 V.nres=()=>{
   if(!NG)return V.escape();
-  const rank=NG.rank?('رتبه محلی تقریبی: '+fa(NG.rank)): '';
-  return `<div class="card" style="text-align:center"><div style="font-size:52px">${NG.over&&NG.elapsed?'🏆':'⏰'}</div>
-  <h2>${NG.elapsed?'فرار موفق!':'تمام شد'}</h2>
-  <p>امتیاز مرحله: ${fa(NG.score)}${NG.elapsed?' · زمان: '+fa(NG.elapsed)+' ثانیه':''}</p>
-  <p>${NG.practice?'حالت تمرین (رتبه ثبت نشد)':(NG.pts?('+'+fa(NG.pts)+' امتیاز هفته'):'')}</p>
+  const ft=NG.finalTime||((NG.elapsed||0)+(NG.penalty|0));
+  const rank=NG.rank?('رتبه بر اساس زمان: '+fa(NG.rank)): '';
+  return `<div class="card" style="text-align:center"><div style="font-size:52px">${NG.elapsed?'🏆':'⏰'}</div>
+  <h2>${NG.elapsed?'فرار کامل شد!':'وقت تمام شد'}</h2>
+  <p style="font-size:22px;margin:12px 0">زمان نهایی: <b>${fa(ft)}</b> ثانیه</p>
+  <p style="font-size:14px">زمان خالص: ${fa(NG.elapsed||0)}ث · جریمه اشتباهات: +${fa(NG.penalty|0)}ث</p>
+  <p style="font-size:13px;opacity:.9">هرکس زمان نهایی کمتری داشته باشد بالاتر است</p>
+  <p>${NG.practice?'حالت تمرین (رتبه رسمی ثبت نشد)':(NG.pts?('پاداش هفته: +'+fa(NG.pts)): '')}</p>
   <p><small>${rank}</small></p>
   <button class="btn" data-a="escape" style="--c:#7e57c2">بازگشت</button>${BK}</div>`;
 };
@@ -1179,7 +1278,104 @@ function ludoTok(p,ti){
   if(!again&&D.winner<0)st.turn=D.turn=(turn+1)%D.np;
   if(BRD.room)brdSaveRoom(st);
   show('ldP');
+}ACT.boards=()=>show('boards');
+
+
+// ----- منچ: منو + صفحه بازی + تاس -----
+V.ludo=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🏠</div>
+<h3>منچ</h3><p>صفحه کلاسیک صلیبی. برای خروج از خانه تاس ۶ لازم است. ۲ یا ۴ نفر.</p>
+<button class="btn" data-a="ld2" style="--c:#ef5350;width:100%">۲ نفره محلی</button>
+<button class="btn" data-a="ld4" style="--c:#e53935;width:100%;margin-top:8px">۴ نفره محلی</button>
+<button class="btn" data-a="ldO" style="--c:#5c6bc0;width:100%;margin-top:8px">آنلاین با کد اتاق</button>
+${BK}</div>`;
+ACT.ludo=()=>show('ludo');
+ACT.ld2=()=>{BRD.kind='ludo';BRD.mode='local';BRD.room=null;BRD.local={phase:'play',players:[{name:'آبی'},{name:'قرمز'}],data:ludoNew(2),turn:0};show('ldP')};
+ACT.ld4=()=>{BRD.kind='ludo';BRD.mode='local';BRD.room=null;BRD.local={phase:'play',players:[{name:'آبی'},{name:'قرمز'},{name:'زرد'},{name:'سبز'}],data:ludoNew(4),turn:0};show('ldP')};
+ACT.ldO=()=>show('ldL');
+V.ldL=()=>`<div class="card" style="text-align:center"><h3>منچ آنلاین</h3>
+<button class="btn" data-a="ldC2" style="--c:#ef5350;width:100%">اتاق ۲ نفره</button>
+<button class="btn" data-a="ldC4" style="--c:#e53935;width:100%;margin-top:6px">اتاق ۴ نفره</button>
+<input id="lc" placeholder="کد اتاق" maxlength="6" style="text-align:center;margin:10px 0;width:100%;padding:10px;border-radius:12px;border:0">
+<button class="btn" data-a="ldJ" style="--c:#5c6bc0;width:100%">ورود با کد</button>
+${BK}</div>`;
+ACT.ldC2=()=>{BRD.kind='ludo';brdCreateRoom(2);};
+ACT.ldC4=()=>{BRD.kind='ludo';brdCreateRoom(4);};
+ACT.ldJ=()=>{const c=(($('#lc')&&$('#lc').value)||'').trim().toUpperCase();if(c.length<3){say('کد را بنویس');return}BRD.kind='ludo';brdJoinRoom(c);};
+function ludoRoll(){
+  const st=BRD.local;if(!st||!st.data)return;
+  const D=st.data;if(D.winner>=0||D.rolling)return;
+  const turn=st.turn!=null?st.turn:D.turn;
+  if(BRD.mode!=='local'&&BRD.room&&typeof uid!=='undefined'&&uid){
+    const seat=(st.players||[]).findIndex(p=>String(p.uid)===String(uid));
+    if(seat>=0&&seat!==turn){say('نوبت تو نیست');return}
+  }
+  if(D.dice&&D.extra){say('اول مهره را حرکت بده');return}
+  D.rolling=1;show('ldP');try{sfx.tap()}catch(e){}
+  const dice=1+(Math.random()*6|0);
+  setTimeout(function(){
+    if(!BRD.local||!BRD.local.data)return;
+    const D2=BRD.local.data;D2.rolling=0;D2.dice=dice;D2.extra=1;
+    const PL=D2.pathLen||60;const HEND=PL+5;
+    const moves=[];
+    D2.tokens[turn].forEach(function(v,ti){
+      if(v===0&&dice===6)moves.push(ti);
+      else if(v>0&&v<=PL&&v+dice<=HEND)moves.push(ti);
+      else if(v>PL&&v+dice<=HEND)moves.push(ti);
+    });
+    if(!moves.length){
+      D2.extra=0;BRD.local.turn=D2.turn=(turn+1)%D2.np;
+      say('تاس '+fa(dice)+' — حرکت ممکن نیست');
+      if(BRD.room)try{brdSaveRoom(BRD.local)}catch(e){}
+      show('ldP');
+      setTimeout(function(){if(BRD.local&&BRD.local.data){BRD.local.data.dice=0;if(cur==='ldP')show('ldP')}},1500);
+    }else{
+      say('تاس: '+fa(dice));
+      if(BRD.room)try{brdSaveRoom(BRD.local)}catch(e){}
+      show('ldP');
+    }
+  },900);
 }
+ACT.ldRoll=()=>ludoRoll();
+ACT.ldTok=()=>{};
+// data-a lt0_1 etc via click router - register patterns in click if needed
+V.ldP=()=>{
+  try{
+    const st=BRD.local;if(!st||!st.data)return V.ludo();
+    const D=st.data;const turn=st.turn!=null?st.turn:D.turn;
+    const names=(st.players||[]).map((p,i)=>p.name||(typeof SN_NAME!=='undefined'?SN_NAME[i]:('P'+(i+1))));
+    const cols=typeof SN_COL!=='undefined'?SN_COL:['#1e88e5','#e53935','#fdd835','#43a047'];
+    let html=`<div class="bar"><span class="chip">نوبت: <b style="color:${cols[turn%4]}">${esc(names[turn]||'')}</b></span><button class="chip" data-a="boards">✖️</button></div>`;
+    if(D.winner>=0){
+      html+=`<div class="card" style="text-align:center"><div style="font-size:48px">🏆</div><h2>برنده: ${esc(names[D.winner]||'')}</h2>
+      <button class="btn" data-a="ludo" style="--c:#ef5350">بازی دوباره</button>${BK}</div>`;
+      return html;
+    }
+    // پنل بازیکن‌ها
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0">`;
+    for(let p=0;p<D.np;p++){
+      const home=D.tokens[p].filter(v=>v>=(D.pathLen||60)+5).length;
+      html+=`<div style="background:${cols[p%4]};color:#fff;border-radius:12px;padding:6px 10px;min-width:70px;text-align:center;outline:${p===turn?'2px solid #fff':'none'}"><b>${esc(names[p]||'')}</b><br><small>خانه: ${fa(home)}/۴</small></div>`;
+    }
+    html+=`</div>`;
+    html+=`<div class="board-wrap" style="display:flex;justify-content:center;margin:6px 0">${ludoBoardSvg(D,names,turn)}</div>`;
+    html+=`<div style="text-align:center;margin:8px 0">${diceHtml(D.dice||0,D.rolling)}${(!D.rolling&&D.dice>=1&&D.dice<=6)?`<div style="color:#fff;font-size:16px;font-weight:800;margin-top:4px">عدد تاس: ${fa(D.dice)}</div>`:(D.rolling?`<div style="color:#ffecb3;margin-top:4px">در حال چرخش…</div>`:'')}</div>`;
+    // مهره‌ها
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">`;
+    for(let ti=0;ti<4;ti++){
+      const v=D.tokens[turn][ti];
+      const label=v===0?'خانه':(v>(D.pathLen||60)?'پایان '+fa(v-(D.pathLen||60)):fa(v));
+      html+=`<button class="btn" data-a="lt${turn}_${ti}" style="--c:${cols[turn%4]};min-width:72px">مهره ${fa(ti+1)} · ${label}</button>`;
+    }
+    html+=`</div>`;
+    html+=`<button class="btn" data-a="ldRoll" style="--c:#ffd54a;width:100%;margin-top:10px;color:#333">🎲 تاس بینداز</button>`;
+    return html;
+  }catch(err){
+    console.error('ldP',err);
+    return `<div class="card"><h3>خطا در منچ</h3><p style="direction:ltr;font-size:12px">${esc(String(err&&err.message||err))}</p><button class="btn" data-a="ludo" style="--c:#ef5350">بازگشت</button></div>`;
+  }
+};
+
+
 
 Object.assign(ACT,{home:()=>show('home'),map:()=>show('map'),quiz:()=>show('quiz'),wheel:()=>show('wheel'),story:()=>show('media','s'),anim:()=>show('media','a'),lb:()=>show('lb'),daily:()=>show('daily'),escape:()=>show('escape'),shop:()=>show('shop'),team:()=>show('team'),hourly:()=>show('hourly'),vote:()=>show('vote'),boards:()=>show('boards'),dots:()=>show('dots'),snakes:()=>show('snakes'),ludo:()=>show('ludo'),snRoll:()=>snakesRoll(),ldRoll:()=>ludoRoll(),snd:()=>{S.snd=S.snd?0:1;save();hud()}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,c=a[0];if(ACT[a]){sfx.tap();ACT[a]()}else if(a.slice(0,2)=='mp'){sfx.tap();const kind=a[2],ix=+a.slice(3);show('media',{k:kind=='s'?'s':'a',ix:ix});}else if(a.slice(0,4)=='buy_'){sfx.tap();buyUp(a.slice(4))}else if(a.slice(0,2)=='dy'){sfx.tap();dailyAns(+a.slice(2))}else if(a.slice(0,2)=='hy'){sfx.tap();hourlyAns(+a.slice(2))}else if(a.slice(0,2)=='nx'){sfx.tap();nightHunt(+a.slice(2))}else if(a.slice(0,2)=='dH'){const p=a.slice(2).split('_');dotsMove('H',+p[0],+p[1])}else if(a.slice(0,2)=='dV'){const p=a.slice(2).split('_');dotsMove('V',+p[0],+p[1])}else if(a.slice(0,2)=='lt'){const p=a.slice(2).split('_');ludoTok(+p[0],+p[1])}else if(a.slice(0,2)=='nq'){sfx.tap();nightQuizAns(+a.slice(2))}else if(a.slice(0,2)=='np'){sfx.tap();nightPuzzle(+a.slice(2))}else if(a.slice(0,2)=='nw'){sfx.tap();nightWatt(+a.slice(2))}else if(a.slice(0,2)=='tj'){sfx.tap();teamVsAns(+a.slice(2))}else if(c=='L'){sfx.tap();play(+a.slice(1))}else if(c=='o')(cur=='dq'?dans:ans)(+a.slice(1));else if(c=='v'){av=AVS[+a.slice(1)];document.querySelectorAll('.avb').forEach((b,i)=>b.className='avb'+(AVS[i]==av?' on':''))}});
