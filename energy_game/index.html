@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>برقی و خانهٔ هوشمند v6.4</title>
+<title>برقی و خانهٔ هوشمند v6.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@500;800&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--y:#ffd54a;--g:#3ee0a3;--r:#ff5d7a;--card:#ffffff1c;--tx:#fff8e7;--ink:#2a1b00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -315,6 +315,7 @@ function iranParts(){
 }
 function hourKey(){const p=iranParts();return p.y+'-'+p.m+'-'+p.d+'-'+p.h}
 function daySeed(){const t=today();let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return h||1}
+function nightSeed(){const t=today();let h=0x4e17;for(let i=0;i<t.length;i++)h=(h*33+t.charCodeAt(i))>>>0;return h||1}
 function hourSeed(){const t=hourKey();let h=0;for(let i=0;i<t.length;i++)h=(h*33+t.charCodeAt(i))>>>0;return h||1}
 function seededPick(seed,n,mod){const out=[];let x=seed||1;while(out.length<n){x=(Math.imul(x,1664525)+1013904223)>>>0;const v=x%mod;if(out.indexOf(v)<0)out.push(v)}return out}
 function nightOpen(){const p=iranParts();return p.h===22||(p.h===21&&p.mi>=55)||(p.h===23&&p.mi<30)}
@@ -1030,80 +1031,94 @@ function snakesRoll(){
 // ----- منچ شبیه اپ کلاسیک (صفحه صلیبی دایره‌ای) -----
 function ludoNew(np){
   const tokens=[];for(let p=0;p<np;p++)tokens.push([0,0,0,0]);
-  return {tokens:tokens,np:np,turn:0,dice:0,rolling:0,extra:0,winner:-1,starts:[0,13,26,39]};
+  return {tokens:tokens,np:np,turn:0,dice:0,rolling:0,extra:0,winner:-1,starts:[0,15,30,45],pathLen:60};
 }
 // مختصات دایره‌های مسیر روی viewBox 0..100 (صلیب)
 function ludoBoardSvg(D,names,turn){
   const PC=SN_COL;
-  const step=5.6, origin=12.5, R=2.85;
+  const step=5.5, origin=13, R=2.65;
   const xy=(r,c)=>[origin+c*step, origin+r*step];
-  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:270px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
-  s+='<rect x="3" y="3" width="94" height="94" rx="8" fill="#e8d5b7" stroke="#5d4037" stroke-width="1.6"/>';
-  // yards: TL red, TR yellow, BL blue, BR green
-  s+='<rect x="5" y="5" width="33" height="33" rx="5" fill="#e53935" opacity="0.2"/>';
-  s+='<rect x="62" y="5" width="33" height="33" rx="5" fill="#fdd835" opacity="0.25"/>';
-  s+='<rect x="5" y="62" width="33" height="33" rx="5" fill="#1e88e5" opacity="0.2"/>';
-  s+='<rect x="62" y="62" width="33" height="33" rx="5" fill="#43a047" opacity="0.2"/>';
-  // path cells on cross (rows/cols 6-8)
-  for(let r=0;r<15;r++){
-    for(let c=0;c<15;c++){
-      if(!((r>=6&&r<=8)||(c>=6&&c<=8)))continue;
-      if(r===7&&c===7)continue;
-      if((r<6||r>8)&&(c<6||c>8))continue;
-      const [x,y]=xy(r,c);
-      let fill='#ffffff';
-      if(c===7&&r>=9&&r<=13)fill='#1e88e5';
-      if(r===7&&c>=1&&c<=5)fill='#e53935';
-      if(c===7&&r>=1&&r<=5)fill='#fdd835';
-      if(r===7&&c>=9&&c<=13)fill='#43a047';
-      s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+fill+'" stroke="#5d4037" stroke-width="0.65"/>';
-    }
+  // دقیقاً ۵۲ خانه مسیر اصلی (ساعت‌گرد از ورودی آبی)
+  if(!window.__LUDO_RC){
+    window.__LUDO_RC=[
+      // بازوی پایین — ستون چپ مسیر، از پایین به بالا
+      [13,6],[12,6],[11,6],[10,6],[9,6],[8,6],
+      // بازوی چپ — ردیف پایین، به چپ
+      [8,5],[8,4],[8,3],[8,2],[8,1],[8,0],
+      // بازوی چپ — ستون چپ، به بالا
+      [7,0],[6,0],[5,0],[4,0],[3,0],[2,0],[1,0],
+      // گوشه و بازوی بالا — ردیف بالا به راست
+      [0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],
+      // بازوی بالا — ستون راست، به پایین تا تقاطع
+      [1,8],[2,8],[3,8],[4,8],[5,8],[6,8],
+      // بازوی راست — ردیف بالا، به راست
+      [6,9],[6,10],[6,11],[6,12],[6,13],[6,14],
+      // بازوی راست — ستون راست، به پایین
+      [7,14],[8,14],[9,14],[10,14],[11,14],[12,14],[13,14],
+      // گوشه پایین‌راست و بازگشت
+      [14,14],[14,13],[14,12],[14,11],[14,10],[14,9],[14,8],
+      // بازوی پایین — ستون راست، به بالا تا نزدیک شروع
+      [13,8],[12,8],[11,8],[10,8],[9,8],[8,8]
+    ];
   }
+  const pathRC=window.__LUDO_RC;
+  // مسیر رنگی خانه (۵ خانه تا مرکز، با فاصله از ★)
+  const homeRC=[
+    [[12,7],[11,7],[10,7],[9,7],[8,7]],
+    [[7,2],[7,3],[7,4],[7,5],[7,6]],
+    [[2,7],[3,7],[4,7],[5,7],[6,7]],
+    [[7,12],[7,11],[7,10],[7,9],[7,8]]
+  ];
+  const homeCol=['#1e88e5','#e53935','#fdd835','#43a047'];
+  let s='<svg viewBox="0 0 100 100" style="width:100%;max-width:255px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 14px #0004)">';
+  s+='<rect x="2" y="2" width="96" height="96" rx="8" fill="#e8d5b7" stroke="#5d4037" stroke-width="1.5"/>';
+  s+='<rect x="4" y="4" width="34" height="34" rx="5" fill="#e53935" opacity="0.18"/>';
+  s+='<rect x="62" y="4" width="34" height="34" rx="5" fill="#fdd835" opacity="0.22"/>';
+  s+='<rect x="4" y="62" width="34" height="34" rx="5" fill="#1e88e5" opacity="0.18"/>';
+  s+='<rect x="62" y="62" width="34" height="34" rx="5" fill="#43a047" opacity="0.18"/>';
+  // فقط همان ۵۲ خانه
+  pathRC.forEach(rc=>{
+    const [x,y]=xy(rc[0],rc[1]);
+    s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="#ffffff" stroke="#5d4037" stroke-width="0.65"/>';
+  });
+  homeRC.forEach((arm,pi)=>{
+    arm.forEach(rc=>{
+      const [x,y]=xy(rc[0],rc[1]);
+      s+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="'+homeCol[pi]+'" stroke="#ffffff" stroke-width="0.5"/>';
+    });
+  });
   const [cx,cy]=xy(7,7);
-  s+='<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="#fff8e1" stroke="#5d4037" stroke-width="0.9"/>';
-  s+='<text x="'+cx+'" y="'+(cy+1.6)+'" text-anchor="middle" font-size="5.5" fill="#5d4037">★</text>';
-  // path for movement
-  if(!window.__LP){
-    const seq=[];
-    for(let r=13;r>=8;r--)seq.push([r,6]);
-    for(let c=5;c>=0;c--)seq.push([8,c]);
-    for(let r=7;r>=0;r--)seq.push([r,0]);
-    for(let c=1;c<=6;c++)seq.push([0,c]);
-    for(let r=1;r<=6;r++)seq.push([r,8]);
-    for(let c=9;c<=14;c++)seq.push([6,c]);
-    for(let r=7;r<=14;r++)seq.push([r,14]);
-    for(let c=13;c>=8;c--)seq.push([14,c]);
-    for(let r=13;r>=9;r--)seq.push([r,8]);
-    window.__LP=seq.map(([r,c])=>xy(r,c));
-    while(window.__LP.length<52)window.__LP.push(window.__LP[window.__LP.length-1]);
-    window.__LP=window.__LP.slice(0,52);
-  }
-  const path=window.__LP;
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4.6" fill="#fff8e1" stroke="#5d4037" stroke-width="0.85"/>';
+  s+='<text x="'+cx+'" y="'+(cy+1.4)+'" text-anchor="middle" font-size="5" fill="#5d4037">★</text>';
   const yardSlots=[
-    [[18,72],[28,72],[18,82],[28,82]],
-    [[18,16],[28,16],[18,26],[28,26]],
-    [[72,16],[82,16],[72,26],[82,26]],
-    [[72,72],[82,72],[72,82],[82,82]]
+    [[16,70],[26,70],[16,80],[26,80]],
+    [[16,14],[26,14],[16,24],[26,24]],
+    [[74,14],[84,14],[74,24],[84,24]],
+    [[74,70],[84,70],[74,80],[84,80]]
   ];
   for(let p=0;p<D.np;p++){
-    D.tokens[p].forEach((v,ti)=>{
-      let x,y;
-      if(v===0){const sl=yardSlots[p][ti];x=sl[0];y=sl[1];}
-      else if(v>0&&v<53){const pt=path[(D.starts[p]+v-1)%52];x=pt[0];y=pt[1];}
-      else{
-        const k=Math.min(5,v-52);
-        if(p===0){const q=xy(14-k,7);x=q[0];y=q[1]}
-        else if(p===1){const q=xy(7,k);x=q[0];y=q[1]}
-        else if(p===2){const q=xy(k,7);x=q[0];y=q[1]}
-        else{const q=xy(7,14-k);x=q[0];y=q[1]}
+    (D.tokens[p]||[]).forEach((v,ti)=>{
+      let x=50,y=50;
+      if(v===0){
+        const sl=yardSlots[p][ti]||yardSlots[p][0];x=sl[0];y=sl[1];
+      }else if(v>0&&v<=(D.pathLen||60)){
+        const PL=D.pathLen||60;const abs=((D.starts[p]+(v-1))%PL+PL)%PL;
+        const rc=pathRC[abs];
+        if(rc){const pt=xy(rc[0],rc[1]);x=pt[0];y=pt[1];}
+      }else{
+        const PL=D.pathLen||60;const k=Math.min(4,Math.max(0,v-(PL+1)));
+        const rc=(homeRC[p]||homeRC[0])[k];
+        if(rc){const pt=xy(rc[0],rc[1]);x=pt[0];y=pt[1];}
       }
       const col=PC[p%4];
-      s+='<g transform="translate('+x+','+y+')"><circle cx="0" cy="-1.2" r="2.6" fill="'+col+'" stroke="#fff" stroke-width="0.7"/><ellipse cx="0" cy="2.2" rx="2.7" ry="2.2" fill="'+col+'" stroke="#fff" stroke-width="0.55"/></g>';
+      s+='<g transform="translate('+x+','+y+')"><circle cx="0" cy="-1" r="2.4" fill="'+col+'" stroke="#fff" stroke-width="0.65"/><ellipse cx="0" cy="2" rx="2.5" ry="2" fill="'+col+'" stroke="#fff" stroke-width="0.5"/></g>';
     });
   }
   s+='</svg>';
   return s;
 }
+
+
 
 V.ludo=()=>`<div class="card" style="text-align:center"><div style="font-size:48px">🏠</div>
 <h3>منچ کلاسیک</h3><p>صفحه صلیبی رنگی مثل بازی واقعی. هر نفر ۴ مهره. با ۶ بیرون بیا.</p>
@@ -1153,7 +1168,7 @@ V.ldP=()=>{
   <div style="text-align:center;margin:10px 0">${diceHtml(D.dice||0,D.rolling)}${D.dice&&!D.rolling?`<div style="color:#fff;font-size:15px;font-weight:800;margin-top:4px">عدد تاس: ${fa(D.dice)}</div>`:''}</div>
   <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:8px">`;
   D.tokens[turn].forEach((v,ti)=>{
-    const label=v===0?'خانه':v>=53?('پایان'):fa(v);
+    const PL=D.pathLen||60;const label=v===0?'خانه':v>PL?('خانه'+fa(v-PL)):fa(v);
     html+=`<button class="chip" data-a="lt${turn}_${ti}" style="background:#fff3;border:2px solid #fff;color:#fff;padding:6px 10px">مهره ${fa(ti+1)} · ${label}</button>`;
   });
   html+=`</div>
@@ -1177,10 +1192,11 @@ function ludoRoll(){
     if(!BRD.local||!BRD.local.data)return;
     const D2=BRD.local.data;D2.rolling=0;D2.dice=dice;D2.extra=1;
     const moves=[];
+    const PL=D2.pathLen||60;const HEND=PL+5;
     D2.tokens[turn].forEach((v,ti)=>{
       if(v===0&&dice===6)moves.push(ti);
-      if(v>0&&v<53&&v+dice<=57)moves.push(ti);
-      if(v>=53&&v+dice<=57)moves.push(ti);
+      else if(v>0&&v<=PL&&v+dice<=HEND)moves.push(ti);
+      else if(v>PL&&v+dice<=HEND)moves.push(ti);
     });
     if(!moves.length){D2.dice=0;D2.extra=0;BRD.local.turn=D2.turn=(turn+1)%D2.np;say('حرکت ممکن نیست')}
     else say('تاس: '+fa(dice));
@@ -1193,20 +1209,29 @@ function ludoTok(p,ti){
   const D=st.data;const turn=st.turn!=null?st.turn:D.turn;
   if(p!==turn){say('نوبت این بازیکن نیست');return}
   if(!D.dice||!D.extra||D.rolling){say('اول تاس بزن');return}
+  const PL=D.pathLen||60;
+  const HOME0=PL+1; // 61
+  const HOME_END=PL+5; // 65 = finished
   const v=D.tokens[p][ti];
   if(v===0){
     if(D.dice!==6){say('برای خروج ۶ لازم است');return}
     D.tokens[p][ti]=1;
-  }else if(v>0&&v<=57){
-    const nv=v+D.dice;
-    if(nv>57){say('باید دقیق وارد شوی');return}
+  }else if(v>0){
+    let nv=v+D.dice;
+    // ورود به خانه رنگی بعد از یک دور کامل
+    if(v<=PL&&nv>PL){
+      const over=nv-PL;
+      if(over>5){say('باید دقیق وارد خانه شوی');return}
+      nv=HOME0+over-1;
+    }
+    if(v>PL&&nv>HOME_END){say('باید دقیق وارد شوی');return}
     D.tokens[p][ti]=nv;
-    if(nv<53){
-      const abs=(D.starts[p]+nv-1)%52;
+    if(nv<=PL){
+      const abs=(D.starts[p]+nv-1)%PL;
       for(let op=0;op<D.np;op++)if(op!==p){
         D.tokens[op].forEach((ov,oi)=>{
-          if(ov>0&&ov<53){
-            const oabs=(D.starts[op]+ov-1)%52;
+          if(ov>0&&ov<=PL){
+            const oabs=(D.starts[op]+ov-1)%PL;
             if(oabs===abs){D.tokens[op][oi]=0;say('زد!');sfx.ok()}
           }
         });
@@ -1214,7 +1239,7 @@ function ludoTok(p,ti){
     }
   }else return;
   sfx.ok();
-  const finished=D.tokens[p].every(x=>x>=57);
+  const finished=D.tokens[p].every(x=>x>=HOME_END);
   if(finished){D.winner=p;sfx.win()}
   const again=D.dice===6&&!finished;
   D.dice=0;D.extra=0;
