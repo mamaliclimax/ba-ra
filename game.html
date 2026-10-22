@@ -4,157 +4,1140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07182b">
-<title>دنیای همدلی 3D</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>دنیای همدلی 3D · نسخه حرفه‌ای</title>
 <style>
-:root{--glass:rgba(7,22,42,.78);--line:rgba(255,255,255,.19);--cyan:#6cf4ff;--gold:#ffd36b;--white:#f7fbff}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--white);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-#world{position:fixed;inset:0}#world canvas{display:block;width:100%;height:100%;outline:none}
-.glass{background:var(--glass);border:1px solid var(--line);box-shadow:0 8px 28px #00152b45;backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);border-radius:16px}
-.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:9px;right:9px;display:flex;justify-content:space-between;align-items:flex-start;gap:7px;pointer-events:none}
-.profile{display:flex;gap:9px;align-items:center;padding:7px 10px;min-width:150px;max-width:47vw}.avatar{width:43px;height:43px;border-radius:13px;background:linear-gradient(145deg,#59dfff,#665cff);display:grid;place-items:center;font-size:27px;border:2px solid #fff8}.pname{font-weight:900;font-size:13px}.level{font-size:10px;color:#c8d9ec}.xp{height:5px;background:#ffffff24;border-radius:9px;margin-top:5px;overflow:hidden}.xp span{display:block;width:42%;height:100%;background:linear-gradient(90deg,#56f3b3,#b7ff7d)}
-.wallet{display:flex;gap:5px}.money{padding:8px 10px;display:flex;align-items:center;gap:5px;font-weight:900;font-size:12px;white-space:nowrap}.money .symbol{font-size:18px}.circlebtn{width:36px;height:36px;border-radius:12px;border:1px solid #ffffff26;background:#ffffff12;color:white;font-size:19px;pointer-events:auto}
-.toptools{position:fixed;top:calc(env(safe-area-inset-top,0px) + 73px);left:10px;display:flex;gap:6px}.tool{width:42px;height:43px;display:grid;place-items:center;font-size:19px;pointer-events:auto}
-.quest{position:fixed;top:calc(env(safe-area-inset-top,0px) + 77px);right:10px;width:min(180px,47vw);padding:10px 12px}.quest strong{font-size:12px;color:var(--gold)}.quest p{font-size:11px;margin:6px 0;color:#e1eaf6;line-height:1.5}.progress{height:6px;background:#ffffff20;border-radius:8px;overflow:hidden}.progress span{display:block;width:33%;height:100%;background:linear-gradient(90deg,#ffd166,#ff9c54)}
-.map{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 185px);width:102px;height:102px;border-radius:50%;border:2px solid #e9fbffad;overflow:hidden;background:#123c53e8;box-shadow:0 6px 24px #001a33a0}.map canvas{width:100%;height:100%}.coords{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 292px);font-size:10px;padding:6px 8px}
-.rightactions{position:fixed;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);display:flex;flex-direction:column;gap:7px}.action{width:55px;min-height:52px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:white;font-size:21px;pointer-events:auto}.action small{font-size:9px}
-.bottomnav{position:fixed;bottom:0;left:0;right:0;padding:7px 5px calc(env(safe-area-inset-bottom,0px) + 5px);display:flex;justify-content:space-around;background:linear-gradient(0deg,#061427f5,#0b1e36ed);border-top:1px solid #ffffff22}.navbtn{background:none;border:0;color:#b9c9db;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:51px;font-size:19px}.navbtn span{font-size:9px}.navbtn.active{color:#78efff;text-shadow:0 0 14px #32dfff}
-.joystick{position:fixed;left:15px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);width:112px;height:112px;border-radius:50%;border:1px solid #ffffff70;background:#071a35a6;box-shadow:inset 0 0 18px #ffffff14;touch-action:none}.stick{position:absolute;width:44px;height:44px;left:34px;top:34px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#ffffffd9,#6cc9eab5);border:2px solid #fff9;box-shadow:0 3px 12px #00182d80;pointer-events:none}
-.jump{position:fixed;right:83px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);width:70px;height:70px;border-radius:50%;font-size:31px;color:white;pointer-events:auto}.emote{position:fixed;right:94px;bottom:calc(env(safe-area-inset-bottom,0px) + 157px);width:44px;height:44px;border-radius:50%;font-size:20px;pointer-events:auto}
-.hotbar{position:fixed;left:143px;right:82px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;gap:4px;justify-content:center}.slot{flex:1;max-width:52px;min-width:34px;height:49px;border-radius:10px;background:#0b2038d9;border:1px solid #ffffff30;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative;pointer-events:auto}.slot small{font-size:9px;color:#d4e2f1}.slot.active{border:2px solid var(--gold);box-shadow:0 0 12px #ffd16655}.slot em{position:absolute;top:1px;right:4px;font-size:9px;font-style:normal;color:#b9c9db}
-.chat{position:fixed;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 202px);width:min(255px,64vw);padding:8px;font-size:10px}.chatline{margin:3px 0;color:#e2efff}.chatline b{color:#6fefff}.chatinput{display:flex;gap:5px;margin-top:7px}.chatinput input{min-width:0;width:100%;border:1px solid #ffffff24;background:#07182bd9;color:white;border-radius:9px;padding:7px;font:inherit;outline:none}.chatinput button{border:0;background:#52d6f3;color:#062139;border-radius:9px;padding:0 9px;font-weight:900}
-.toast{position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);background:#06182deF;border:1px solid #65eaff;border-radius:14px;padding:11px 16px;font-size:12px;max-width:85vw;text-align:center;display:none;box-shadow:0 10px 35px #00182d80;z-index:30}
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:#03101cce;z-index:25}.modal.open{display:flex}.modalcard{width:min(390px,100%);padding:17px;background:#0c2038;border:1px solid #ffffff2a;border-radius:20px;max-height:85vh;overflow:auto}.modalcard h2{font-size:18px;margin:0 0 9px}.modalcard p{font-size:12px;line-height:1.8;color:#c4d7e9}.modalcard input,.modalcard select{width:100%;padding:11px;border:1px solid #ffffff2c;border-radius:10px;background:#06172a;color:white;margin:4px 0 9px;direction:ltr}.rowbtn{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #ffffff24;border-radius:11px;background:#183654;color:white;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer}.btn.primary{background:#66e6ef;color:#062039}.btn.gold{background:#ffd166;color:#332100}.smallnote{font-size:10px;color:#a9bfd6;line-height:1.7}
-#loading{position:fixed;inset:0;background:linear-gradient(155deg,#082543,#2785a7);display:flex;align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:12px;text-align:center;padding:28px;transition:opacity .5s}#loading .logo{font-size:54px}#loading strong{font-size:22px}#loading p{max-width:300px;color:#d8f3ff;font-size:12px;line-height:1.8}.loaderbar{height:6px;width:200px;background:#ffffff30;border-radius:9px;overflow:hidden}.loaderbar span{display:block;height:100%;width:0;background:#6fffc7;transition:width .25s}
-@media(min-width:700px){.quest{width:210px}.map{width:130px;height:130px}.coords{top:330px}.chat{width:280px}.joystick{width:130px;height:130px}.stick{left:42px;top:42px}.rightactions{right:calc(50% - 380px)}}
+:root{
+  --glass:rgba(7,22,42,.82);--line:rgba(255,255,255,.2);--cyan:#6cf4ff;--gold:#ffd36b;
+  --white:#f7fbff;--accent:#56f3b3;--bg:#071a2e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--white);
+  font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+#world{position:fixed;inset:0}#world canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}
+.glass{background:var(--glass);border:1px solid var(--line);box-shadow:0 8px 28px #00152b55;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:16px}
+/* Top bar */
+.top{position:fixed;top:calc(env(safe-area-inset-top,0px)+6px);left:8px;right:8px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:6px;pointer-events:none;z-index:10}
+.profile{display:flex;gap:8px;align-items:center;padding:6px 10px;min-width:140px;max-width:48vw}
+.avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#59dfff,#665cff);
+  display:grid;place-items:center;font-size:24px;border:2px solid #fff8}
+.pname{font-weight:900;font-size:12px}.level{font-size:9px;color:#c8d9ec}
+.xp{height:5px;background:#ffffff22;border-radius:9px;margin-top:4px;overflow:hidden}
+.xp span{display:block;height:100%;background:linear-gradient(90deg,#56f3b3,#b7ff7d);transition:width .3s}
+.wallet{display:flex;gap:4px}
+.money{padding:7px 9px;display:flex;align-items:center;gap:4px;font-weight:900;font-size:11px;white-space:nowrap}
+.money .symbol{font-size:16px}
+.circlebtn{width:32px;height:32px;border-radius:10px;border:1px solid #ffffff26;background:#ffffff14;color:white;font-size:17px;pointer-events:auto;cursor:pointer}
+/* Tools & quest */
+.toptools{position:fixed;top:calc(env(safe-area-inset-top,0px)+68px);left:8px;display:flex;gap:5px;z-index:10}
+.tool{width:40px;height:40px;display:grid;place-items:center;font-size:18px;pointer-events:auto;cursor:pointer;border:none}
+.quest{position:fixed;top:calc(env(safe-area-inset-top,0px)+72px);right:8px;width:min(175px,46vw);padding:9px 11px;z-index:10}
+.quest strong{font-size:11px;color:var(--gold)}.quest p{font-size:10px;margin:5px 0;color:#e1eaf6;line-height:1.45}
+.progress{height:5px;background:#ffffff1e;border-radius:8px;overflow:hidden}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff9c54);transition:width .35s}
+/* Mini map */
+.map{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px)+175px);width:96px;height:96px;
+  border-radius:50%;border:2px solid #e9fbffaa;overflow:hidden;background:#123c53ee;box-shadow:0 6px 20px #001a3390;z-index:10}
+.map canvas{width:100%;height:100%}
+.coords{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px)+278px);font-size:9px;padding:5px 7px;z-index:10}
+/* Right actions */
+.rightactions{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px)+105px);
+  display:flex;flex-direction:column;gap:6px;z-index:10}
+.action{width:52px;min-height:48px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:1px;color:white;font-size:20px;pointer-events:auto;cursor:pointer;border:none}
+.action small{font-size:8px}
+/* Bottom nav */
+.bottomnav{position:fixed;bottom:0;left:0;right:0;padding:6px 4px calc(env(safe-area-inset-bottom,0px)+4px);
+  display:flex;justify-content:space-around;background:linear-gradient(0deg,#061427f8,#0b1e36f0);
+  border-top:1px solid #ffffff20;z-index:12}
+.navbtn{background:none;border:0;color:#b9c9db;display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-width:48px;font-size:18px;cursor:pointer}.navbtn span{font-size:8px}
+.navbtn.active{color:#78efff;text-shadow:0 0 12px #32dfff}
+/* Joystick & buttons */
+.joystick{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px)+72px);width:108px;height:108px;
+  border-radius:50%;border:1px solid #ffffff66;background:#071a35b0;box-shadow:inset 0 0 16px #ffffff12;touch-action:none;z-index:11}
+.stick{position:absolute;width:42px;height:42px;left:33px;top:33px;border-radius:50%;
+  background:radial-gradient(circle at 35% 25%,#ffffffdd,#6cc9eab8);border:2px solid #fff9;
+  box-shadow:0 3px 10px #00182d80;pointer-events:none;transition:transform .05s}
+.jump{position:fixed;right:78px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);width:66px;height:66px;
+  border-radius:50%;font-size:28px;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
+.emote{position:fixed;right:88px;bottom:calc(env(safe-area-inset-bottom,0px)+148px);width:42px;height:42px;
+  border-radius:50%;font-size:18px;pointer-events:auto;cursor:pointer;border:none;z-index:11}
+.runbtn{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);width:50px;height:50px;
+  border-radius:50%;font-size:14px;font-weight:800;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
+/* Hotbar */
+.hotbar{position:fixed;left:130px;right:78px;bottom:calc(env(safe-area-inset-bottom,0px)+10px);
+  display:flex;gap:3px;justify-content:center;z-index:11}
+.slot{flex:1;max-width:48px;min-width:30px;height:46px;border-radius:10px;background:#0b2038e0;
+  border:1px solid #ffffff2e;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:18px;position:relative;pointer-events:auto;cursor:pointer}
+.slot small{font-size:8px;color:#d4e2f1}.slot.active{border:2px solid var(--gold);box-shadow:0 0 10px #ffd16650}
+.slot em{position:absolute;top:1px;right:3px;font-size:8px;font-style:normal;color:#b9c9db}
+/* Chat */
+.chat{position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px)+190px);width:min(240px,60vw);
+  padding:7px;font-size:9px;max-height:110px;overflow-y:auto;z-index:10}
+.chatline{margin:2px 0;color:#e2efff}.chatline b{color:#6fefff}
+.chatinput{display:flex;gap:4px;margin-top:5px}
+.chatinput input{min-width:0;width:100%;border:1px solid #ffffff22;background:#07182bd8;color:white;
+  border-radius:8px;padding:6px;font:inherit;outline:none}
+.chatinput button{border:0;background:#52d6f3;color:#062139;border-radius:8px;padding:0 8px;font-weight:900;cursor:pointer}
+/* Toast & modal */
+.toast{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);background:#06182df0;
+  border:1px solid #65eaff;border-radius:14px;padding:10px 15px;font-size:12px;max-width:85vw;
+  text-align:center;display:none;box-shadow:0 10px 32px #00182d80;z-index:40}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;
+  background:#03101cd0;z-index:30}.modal.open{display:flex}
+.modalcard{width:min(400px,100%);padding:16px;background:#0c2038;border:1px solid #ffffff28;
+  border-radius:18px;max-height:82vh;overflow:auto}
+.modalcard h2{font-size:17px;margin:0 0 8px}.modalcard p{font-size:12px;line-height:1.75;color:#c4d7e9}
+.modalcard input,.modalcard select{width:100%;padding:10px;border:1px solid #ffffff2a;border-radius:10px;
+  background:#06172a;color:white;margin:4px 0 8px;direction:ltr}
+.rowbtn{display:flex;gap:6px;flex-wrap:wrap}
+.btn{border:1px solid #ffffff22;border-radius:10px;background:#183654;color:white;padding:9px 11px;
+  font-weight:800;font-size:11px;cursor:pointer}.btn.primary{background:#66e6ef;color:#062039}
+.btn.gold{background:#ffd166;color:#332100}.btn:active{transform:scale(.97)}
+.smallnote{font-size:10px;color:#a9bfd6;line-height:1.65}
+/* Loading */
+#loading{position:fixed;inset:0;background:linear-gradient(155deg,#082543,#2785a7);display:flex;
+  align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:12px;text-align:center;
+  padding:24px;transition:opacity .45s}
+#loading .logo{font-size:52px}#loading strong{font-size:20px}
+#loading p{max-width:290px;color:#d8f3ff;font-size:12px;line-height:1.75}
+.loaderbar{height:6px;width:200px;background:#ffffff30;border-radius:9px;overflow:hidden}
+.loaderbar span{display:block;height:100%;width:0;background:#6fffc7;transition:width .2s}
+/* Landscape orientation */
+@media (orientation:landscape) and (max-height:500px){
+  .top{top:4px}.profile{padding:4px 8px;min-width:120px}.avatar{width:32px;height:32px;font-size:18px}
+  .pname{font-size:11px}.level{font-size:8px}
+  .toptools{top:52px}.tool{width:34px;height:34px;font-size:15px}
+  .quest{top:52px;width:min(150px,38vw);padding:6px 8px}
+  .map{width:70px;height:70px;top:130px}.coords{top:205px;font-size:8px}
+  .rightactions{bottom:70px}.action{width:44px;min-height:40px;font-size:16px}
+  .joystick{width:90px;height:90px;bottom:58px;left:10px}.stick{width:34px;height:34px;left:28px;top:28px}
+  .jump{width:54px;height:54px;bottom:60px;right:70px;font-size:22px}
+  .emote{bottom:120px;right:78px;width:36px;height:36px}
+  .runbtn{width:42px;height:42px;bottom:60px;right:12px;font-size:12px}
+  .hotbar{bottom:8px;left:110px;right:70px}.slot{height:38px;font-size:15px}
+  .chat{bottom:150px;max-height:80px;width:min(200px,40vw)}
+  .bottomnav{padding:4px 2px calc(env(safe-area-inset-bottom,0px)+2px)}.navbtn{font-size:15px;min-width:42px}
+}
+@media(min-width:800px){
+  .quest{width:200px}.map{width:120px;height:120px}.coords{top:310px}
+  .chat{width:270px}.joystick{width:125px;height:125px}.stick{left:40px;top:40px;width:45px;height:45px}
+  .rightactions{right:calc(50% - 400px)}
+}
 </style>
 </head>
 <body>
 <div id="world"></div>
-<div id="loading"><div class="logo">🌍</div><strong>دنیای همدلی 3D</strong><p>در حال ساخت جزیره، شهر، آبشارها و دنیای سه‌بعدی…<br>برای نمایش گرافیک سه‌بعدی به اینترنت و WebGL نیاز است.</p><div class="loaderbar"><span id="loadbar"></span></div><small id="loadtext">آماده‌سازی موتور سه‌بعدی…</small></div>
-<div class="top">
- <div class="profile glass"><div class="avatar">🧑🏻‍🚀</div><div style="flex:1;min-width:0"><div class="pname">ماجراجو <span style="color:#6cf4ff">✦</span></div><div class="level">سطح <b id="level">3</b> · سازنده جزیره</div><div class="xp"><span id="xpbar"></span></div></div></div>
- <div class="wallet"><div class="money glass"><span class="symbol">🪙</span><span id="coins">1250</span><button class="circlebtn" data-open="shop">＋</button></div><div class="money glass"><span class="symbol">💎</span><span id="gems">32</span></div></div>
+<div id="loading">
+  <div class="logo">🌍</div>
+  <strong>دنیای همدلی 3D</strong>
+  <p>نسخه حرفه‌ای · گرافیک ارتقایافته · حرکت نرم · آنلاین شبیه‌سازی‌شده</p>
+  <div class="loaderbar"><span id="loadbar"></span></div>
+  <small id="loadtext">آماده‌سازی موتور سه‌بعدی…</small>
 </div>
-<div class="toptools"><button class="tool glass" data-open="friends" title="دوستان">👥</button><button class="tool glass" data-open="inventory" title="کوله">🎒</button><button class="tool glass" data-open="settings" title="تنظیمات">⚙️</button></div>
-<div class="quest glass"><strong>🏅 مأموریت روزانه</strong><p id="questText">سه بلوک در جزیره‌ات بساز</p><div class="progress"><span id="questbar"></span></div><p><span id="questcount">0</span> / 3 بلوک · پاداش 100 🪙</p></div>
-<div class="map"><canvas id="mapcanvas" width="180" height="180"></canvas></div><div class="coords glass">📍 جزیره همدلی<br><span id="coords">X: 0 · Z: 0</span></div>
-<div class="rightactions"><button class="action glass" id="buildbtn">🔨<small>ساخت‌وساز</small></button><button class="action glass" data-open="inventory">🎒<small>کوله‌پشتی</small></button><button class="action glass" id="placebtn">🧱<small>قرار دادن</small></button><button class="action glass" id="deletebtn">🧹<small>برداشتن</small></button></div>
-<div class="chat glass"><div class="chatline"><b>سارا:</b> چه جزیره قشنگی! 🌺</div><div class="chatline"><b>رضا:</b> بیایید پل بسازیم!</div><div class="chatline"><b>سیستم:</b> خوش آمدی به دنیای همدلی</div><div id="chatmore"></div><div class="chatinput"><input id="chattext" placeholder="پیام محلی بنویس…" maxlength="120"><button id="sendchat">➤</button></div></div>
-<div class="joystick" id="joystick"><div class="stick" id="stick"></div></div><button class="jump glass" id="jump">⬆</button><button class="emote glass" id="emote">👋</button>
-<div class="hotbar" id="hotbar"><button class="slot active" data-block="wood"><em>1</em>🪵<small>48</small></button><button class="slot" data-block="stone"><em>2</em>🧱<small>32</small></button><button class="slot" data-block="leaf"><em>3</em>🌿<small>12</small></button><button class="slot" data-block="lamp"><em>4</em>🏮<small>6</small></button><button class="slot" data-block="glass"><em>5</em>💠<small>20</small></button></div>
-<div class="bottomnav"><button class="navbtn active" data-tab="home">🏠<span>خانه</span></button><button class="navbtn" data-tab="worlds">🌐<span>دنیاها</span></button><button class="navbtn" data-tab="build">🔨<span>ساخت‌وساز</span></button><button class="navbtn" data-open="friends">👥<span>بازیکنان</span></button><button class="navbtn" data-open="shop">🏪<span>فروشگاه</span></button></div>
+
+<div class="top">
+  <div class="profile glass">
+    <div class="avatar">🧑🏻‍🚀</div>
+    <div style="flex:1;min-width:0">
+      <div class="pname">ماجراجو <span style="color:#6cf4ff">✦</span></div>
+      <div class="level">سطح <b id="level">3</b> · سازنده جزیره</div>
+      <div class="xp"><span id="xpbar"></span></div>
+    </div>
+  </div>
+  <div class="wallet">
+    <div class="money glass"><span class="symbol">🪙</span><span id="coins">1250</span>
+      <button class="circlebtn" data-open="shop">＋</button></div>
+    <div class="money glass"><span class="symbol">💎</span><span id="gems">32</span></div>
+  </div>
+</div>
+
+<div class="toptools">
+  <button class="tool glass" data-open="friends" title="بازیکنان">👥</button>
+  <button class="tool glass" data-open="inventory" title="کوله">🎒</button>
+  <button class="tool glass" data-open="settings" title="تنظیمات">⚙️</button>
+</div>
+
+<div class="quest glass">
+  <strong>🏅 مأموریت روزانه</strong>
+  <p id="questText">سه بلوک در جزیره‌ات بساز</p>
+  <div class="progress"><span id="questbar"></span></div>
+  <p><span id="questcount">0</span> / 3 بلوک · پاداش ۱۰۰ 🪙</p>
+</div>
+
+<div class="map"><canvas id="mapcanvas" width="180" height="180"></canvas></div>
+<div class="coords glass">📍 جزیره همدلی<br><span id="coords">X: 0 · Z: 0</span></div>
+
+<div class="rightactions">
+  <button class="action glass" id="buildbtn">🔨<small>ساخت</small></button>
+  <button class="action glass" data-open="inventory">🎒<small>کوله</small></button>
+  <button class="action glass" id="placebtn">🧱<small>قرار دادن</small></button>
+  <button class="action glass" id="deletebtn">🧹<small>برداشتن</small></button>
+</div>
+
+<div class="chat glass">
+  <div id="chatlog">
+    <div class="chatline"><b>سارا:</b> چه جزیره قشنگی! 🌺</div>
+    <div class="chatline"><b>رضا:</b> بیایید پل بسازیم!</div>
+    <div class="chatline"><b>سیستم:</b> خوش آمدی به دنیای همدلی</div>
+  </div>
+  <div class="chatinput">
+    <input id="chattext" placeholder="پیام محلی بنویس…" maxlength="100">
+    <button id="sendchat">➤</button>
+  </div>
+</div>
+
+<div class="joystick" id="joystick"><div class="stick" id="stick"></div></div>
+<button class="jump glass" id="jump">⬆</button>
+<button class="emote glass" id="emote">👋</button>
+<button class="runbtn glass" id="runbtn">دویدن</button>
+
+<div class="hotbar" id="hotbar">
+  <button class="slot active" data-block="wood"><em>1</em>🪵<small>48</small></button>
+  <button class="slot" data-block="stone"><em>2</em>🧱<small>32</small></button>
+  <button class="slot" data-block="brick"><em>3</em>🧱<small>20</small></button>
+  <button class="slot" data-block="grass"><em>4</em>🌿<small>18</small></button>
+  <button class="slot" data-block="glass"><em>5</em>💠<small>15</small></button>
+  <button class="slot" data-block="neon"><em>6</em>💡<small>8</small></button>
+  <button class="slot" data-block="metal"><em>7</em>⚙️<small>10</small></button>
+  <button class="slot" data-block="sand"><em>8</em>🏖️<small>25</small></button>
+</div>
+
+<div class="bottomnav">
+  <button class="navbtn active" data-tab="home">🏠<span>خانه</span></button>
+  <button class="navbtn" data-tab="worlds">🌐<span>دنیاها</span></button>
+  <button class="navbtn" data-tab="build">🔨<span>ساخت</span></button>
+  <button class="navbtn" data-open="friends">👥<span>بازیکنان</span></button>
+  <button class="navbtn" data-open="shop">🏪<span>فروشگاه</span></button>
+</div>
+
 <div class="toast" id="toast"></div>
-<div class="modal" id="modal"><div class="modalcard"><h2 id="modtitle">منو</h2><div id="modbody"></div><div class="rowbtn" style="margin-top:10px"><button class="btn primary" id="modok">باشه</button><button class="btn" id="modclose">بستن</button></div></div></div>
+<div class="modal" id="modal">
+  <div class="modalcard">
+    <h2 id="modtitle">منو</h2>
+    <div id="modbody"></div>
+    <div class="rowbtn" style="margin-top:10px">
+      <button class="btn primary" id="modok">باشه</button>
+      <button class="btn" id="modclose">بستن</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 (function(){
 'use strict';
-const $=id=>document.getElementById(id);const state={coins:1250,gems:32,blocks:0,level:3,xp:2450,selected:'wood',buildMode:true,moveX:0,moveZ:0,yaw:0,pitch:.22,jumpV:0,onGround:true,placed:[],inventory:{wood:48,stone:32,leaf:12,lamp:6,glass:20},chat:[],sound:false,quality:'high',lastSave:0};
-let scene,camera,renderer,clock,player,avatarRoot,cat,water,raycaster,mouse=new THREE.Vector2(),cameraDrag=null,keys={},worldObjects=[],colliders=[],walkTime=0,animId=0,started=false,dayTime=0;
-const mats={};
-function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').style.display='none',2100)}
-function setLoad(p,t){$('loadbar').style.width=p+'%';$('loadtext').textContent=t}
-function mat(color,rough=.8,metal=0){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal})}
-function box(w,h,d,m,x,y,z,add=true){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);if(add)scene.add(o);return o}
-function group(parent=scene){let g=new THREE.Group();parent.add(g);return g}
-function rand(a,b){return a+Math.random()*(b-a)}
-function noiseColor(){return [0x58b878,0x69c987,0x4caf77,0x7bd38d][Math.floor(Math.random()*4)]}
-function makeTree(x,z,scale=1){let g=group();let trunk=box(.32*scale,1.5*scale,.32*scale,mat(0x79533b),x,.6*scale,z);let leaves=box(1.55*scale,1.65*scale,1.55*scale,mat(noiseColor()),x,1.9*scale,z);leaves.rotation.y=rand(0,1);g.add(trunk,leaves);let shadow=new THREE.Mesh(new THREE.CircleGeometry(.65*scale,12),new THREE.MeshBasicMaterial({color:0x214f3a,transparent:true,opacity:.18}));shadow.rotation.x=-Math.PI/2;shadow.position.set(x,.012,z);scene.add(shadow);worldObjects.push(g);return g}
-function makeHouse(x,z,color=0xffc66b,scale=1){let g=group();let base=box(3*scale,1.7*scale,2.6*scale,mat(0xf5e4c6),x,.86*scale,z);let roof=box(3.5*scale,.28*scale,3*scale,mat(color),x,1.85*scale,z);roof.rotation.z=.12;let door=box(.52*scale,1.05*scale,.08,mat(0x70452e),x,0.52*scale,z+1.34*scale);let winmat=mat(0x7edff6,.25,.2);let win1=box(.55*scale,.55*scale,.08,winmat,x-.9*scale,1.05*scale,z+1.34*scale);let win2=box(.55*scale,.55*scale,.08,winmat,x+.9*scale,1.05*scale,z+1.34*scale);g.add(base,roof,door,win1,win2);worldObjects.push(g);return g}
-function makeRock(x,y,z,s){let m=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x647e91));m.position.set(x,y,z);m.rotation.set(rand(0,1),rand(0,2),rand(0,1));scene.add(m);worldObjects.push(m)}
-function makeIsland(cx,cz,r,top=0){let shape=new THREE.Shape();shape.absarc(0,0,r,0,Math.PI*2,false);let geo=new THREE.ExtrudeGeometry(shape,{depth:1.8,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.3,bevelThickness:.22,curveSegments:20});geo.rotateX(Math.PI/2);let m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x5a9e68,roughness:1}));m.position.set(cx,top,cz);scene.add(m);let cliff=new THREE.Mesh(new THREE.CylinderGeometry(r*.85,r*.58,1.6,20,1),mat(0x8c7052));cliff.position.set(cx,top-.9,cz);scene.add(cliff);return {cx,cz,r,top}}
-function makeBridge(x1,z1,x2,z2,y=.2){let dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),ang=Math.atan2(dz,dx);let deck=box(len,.16,.85,mat(0x9c6d42),(x1+x2)/2,y,(z1+z2)/2);deck.rotation.y=-ang;for(let i=0;i<Math.floor(len/.8);i++){let t=i/Math.max(1,Math.floor(len/.8));let x=x1+dx*t,z=z1+dz*t;let rail=box(.12,.32,.12,mat(0xe5bd7a),x,y+.2,z);rail.rotation.y=-ang}return deck}
-function makeLamp(x,z){let pole=box(.13,1.5,.13,mat(0x5d4c40),x,.75,z);let light=box(.42,.38,.42,new THREE.MeshStandardMaterial({color:0xffdc87,emissive:0xffa52a,emissiveIntensity:1.8}),x,1.55,z);let l=new THREE.PointLight(0xffbb55,1.5,5);l.position.set(x,1.7,z);scene.add(l);return [pole,light,l]}
+const $ = id => document.getElementById(id);
+
+/* ── State ─────────────────────────────────────────────── */
+const state = {
+  coins:1250, gems:32, blocks:0, level:3, xp:2450,
+  selected:'wood', buildMode:true,
+  moveX:0, moveZ:0, yaw:0, pitch:0.18,
+  velX:0, velZ:0, jumpV:0, onGround:true,
+  running:false, placed:[],
+  inventory:{wood:48,stone:32,brick:20,grass:18,glass:15,neon:8,metal:10,sand:25},
+  quality:'high', questDone:false, lastSave:0,
+  onlinePlayers:[]
+};
+
+let scene, camera, renderer, clock, player, avatarRoot, cat;
+let water, sunLight, ambientLight, raycaster;
+let cameraDrag = null, keys = {}, worldObjects = [], animId = 0;
+let walkTime = 0, dayTime = 0, started = false;
+let bots = []; // simulated online players
+
+/* ── Helpers ────────────────────────────────────────────── */
+function toast(s){
+  const t = $('toast'); t.textContent = s; t.style.display = 'block';
+  clearTimeout(toast._t); toast._t = setTimeout(()=> t.style.display='none', 2200);
+}
+function setLoad(p,t){ $('loadbar').style.width = p+'%'; $('loadtext').textContent = t; }
+function mat(color, rough=0.75, metal=0){
+  return new THREE.MeshStandardMaterial({color, roughness:rough, metalness:metal});
+}
+function box(w,h,d,m,x,y,z, add=true){
+  const o = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m);
+  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true;
+  if(add) scene.add(o); return o;
+}
+function group(parent=scene){ const g = new THREE.Group(); parent.add(g); return g; }
+function rand(a,b){ return a + Math.random()*(b-a); }
+function noiseColor(){ return [0x58b878,0x69c987,0x4caf77,0x7bd38d,0x3da86a][Math.floor(Math.random()*5)]; }
+
+/* ── Block materials (Roblox-inspired) ──────────────────── */
+function blockMaterial(type){
+  switch(type){
+    case 'wood':   return mat(0x9b7045, 0.85, 0.05);
+    case 'stone':  return mat(0x8b9cac, 0.9, 0.1);
+    case 'brick':  return mat(0xa05a3c, 0.8, 0.05);
+    case 'grass':  return mat(0x42b86c, 0.95, 0);
+    case 'glass':  return new THREE.MeshPhysicalMaterial({color:0x63e9ff, transparent:true, opacity:0.55, roughness:0.08, metalness:0.15, transmission:0.4});
+    case 'neon':   return new THREE.MeshStandardMaterial({color:0xff66cc, emissive:0xff3399, emissiveIntensity:1.8, roughness:0.3});
+    case 'metal':  return mat(0xa8b4c0, 0.25, 0.85);
+    case 'sand':   return mat(0xe6d3a0, 0.95, 0);
+    case 'plastic':return mat(0xf0f4f8, 0.4, 0.1);
+    case 'leaf':   return mat(0x3aa85a, 0.9, 0);
+    case 'lamp':   return new THREE.MeshStandardMaterial({color:0xffd66b, emissive:0xffa21a, emissiveIntensity:1.7});
+    default: return mat(0x9b7045);
+  }
+}
+const BLOCK_LABELS = {
+  wood:'چوب', stone:'سنگ', brick:'آجر', grass:'چمن', glass:'شیشه',
+  neon:'نئون', metal:'فلز', sand:'ماسه', plastic:'پلاستیک', leaf:'برگ', lamp:'چراغ'
+};
+const BLOCK_ICONS = {
+  wood:'🪵', stone:'🪨', brick:'🧱', grass:'🌿', glass:'💠',
+  neon:'💡', metal:'⚙️', sand:'🏖️', plastic:'⬜', leaf:'🍃', lamp:'🏮'
+};
+
+/* ── World builders ─────────────────────────────────────── */
+function makeTree(x,z,scale=1){
+  const g = group();
+  const trunk = box(0.3*scale, 1.55*scale, 0.3*scale, mat(0x6b4423), x, 0.65*scale, z, false);
+  const leaves = box(1.5*scale, 1.6*scale, 1.5*scale, mat(noiseColor()), x, 1.95*scale, z, false);
+  leaves.rotation.y = rand(0,1);
+  g.add(trunk, leaves);
+  const shadow = new THREE.Mesh(
+    new THREE.CircleGeometry(0.6*scale, 10),
+    new THREE.MeshBasicMaterial({color:0x1a3a28, transparent:true, opacity:0.2})
+  );
+  shadow.rotation.x = -Math.PI/2; shadow.position.set(x, 0.02, z); scene.add(shadow);
+  worldObjects.push(g); return g;
+}
+function makeHouse(x,z,color=0xffc66b, scale=1){
+  const g = group();
+  const base = box(3*scale, 1.7*scale, 2.6*scale, mat(0xf5e4c6), x, 0.86*scale, z, false);
+  const roof = box(3.5*scale, 0.28*scale, 3*scale, mat(color), x, 1.88*scale, z, false);
+  roof.rotation.z = 0.1;
+  const door = box(0.5*scale, 1.05*scale, 0.08, mat(0x5c3a22), x, 0.52*scale, z+1.32*scale, false);
+  const winmat = mat(0x7edff6, 0.2, 0.25);
+  const win1 = box(0.5*scale, 0.5*scale, 0.08, winmat, x-0.9*scale, 1.05*scale, z+1.32*scale, false);
+  const win2 = box(0.5*scale, 0.5*scale, 0.08, winmat, x+0.9*scale, 1.05*scale, z+1.32*scale, false);
+  g.add(base, roof, door, win1, win2); worldObjects.push(g); return g;
+}
+function makeRock(x,y,z,s){
+  const m = new THREE.Mesh(new THREE.DodecahedronGeometry(s,0), mat(0x647e91, 0.9));
+  m.position.set(x,y,z); m.rotation.set(rand(0,1),rand(0,2),rand(0,1));
+  m.castShadow = true; scene.add(m); worldObjects.push(m);
+}
+function makeIsland(cx,cz,r,top=0){
+  const shape = new THREE.Shape();
+  shape.absarc(0,0,r,0,Math.PI*2,false);
+  const geo = new THREE.ExtrudeGeometry(shape,{
+    depth:1.9, bevelEnabled:true, bevelSegments:3, steps:1,
+    bevelSize:0.35, bevelThickness:0.25, curveSegments:24
+  });
+  geo.rotateX(Math.PI/2);
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0x5a9e68, roughness:0.95}));
+  m.position.set(cx, top, cz); m.receiveShadow = true; m.castShadow = true; scene.add(m);
+  const cliff = new THREE.Mesh(
+    new THREE.CylinderGeometry(r*0.88, r*0.55, 1.7, 22, 1),
+    mat(0x8c7052, 0.9)
+  );
+  cliff.position.set(cx, top-0.95, cz); cliff.receiveShadow = true; scene.add(cliff);
+  return {cx,cz,r,top};
+}
+function makeBridge(x1,z1,x2,z2,y=0.2){
+  const dx=x2-x1, dz=z2-z1, len=Math.hypot(dx,dz), ang=Math.atan2(dz,dx);
+  const deck = box(len, 0.14, 0.9, mat(0x9c6d42), (x1+x2)/2, y, (z1+z2)/2);
+  deck.rotation.y = -ang;
+  for(let i=0; i<Math.floor(len/0.75); i++){
+    const t = i / Math.max(1, Math.floor(len/0.75));
+    const x = x1+dx*t, z = z1+dz*t;
+    const rail = box(0.1, 0.3, 0.1, mat(0xe5bd7a), x, y+0.2, z);
+    rail.rotation.y = -ang;
+  }
+  return deck;
+}
+function makeLamp(x,z){
+  box(0.12, 1.5, 0.12, mat(0x5d4c40), x, 0.75, z);
+  box(0.4, 0.36, 0.4, new THREE.MeshStandardMaterial({color:0xffdc87, emissive:0xffa52a, emissiveIntensity:1.6}), x, 1.55, z);
+  const l = new THREE.PointLight(0xffbb55, 1.4, 6); l.position.set(x, 1.7, z); scene.add(l);
+}
+
+/* ── Player & companion ─────────────────────────────────── */
 function makePlayer(){
- avatarRoot=group();player=group(avatarRoot);let skin=mat(0xffc69b),shirt=mat(0x287bd9),pants=mat(0x172c48),shoe=mat(0x111b2a),hair=mat(0x30251f);
- let torso=box(.68,.85,.38,shirt,0,1.15,0,false);let head=box(.48,.5,.48,skin,0,1.88,0,false);let hairmesh=box(.5,.17,.5,hair,0,2.17,-.015,false);let legL=box(.24,.58,.28,pants,-.18,.43,0,false),legR=box(.24,.58,.28,pants,.18,.43,0,false);let shoeL=box(.28,.15,.38,shoe,-.18,.12,.045,false),shoeR=box(.28,.15,.38,shoe,.18,.12,.045,false);let armL=box(.2,.67,.22,skin,-.48,1.18,0,false),armR=box(.2,.67,.22,skin,.48,1.18,0,false);
- [torso,head,hairmesh,legL,legR,shoeL,shoeR,armL,armR].forEach(o=>player.add(o));player.userData={legL,legR,armL,armR};avatarRoot.position.set(0,0,0);scene.add(avatarRoot);
- // small friendly robot-cat companion
- cat=group();let body=box(.58,.42,.42,mat(0xf6f8ff),0,.3,0,false);let headc=box(.42,.4,.4,mat(0xffffff),0,.62,0,false);let ear1=box(.13,.22,.13,mat(0xffffff),-.13,.91,0,false),ear2=box(.13,.22,.13,mat(0xffffff),.13,.91,0,false);let eyeMat=new THREE.MeshStandardMaterial({color:0x3be9ff,emissive:0x21cfff,emissiveIntensity:1.6});let e1=box(.07,.07,.04,eyeMat,-.1,.66,.215,false),e2=box(.07,.07,.04,eyeMat,.1,.66,.215,false);[body,headc,ear1,ear2,e1,e2].forEach(o=>cat.add(o));cat.position.set(-1,0,1);scene.add(cat)
+  avatarRoot = group();
+  player = group(avatarRoot);
+  const skin=mat(0xffc69b), shirt=mat(0x287bd9), pants=mat(0x172c48), shoe=mat(0x111b2a), hair=mat(0x2a2018);
+  const torso = box(0.66, 0.82, 0.36, shirt, 0, 1.12, 0, false);
+  const head  = box(0.46, 0.48, 0.46, skin, 0, 1.85, 0, false);
+  const hairm = box(0.48, 0.16, 0.48, hair, 0, 2.14, -0.02, false);
+  const legL  = box(0.22, 0.55, 0.26, pants, -0.17, 0.42, 0, false);
+  const legR  = box(0.22, 0.55, 0.26, pants,  0.17, 0.42, 0, false);
+  const shoeL = box(0.26, 0.14, 0.36, shoe, -0.17, 0.11, 0.04, false);
+  const shoeR = box(0.26, 0.14, 0.36, shoe,  0.17, 0.11, 0.04, false);
+  const armL  = box(0.18, 0.64, 0.2, skin, -0.46, 1.15, 0, false);
+  const armR  = box(0.18, 0.64, 0.2, skin,  0.46, 1.15, 0, false);
+  [torso,head,hairm,legL,legR,shoeL,shoeR,armL,armR].forEach(o => player.add(o));
+  player.userData = {legL,legR,armL,armR};
+  avatarRoot.position.set(0,0,0); scene.add(avatarRoot);
+
+  // Friendly robot-cat companion
+  cat = group();
+  const body = box(0.55, 0.4, 0.4, mat(0xf6f8ff), 0, 0.28, 0, false);
+  const headc = box(0.4, 0.38, 0.38, mat(0xffffff), 0, 0.6, 0, false);
+  const ear1 = box(0.12, 0.2, 0.12, mat(0xffffff), -0.12, 0.88, 0, false);
+  const ear2 = box(0.12, 0.2, 0.12, mat(0xffffff),  0.12, 0.88, 0, false);
+  const eyeMat = new THREE.MeshStandardMaterial({color:0x3be9ff, emissive:0x21cfff, emissiveIntensity:1.5});
+  const e1 = box(0.06, 0.06, 0.04, eyeMat, -0.09, 0.64, 0.2, false);
+  const e2 = box(0.06, 0.06, 0.04, eyeMat,  0.09, 0.64, 0.2, false);
+  [body,headc,ear1,ear2,e1,e2].forEach(o => cat.add(o));
+  cat.position.set(-1.2, 0, 1.1); scene.add(cat);
 }
+
+/* ── Simulated online bots ──────────────────────────────── */
+function makeBot(name, color, x, z){
+  const root = group();
+  const body = box(0.55, 0.7, 0.3, mat(color), 0, 1.0, 0, false);
+  const head = box(0.4, 0.4, 0.4, mat(0xffc69b), 0, 1.65, 0, false);
+  const legL = box(0.18, 0.45, 0.22, mat(0x1a2a40), -0.14, 0.35, 0, false);
+  const legR = box(0.18, 0.45, 0.22, mat(0x1a2a40),  0.14, 0.35, 0, false);
+  [body,head,legL,legR].forEach(o => root.add(o));
+  root.position.set(x, 0, z);
+  root.userData = {name, targetX:x, targetZ:z, walkT:0, legL, legR, chatTimer:rand(8,20)};
+  scene.add(root); bots.push(root);
+  return root;
+}
+
+/* ── Build entire world ─────────────────────────────────── */
 function buildWorld(){
- scene=new THREE.Scene();scene.background=new THREE.Color(0x83c9f4);scene.fog=new THREE.Fog(0x9bd6f5,42,105);
- camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,180);camera.position.set(0,7,10);
- renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;$('world').appendChild(renderer.domElement);
- scene.add(new THREE.HemisphereLight(0xdff5ff,0x43644d,2.2));let sun=new THREE.DirectionalLight(0xffe9c1,3.1);sun.position.set(-18,28,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;scene.add(sun);
- // water plane
- let waterGeo=new THREE.PlaneGeometry(180,180,1,1);let waterMat=new THREE.MeshStandardMaterial({color:0x158dbb,roughness:.2,metalness:.3,transparent:true,opacity:.91});water=new THREE.Mesh(waterGeo,waterMat);water.rotation.x=-Math.PI/2;water.position.y=-1.9;scene.add(water);
- // main green island with layered rocky sides
- const island=makeIsland(0,0,18,0);
- // path plaza
- let plaza=box(9,.12,7,mat(0xc9b48d),0,.09,1);plaza.rotation.y=.1;
- let pathmat=mat(0xe6d3a5);for(let i=0;i<7;i++){let p=box(1.15,.07,1.15,pathmat,-3.6+i*1.2,.17,4.7);p.rotation.y=.08}
- // garden terraces
- for(let i=0;i<34;i++){let a=rand(0,Math.PI*2),r=rand(9,16.5),x=Math.cos(a)*r,z=Math.sin(a)*r;if(Math.abs(x)<4&&Math.abs(z)<5)continue;makeTree(x,z,rand(.65,1.2))}
- // houses and community buildings
- makeHouse(-5,1,0xffa95e,1.15);makeHouse(5,2,0x6ed7ed,1.05);makeHouse(-7,-5,0xef8fc7,.8);makeHouse(7,-6,0x897bff,.9);makeHouse(1,-9,0xffd166,.8);
- // fountain in plaza
- let pool=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.6,.25,32),mat(0x8bd8ed,.25,.2));pool.position.set(0,.23,-2);scene.add(pool);let waterjet=new THREE.Mesh(new THREE.CylinderGeometry(.12,.24,1.9,12),new THREE.MeshStandardMaterial({color:0x80edff,emissive:0x27c8ff,emissiveIntensity:.55,transparent:true,opacity:.8}));waterjet.position.set(0,1.25,-2);scene.add(waterjet);let ring=new THREE.Mesh(new THREE.TorusGeometry(.8,.06,8,32),mat(0x72f2ff,.2,.4));ring.rotation.x=Math.PI/2;ring.position.set(0,1.9,-2);scene.add(ring);
- // docks and bridges
- makeBridge(-1,7,1,15,.15);makeBridge(6,2,14,1,.12);makeBridge(-7,0,-15,-2,.12);
- // little nearby islands and their landmarks
- const i1=makeIsland(24,4,7,-.5);makeHouse(24,4,0x6cdeec,.7);for(let i=0;i<7;i++)makeTree(24+rand(-5,5),4+rand(-5,5),.65);
- const i2=makeIsland(-23,-8,6,-.2);makeHouse(-23,-8,0xffb35e,.72);for(let i=0;i<5;i++)makeTree(-23+rand(-4,4),-8+rand(-4,4),.65);
- const i3=makeIsland(6,29,5,-.1);for(let i=0;i<5;i++)makeTree(6+rand(-3,3),29+rand(-3,3),.7);makeLamp(6,29);
- makeBridge(15,1,19,3,-.05);makeBridge(-15,-2,-18,-5,.1);
- // rocks around coastline
- for(let i=0;i<70;i++){let a=rand(0,Math.PI*2),r=rand(18,21);makeRock(Math.cos(a)*r,rand(-1.8,-.4),Math.sin(a)*r,rand(.25,.9))}
- // glowing crystals
- for(let i=0;i<9;i++){let x=rand(-12,12),z=rand(-12,12);if(Math.abs(x)<5&&Math.abs(z)<5)continue;let c=box(.32,rand(.5,1.2),.32,new THREE.MeshStandardMaterial({color:0x63f4ff,emissive:0x20bfff,emissiveIntensity:1.4,metalness:.25,roughness:.2}),x,.45,z);c.rotation.z=rand(-.2,.2)}
- // clouds, sun and balloons
- let cloudmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1});for(let i=0;i<12;i++){let g=group();let x=rand(-45,45),y=rand(15,27),z=rand(-45,45);for(let j=0;j<4;j++){let s=box(rand(2,4),rand(1,2),rand(1.5,3),cloudmat,x+rand(-2,2),y+rand(-.5,.5),z+rand(-1,1),false);g.add(s)}worldObjects.push(g)}
- let sunball=new THREE.Mesh(new THREE.SphereGeometry(3,20,16),new THREE.MeshBasicMaterial({color:0xfff1bb}));sunball.position.set(-35,27,-48);scene.add(sunball);
- // floating island shards and little hot-air balloon
- for(let i=0;i<5;i++){let a=rand(0,6.28),r=rand(27,43),x=Math.cos(a)*r,z=Math.sin(a)*r;let rock=new THREE.Mesh(new THREE.ConeGeometry(rand(1,2),rand(3,6),6),mat(0x766d78));rock.position.set(x,rand(4,11),z);rock.rotation.x=Math.PI;scene.add(rock)}
- let balloon=group();let ball=new THREE.Mesh(new THREE.SphereGeometry(1.45,18,16),new THREE.MeshStandardMaterial({color:0xffa64d,roughness:.7}));ball.scale.set(.85,1.2,.85);balloon.add(ball);let stripe=new THREE.Mesh(new THREE.TorusGeometry(1.1,.2,8,20),mat(0x5a78ff));stripe.position.y=.25;stripe.rotation.x=Math.PI/2;balloon.add(stripe);let basket=box(.4,.3,.4,mat(0x8b5a38),0,-2,0,false);balloon.add(basket);balloon.position.set(-10,10,-9);scene.add(balloon);balloon.userData.float=true;worldObjects.push(balloon);
- makePlayer();raycaster=new THREE.Raycaster();clock=new THREE.Clock();
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x83c9f4);
+  scene.fog = new THREE.Fog(0x9bd6f5, 48, 115);
+
+  camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 200);
+  camera.position.set(0, 6.5, 9);
+
+  renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1, 1.6));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  $('world').appendChild(renderer.domElement);
+
+  ambientLight = new THREE.HemisphereLight(0xdff5ff, 0x43644d, 1.9);
+  scene.add(ambientLight);
+  sunLight = new THREE.DirectionalLight(0xffe9c1, 2.8);
+  sunLight.position.set(-16, 26, 14);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(1024, 1024);
+  sunLight.shadow.camera.left = -28; sunLight.shadow.camera.right = 28;
+  sunLight.shadow.camera.top = 28; sunLight.shadow.camera.bottom = -28;
+  sunLight.shadow.bias = -0.001;
+  scene.add(sunLight);
+
+  // Water
+  const waterGeo = new THREE.PlaneGeometry(200, 200, 1, 1);
+  const waterMat = new THREE.MeshStandardMaterial({
+    color:0x158dbb, roughness:0.15, metalness:0.35, transparent:true, opacity:0.9
+  });
+  water = new THREE.Mesh(waterGeo, waterMat);
+  water.rotation.x = -Math.PI/2; water.position.y = -1.85; scene.add(water);
+
+  // Main island
+  makeIsland(0, 0, 18.5, 0);
+
+  // Plaza & paths
+  box(9, 0.1, 7, mat(0xc9b48d), 0, 0.08, 1);
+  for(let i=0;i<8;i++) box(1.1, 0.06, 1.1, mat(0xe6d3a5), -4+i*1.15, 0.14, 4.6);
+
+  // Trees
+  for(let i=0;i<38;i++){
+    const a=rand(0,Math.PI*2), r=rand(8.5,16.8);
+    const x=Math.cos(a)*r, z=Math.sin(a)*r;
+    if(Math.abs(x)<4.5 && Math.abs(z)<5.5) continue;
+    makeTree(x, z, rand(0.6, 1.25));
+  }
+
+  // Houses
+  makeHouse(-5.2, 1.2, 0xffa95e, 1.1);
+  makeHouse(5.3, 2.1, 0x6ed7ed, 1.0);
+  makeHouse(-7.5, -5.2, 0xef8fc7, 0.85);
+  makeHouse(7.2, -6.1, 0x897bff, 0.9);
+  makeHouse(0.5, -9.5, 0xffd166, 0.85);
+
+  // Fountain
+  const pool = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.55, 0.22, 28), mat(0x8bd8ed, 0.2, 0.3));
+  pool.position.set(0, 0.2, -2.2); scene.add(pool);
+  const jet = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.2, 1.8, 10),
+    new THREE.MeshStandardMaterial({color:0x80edff, emissive:0x27c8ff, emissiveIntensity:0.5, transparent:true, opacity:0.75})
+  );
+  jet.position.set(0, 1.2, -2.2); scene.add(jet);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.05, 8, 28), mat(0x72f2ff, 0.15, 0.5));
+  ring.rotation.x = Math.PI/2; ring.position.set(0, 1.85, -2.2); scene.add(ring);
+
+  // Bridges
+  makeBridge(-1, 7.2, 1.2, 15.5, 0.14);
+  makeBridge(6.5, 2.2, 14.5, 1.5, 0.12);
+  makeBridge(-7.5, 0.2, -15.5, -2.5, 0.12);
+
+  // Side islands
+  makeIsland(25, 5, 7.2, -0.4); makeHouse(25, 5, 0x6cdeec, 0.7);
+  for(let i=0;i<6;i++) makeTree(25+rand(-4.5,4.5), 5+rand(-4.5,4.5), 0.6);
+  makeIsland(-24, -9, 6.2, -0.25); makeHouse(-24, -9, 0xffb35e, 0.7);
+  for(let i=0;i<5;i++) makeTree(-24+rand(-3.8,3.8), -9+rand(-3.8,3.8), 0.6);
+  makeIsland(7, 30, 5.5, -0.15);
+  for(let i=0;i<5;i++) makeTree(7+rand(-3,3), 30+rand(-3,3), 0.65);
+  makeLamp(7, 30);
+  makeBridge(15.5, 1.5, 20, 3.5, -0.05);
+  makeBridge(-15.5, -2.5, -19, -6, 0.08);
+
+  // Coast rocks
+  for(let i=0;i<65;i++){
+    const a=rand(0,Math.PI*2), r=rand(18.5,21.5);
+    makeRock(Math.cos(a)*r, rand(-1.7,-0.35), Math.sin(a)*r, rand(0.22,0.85));
+  }
+
+  // Crystals
+  for(let i=0;i<10;i++){
+    const x=rand(-13,13), z=rand(-13,13);
+    if(Math.abs(x)<5 && Math.abs(z)<5) continue;
+    const c = box(0.28, rand(0.45,1.15), 0.28,
+      new THREE.MeshStandardMaterial({color:0x63f4ff, emissive:0x20bfff, emissiveIntensity:1.35, metalness:0.3, roughness:0.2}),
+      x, 0.4, z);
+    c.rotation.z = rand(-0.25,0.25);
+  }
+
+  // Clouds
+  const cloudmat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:1});
+  for(let i=0;i<14;i++){
+    const g = group();
+    const x=rand(-50,50), y=rand(14,28), z=rand(-50,50);
+    for(let j=0;j<4;j++){
+      const s = box(rand(2,4), rand(0.9,1.8), rand(1.4,2.8), cloudmat,
+        x+rand(-2,2), y+rand(-0.4,0.4), z+rand(-1.2,1.2), false);
+      g.add(s);
+    }
+    worldObjects.push(g);
+  }
+
+  // Sun ball
+  const sunball = new THREE.Mesh(new THREE.SphereGeometry(2.8, 18, 14), new THREE.MeshBasicMaterial({color:0xfff1bb}));
+  sunball.position.set(-38, 28, -50); scene.add(sunball);
+
+  // Floating rocks & balloon
+  for(let i=0;i<6;i++){
+    const a=rand(0,6.28), r=rand(28,45);
+    const rock = new THREE.Mesh(new THREE.ConeGeometry(rand(1,2.2), rand(2.8,5.5), 6), mat(0x766d78));
+    rock.position.set(Math.cos(a)*r, rand(4,12), Math.sin(a)*r);
+    rock.rotation.x = Math.PI; scene.add(rock);
+  }
+  const balloon = group();
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 14), new THREE.MeshStandardMaterial({color:0xffa64d, roughness:0.65}));
+  ball.scale.set(0.85, 1.2, 0.85); balloon.add(ball);
+  const stripe = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.18, 8, 18), mat(0x5a78ff));
+  stripe.position.y = 0.2; stripe.rotation.x = Math.PI/2; balloon.add(stripe);
+  const basket = box(0.38, 0.28, 0.38, mat(0x8b5a38), 0, -1.95, 0, false); balloon.add(basket);
+  balloon.position.set(-11, 10.5, -10); balloon.userData.float = true; scene.add(balloon); worldObjects.push(balloon);
+
+  // Player & bots
+  makePlayer();
+  makeBot('سارا', 0xff6b9d, 4, -3);
+  makeBot('رضا', 0x4ecdc4, -6, 3);
+  makeBot('آیدا', 0xffd166, 8, 6);
+  makeBot('امیر', 0xa78bfa, -3, -7);
+
+  raycaster = new THREE.Raycaster();
+  clock = new THREE.Clock();
 }
-function blockMaterial(type){switch(type){case'wood':return mat(0x9b7045);case'stone':return mat(0x8b9cac);case'leaf':return mat(0x42b86c);case'lamp':return new THREE.MeshStandardMaterial({color:0xffd66b,emissive:0xffa21a,emissiveIntensity:1.6});case'glass':return new THREE.MeshPhysicalMaterial({color:0x63e9ff,transparent:true,opacity:.62,roughness:.1,metalness:.1});default:return mat(0x9b7045)}}
-function placeBlock(){let type=state.selected;if(state.inventory[type]<=0){toast('از این بلوک نداری؛ از فروشگاه تهیه کن.');return}let fwd=new THREE.Vector3(Math.sin(state.yaw),0,-Math.cos(state.yaw));let x=Math.round(avatarRoot.position.x+fwd.x*2),z=Math.round(avatarRoot.position.z+fwd.z*2);x=Math.max(-17,Math.min(17,x));z=Math.max(-17,Math.min(17,z));let y=.55;for(let b of state.placed)if(b.x===x&&b.z===z)y=Math.max(y,b.y+1);let mesh=box(.98,.98,.98,blockMaterial(type),x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.placed=true;state.placed.push({x,y,z,type,mesh});state.inventory[type]--;state.blocks++;state.xp+=15;state.coins+=2;updateHUD();toast('بلوک '+({wood:'چوبی',stone:'سنگی',leaf:'سبز',lamp:'چراغ',glass:'شیشه‌ای'}[type]||'')+' ساخته شد!');if(state.blocks>=3&&!state.questDone){state.questDone=true;state.coins+=100;toast('🎉 مأموریت تکمیل شد! ۱۰۰ سکه جایزه');updateHUD()}saveLocal()}
-function removeBlock(){if(!state.placed.length){toast('هنوز سازه‌ای نساخته‌ای.');return}let b=state.placed.pop();scene.remove(b.mesh);state.inventory[b.type]=(state.inventory[b.type]||0)+1;state.blocks=Math.max(0,state.blocks-1);updateHUD();toast('بلوک برداشته شد.');saveLocal()}
-function updateHUD(){$('coins').textContent=state.coins;$('gems').textContent=state.gems;$('level').textContent=state.level;$('xpbar').style.width=(state.xp%5000/50)+'%';$('questcount').textContent=Math.min(3,state.blocks);$('questbar').style.width=Math.min(100,state.blocks/3*100)+'%';document.querySelectorAll('.slot').forEach(el=>{let t=el.dataset.block;el.classList.toggle('active',t===state.selected);el.querySelector('small').textContent=state.inventory[t]||0})}
-function saveLocal(){try{localStorage.setItem('hamdeli3d-save-v1',JSON.stringify({coins:state.coins,gems:state.gems,blocks:state.placed.map(b=>({x:b.x,y:b.y,z:b.z,type:b.type})),inventory:state.inventory,player:{x:avatarRoot.position.x,z:avatarRoot.position.z,yaw:state.yaw},xp:state.xp,questDone:!!state.questDone}));}catch(e){}}
-function loadLocal(){try{let d=JSON.parse(localStorage.getItem('hamdeli3d-save-v1')||'null');if(!d)return;state.coins=d.coins??state.coins;state.gems=d.gems??state.gems;state.inventory={...state.inventory,...d.inventory};state.xp=d.xp||state.xp;state.questDone=!!d.questDone;if(d.player){avatarRoot.position.set(d.player.x||0,0,d.player.z||0);state.yaw=d.player.yaw||0}for(let b of (d.blocks||[])){let mesh=box(.98,.98,.98,blockMaterial(b.type),b.x,b.y,b.z);mesh.userData.placed=true;state.placed.push({...b,mesh});state.blocks++}updateHUD()}catch(e){}}
-function moveCamera(dt){const p=avatarRoot.position;let offset=new THREE.Vector3(Math.sin(state.yaw)*8,4.8,Math.cos(state.yaw)*8);let target=new THREE.Vector3(p.x+offset.x,p.y+offset.y+state.pitch*4,p.z+offset.z);camera.position.lerp(target,1-Math.exp(-4*dt));camera.lookAt(p.x,p.y+1.05,p.z)}
-function animate(){animId=requestAnimationFrame(animate);if(!renderer||!scene)return;let dt=Math.min(clock.getDelta(),.04);dayTime+=dt;let moving=false;let forward=state.moveZ,side=state.moveX;if(keys.ArrowUp||keys.KeyW)forward=-1;if(keys.ArrowDown||keys.KeyS)forward=1;if(keys.ArrowLeft||keys.KeyA)side=-1;if(keys.ArrowRight||keys.KeyD)side=1;
- let fx=Math.sin(state.yaw),fz=-Math.cos(state.yaw),rx=Math.cos(state.yaw),rz=Math.sin(state.yaw);let dx=(fx*(-forward)+rx*side),dz=(fz*(-forward)+rz*side);let len=Math.hypot(dx,dz);if(len>.01){dx/=len;dz/=len;let speed=state.quality==='low'?4.2:5.1;avatarRoot.position.x+=dx*speed*dt;avatarRoot.position.z+=dz*speed*dt;state.yaw=Math.atan2(dx,-dz);moving=true;walkTime+=dt*9}
- avatarRoot.position.x=Math.max(-17,Math.min(17,avatarRoot.position.x));avatarRoot.position.z=Math.max(-17,Math.min(17,avatarRoot.position.z));
- if(!state.onGround){state.jumpV-=18*dt;avatarRoot.position.y+=state.jumpV*dt;if(avatarRoot.position.y<=0){avatarRoot.position.y=0;state.jumpV=0;state.onGround=true}}
- if(player&&player.userData.legL){let swing=moving?Math.sin(walkTime)*.55:0;player.userData.legL.rotation.x=swing;player.userData.legR.rotation.x=-swing;player.userData.armL.rotation.x=-swing*.65;player.userData.armR.rotation.x=swing*.65}
- cat.position.x+=(avatarRoot.position.x-1-cat.position.x)*Math.min(1,dt*2.5);cat.position.z+=(avatarRoot.position.z+1-cat.position.z)*Math.min(1,dt*2.5);cat.position.y=.04+Math.abs(Math.sin(dayTime*2.8))*.1;cat.rotation.y=Math.sin(dayTime)*.2;
- for(let o of worldObjects)if(o.userData.float)o.position.y=10+Math.sin(dayTime*.8)*.6;
- water.material.color.setHSL(.53,.72,.36+Math.sin(dayTime*.4)*.025);water.position.y=-1.9+Math.sin(dayTime*.65)*.04;
- moveCamera(dt);renderer.render(scene,camera);drawMap();$('coords').textContent='X: '+Math.round(avatarRoot.position.x)+' · Z: '+Math.round(avatarRoot.position.z)}
-function drawMap(){let c=$('mapcanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,180,180);ctx.fillStyle='#164e61';ctx.fillRect(0,0,180,180);ctx.fillStyle='#55a96e';ctx.beginPath();ctx.arc(90,90,70,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d2c49a';ctx.beginPath();ctx.ellipse(90,93,36,24,-.2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#9fe4f4';ctx.beginPath();ctx.arc(90,93,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8d56b';ctx.beginPath();ctx.moveTo(90,73);ctx.lineTo(82,96);ctx.lineTo(90,91);ctx.lineTo(98,96);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.font='12px sans-serif';ctx.fillText('N',86,17)}
-function openModal(title,body){$('modtitle').textContent=title;$('modbody').innerHTML=body;$('modal').classList.add('open')}
-function closeModal(){$('modal').classList.remove('open')}
-function inventoryModal(){openModal('🎒 کوله‌پشتی','<p>وسایل دنیای تو</p><div class="rowbtn">'+Object.entries(state.inventory).map(([k,v])=>'<button class="btn" data-pick="'+k+'">'+({wood:'🪵 چوب',stone:'🧱 سنگ',leaf:'🌿 برگ',lamp:'🏮 چراغ',glass:'💠 شیشه'}[k])+' · '+v+'</button>').join('')+'</div><p class="smallnote">یک بلوک را انتخاب کن، سپس دکمه «قرار دادن» را بزن.</p>');$('modbody').querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{state.selected=b.dataset.pick;updateHUD();closeModal();toast('بلوک انتخاب شد')})}
-function settingsModal(){openModal('⚙️ تنظیمات','<p>کیفیت گرافیک</p><select id="quality"><option value="high">بالا — سایه و نور</option><option value="medium">متوسط — مناسب بیشتر گوشی‌ها</option><option value="low">اقتصادی — مصرف کمتر باتری</option></select><p class="smallnote">نسخه وب از امکانات دستگاه و WebGL استفاده می‌کند. در صورت افت فریم، کیفیت اقتصادی را انتخاب کن.</p><p>ذخیره فعلی فقط روی همین مرورگر است.</p>');$('quality').value=state.quality;$('quality').onchange=e=>{state.quality=e.target.value;renderer.shadowMap.enabled=state.quality==='high';renderer.setPixelRatio(Math.min(devicePixelRatio||1,state.quality==='high'?1.7:state.quality==='medium'?1.25:1));toast('کیفیت به‌روزرسانی شد')}}
-function shopModal(){openModal('🏪 فروشگاه جزیره','<p>با سکه‌های بازی، بسته بلوک بخرید.</p><div class="rowbtn"><button class="btn gold" data-buy="wood">🪵 10 چوب · 30 🪙</button><button class="btn gold" data-buy="stone">🧱 10 سنگ · 40 🪙</button><button class="btn gold" data-buy="leaf">🌿 5 برگ · 25 🪙</button><button class="btn gold" data-buy="lamp">🏮 3 چراغ · 45 🪙</button><button class="btn gold" data-buy="glass">💠 5 شیشه · 50 🪙</button></div><p class="smallnote">این سکه‌ها صرفاً امتیاز داخل بازی‌اند و ارزش مالی ندارند.</p>');$('modbody').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{let t=b.dataset.buy,cost={wood:30,stone:40,leaf:25,lamp:45,glass:50}[t];if(state.coins<cost){toast('سکه کافی نیست');return}state.coins-=cost;state.inventory[t]+={wood:10,stone:10,leaf:5,lamp:3,glass:5}[t];updateHUD();saveLocal();toast('بسته به کوله اضافه شد')})}
-function friendsModal(){openModal('👥 بازیکنان','<p>در این نسخه محیط سه‌بعدی و شخصیت همراه به‌صورت محلی اجرا می‌شوند.</p><p>👤 تو — سازنده جزیره</p><p>🧑🏻 سارا — بازدیدکننده نمونه</p><p>🧑🏽 رضا — سازنده نمونه</p><p class="smallnote">بازیکنان نمونه واقعی و آنلاین نیستند. برای چندنفره واقعی باید احراز هویت، جدول حضور و کانال Realtime در Supabase با سیاست‌های امن راه‌اندازی شود.</p>')}
-function showTab(t){document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));if(t==='build'){state.buildMode=true;toast('حالت ساخت فعال است؛ بلوک را انتخاب و قرار بده.')}else if(t==='worlds'){openModal('🌐 دنیاها','<p>🌴 جزیره همدلی — دنیای فعلی</p><p>🏔️ جزیره کوهستان — به‌زودی</p><p>🌌 جزیره آسمانی — به‌زودی</p><p class="smallnote">در این نسخه فقط دنیای محلی فعلی قابل‌بازی است.</p>')}else if(t==='home')toast('به خانه‌ات خوش آمدی!')}
+
+/* ── Place / remove blocks ──────────────────────────────── */
+function placeBlock(){
+  const type = state.selected;
+  if((state.inventory[type]||0) <= 0){ toast('از این بلوک نداری؛ از فروشگاه بخر.'); return; }
+  const fwd = new THREE.Vector3(Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+  let x = Math.round(avatarRoot.position.x + fwd.x * 2.2);
+  let z = Math.round(avatarRoot.position.z + fwd.z * 2.2);
+  x = Math.max(-17, Math.min(17, x));
+  z = Math.max(-17, Math.min(17, z));
+  let y = 0.52;
+  for(const b of state.placed){
+    if(b.x === x && b.z === z) y = Math.max(y, b.y + 1);
+  }
+  // Prevent stacking too high
+  if(y > 8){ toast('بلندتر از این نمی‌شود.'); return; }
+  const mesh = box(0.98, 0.98, 0.98, blockMaterial(type), x, y, z);
+  mesh.userData.placed = true;
+  state.placed.push({x, y, z, type, mesh});
+  state.inventory[type]--;
+  state.blocks++;
+  state.xp += 18;
+  state.coins += 3;
+  updateHUD();
+  toast('بلوک ' + (BLOCK_LABELS[type]||'') + ' ساخته شد!');
+  if(state.blocks >= 3 && !state.questDone){
+    state.questDone = true;
+    state.coins += 100;
+    toast('🎉 مأموریت تکمیل شد! +۱۰۰ سکه');
+    updateHUD();
+  }
+  // Level up check
+  if(state.xp >= state.level * 5000){
+    state.level++;
+    state.gems += 5;
+    toast('✨ سطح جدید! سطح ' + state.level);
+    updateHUD();
+  }
+  saveLocal();
+}
+function removeBlock(){
+  if(!state.placed.length){ toast('هنوز سازه‌ای نساخته‌ای.'); return; }
+  // Remove nearest block in front
+  const fwd = new THREE.Vector3(Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+  const px = avatarRoot.position.x + fwd.x * 2;
+  const pz = avatarRoot.position.z + fwd.z * 2;
+  let best = -1, bestD = 99;
+  state.placed.forEach((b,i)=>{
+    const d = Math.hypot(b.x - px, b.z - pz);
+    if(d < bestD && d < 2.5){ bestD = d; best = i; }
+  });
+  if(best < 0){ // fallback to last
+    best = state.placed.length - 1;
+  }
+  const b = state.placed.splice(best, 1)[0];
+  scene.remove(b.mesh);
+  if(b.mesh.geometry) b.mesh.geometry.dispose();
+  state.inventory[b.type] = (state.inventory[b.type]||0) + 1;
+  state.blocks = Math.max(0, state.blocks - 1);
+  updateHUD();
+  toast('بلوک برداشته شد.');
+  saveLocal();
+}
+
+/* ── HUD & persistence ──────────────────────────────────── */
+function updateHUD(){
+  $('coins').textContent = state.coins;
+  $('gems').textContent = state.gems;
+  $('level').textContent = state.level;
+  const xpPct = ((state.xp % 5000) / 50);
+  $('xpbar').style.width = Math.min(100, xpPct) + '%';
+  $('questcount').textContent = Math.min(3, state.blocks);
+  $('questbar').style.width = Math.min(100, state.blocks / 3 * 100) + '%';
+  document.querySelectorAll('.slot').forEach(el=>{
+    const t = el.dataset.block;
+    el.classList.toggle('active', t === state.selected);
+    const sm = el.querySelector('small');
+    if(sm) sm.textContent = state.inventory[t] || 0;
+  });
+}
+function saveLocal(){
+  try{
+    localStorage.setItem('hamdeli3d-pro-v2', JSON.stringify({
+      coins:state.coins, gems:state.gems, xp:state.xp, level:state.level,
+      blocks:state.placed.map(b=>({x:b.x,y:b.y,z:b.z,type:b.type})),
+      inventory:state.inventory,
+      player:{x:avatarRoot.position.x, z:avatarRoot.position.z, yaw:state.yaw},
+      questDone:!!state.questDone
+    }));
+  }catch(e){}
+}
+function loadLocal(){
+  try{
+    const d = JSON.parse(localStorage.getItem('hamdeli3d-pro-v2') || 'null');
+    if(!d) return;
+    state.coins = d.coins ?? state.coins;
+    state.gems = d.gems ?? state.gems;
+    state.xp = d.xp || state.xp;
+    state.level = d.level || state.level;
+    state.inventory = {...state.inventory, ...d.inventory};
+    state.questDone = !!d.questDone;
+    if(d.player){
+      avatarRoot.position.set(d.player.x||0, 0, d.player.z||0);
+      state.yaw = d.player.yaw || 0;
+    }
+    for(const b of (d.blocks||[])){
+      const mesh = box(0.98, 0.98, 0.98, blockMaterial(b.type), b.x, b.y, b.z);
+      mesh.userData.placed = true;
+      state.placed.push({...b, mesh});
+      state.blocks++;
+    }
+    updateHUD();
+  }catch(e){}
+}
+
+/* ── Smooth movement & camera ───────────────────────────── */
+function updateMovement(dt){
+  let forward = state.moveZ, side = state.moveX;
+  if(keys.ArrowUp || keys.KeyW) forward = -1;
+  if(keys.ArrowDown || keys.KeyS) forward = 1;
+  if(keys.ArrowLeft || keys.KeyA) side = -1;
+  if(keys.ArrowRight || keys.KeyD) side = 1;
+
+  // Desired direction in world space
+  const fx = Math.sin(state.yaw), fz = -Math.cos(state.yaw);
+  const rx = Math.cos(state.yaw), rz = Math.sin(state.yaw);
+  let dx = fx * (-forward) + rx * side;
+  let dz = fz * (-forward) + rz * side;
+  const len = Math.hypot(dx, dz);
+  if(len > 0.01){ dx /= len; dz /= len; }
+
+  // Acceleration / friction (smooth Roblox-like feel)
+  const maxSpeed = state.running ? 7.8 : 4.8;
+  const accel = state.running ? 28 : 18;
+  const friction = 14;
+
+  if(len > 0.01){
+    state.velX += dx * accel * dt;
+    state.velZ += dz * accel * dt;
+    // Cap speed
+    const spd = Math.hypot(state.velX, state.velZ);
+    if(spd > maxSpeed){
+      state.velX = (state.velX / spd) * maxSpeed;
+      state.velZ = (state.velZ / spd) * maxSpeed;
+    }
+  } else {
+    // Friction when no input
+    const spd = Math.hypot(state.velX, state.velZ);
+    if(spd > 0.01){
+      const f = Math.max(0, 1 - friction * dt);
+      state.velX *= f; state.velZ *= f;
+    } else {
+      state.velX = 0; state.velZ = 0;
+    }
+  }
+
+  // Apply velocity
+  let moving = Math.hypot(state.velX, state.velZ) > 0.15;
+  avatarRoot.position.x += state.velX * dt;
+  avatarRoot.position.z += state.velZ * dt;
+
+  // Soft collision with placed blocks
+  for(const b of state.placed){
+    const dxb = avatarRoot.position.x - b.x;
+    const dzb = avatarRoot.position.z - b.z;
+    if(Math.abs(dxb) < 0.7 && Math.abs(dzb) < 0.7 && avatarRoot.position.y < b.y + 0.9){
+      // Push out
+      if(Math.abs(dxb) > Math.abs(dzb)){
+        avatarRoot.position.x = b.x + Math.sign(dxb || 1) * 0.72;
+        state.velX = 0;
+      } else {
+        avatarRoot.position.z = b.z + Math.sign(dzb || 1) * 0.72;
+        state.velZ = 0;
+      }
+    }
+  }
+
+  // Bounds
+  avatarRoot.position.x = Math.max(-17.5, Math.min(17.5, avatarRoot.position.x));
+  avatarRoot.position.z = Math.max(-17.5, Math.min(17.5, avatarRoot.position.z));
+
+  // Face movement direction smoothly
+  if(moving){
+    const targetYaw = Math.atan2(state.velX, -state.velZ);
+    let dy = targetYaw - state.yaw;
+    while(dy > Math.PI) dy -= Math.PI*2;
+    while(dy < -Math.PI) dy += Math.PI*2;
+    state.yaw += dy * Math.min(1, 10 * dt);
+  }
+
+  // Jump physics
+  if(!state.onGround){
+    state.jumpV -= 22 * dt;
+    avatarRoot.position.y += state.jumpV * dt;
+    if(avatarRoot.position.y <= 0){
+      avatarRoot.position.y = 0;
+      state.jumpV = 0;
+      state.onGround = true;
+    }
+  }
+
+  // Walk animation
+  if(player && player.userData.legL){
+    if(moving){
+      walkTime += dt * (state.running ? 14 : 9);
+      const swing = Math.sin(walkTime) * (state.running ? 0.7 : 0.5);
+      player.userData.legL.rotation.x = swing;
+      player.userData.legR.rotation.x = -swing;
+      player.userData.armL.rotation.x = -swing * 0.7;
+      player.userData.armR.rotation.x = swing * 0.7;
+    } else {
+      // Ease back to idle
+      player.userData.legL.rotation.x *= 0.85;
+      player.userData.legR.rotation.x *= 0.85;
+      player.userData.armL.rotation.x *= 0.85;
+      player.userData.armR.rotation.x *= 0.85;
+    }
+  }
+
+  return moving;
+}
+
+function moveCamera(dt){
+  const p = avatarRoot.position;
+  const dist = 7.5, height = 4.2;
+  const offset = new THREE.Vector3(
+    Math.sin(state.yaw) * dist,
+    height + state.pitch * 3.5,
+    Math.cos(state.yaw) * dist
+  );
+  const target = new THREE.Vector3(p.x + offset.x, p.y + offset.y, p.z + offset.z);
+  // Smooth follow (frame-rate independent)
+  const t = 1 - Math.exp(-5.5 * dt);
+  camera.position.lerp(target, t);
+  camera.lookAt(p.x, p.y + 1.15, p.z);
+}
+
+/* ── Bots AI (online simulation) ────────────────────────── */
+function updateBots(dt){
+  for(const bot of bots){
+    const ud = bot.userData;
+    // Random wander
+    if(Math.hypot(bot.position.x - ud.targetX, bot.position.z - ud.targetZ) < 0.8){
+      ud.targetX = rand(-14, 14);
+      ud.targetZ = rand(-14, 14);
+    }
+    const dx = ud.targetX - bot.position.x;
+    const dz = ud.targetZ - bot.position.z;
+    const len = Math.hypot(dx, dz) || 1;
+    const spd = 2.2;
+    bot.position.x += (dx/len) * spd * dt;
+    bot.position.z += (dz/len) * spd * dt;
+    bot.rotation.y = Math.atan2(dx, dz);
+    // Simple leg swing
+    ud.walkT += dt * 8;
+    if(ud.legL){
+      ud.legL.rotation.x = Math.sin(ud.walkT) * 0.4;
+      ud.legR.rotation.x = -Math.sin(ud.walkT) * 0.4;
+    }
+    // Occasional chat
+    ud.chatTimer -= dt;
+    if(ud.chatTimer <= 0){
+      ud.chatTimer = rand(12, 28);
+      const msgs = [
+        'چه جزیره زیبایی! 🌸', 'بیایید با هم بسازیم 🏗️', 'سلام دوست عزیز 👋',
+        'اینجا خیلی آرامش‌بخشه 💙', 'پل جدید عالی شد!', 'همدلی یعنی کمک به هم ❤️',
+        'دارم خانه می‌سازم 🏠', 'کی می‌خواد شنا کنه؟ 🌊'
+      ];
+      addChatLine(ud.name, msgs[Math.floor(Math.random()*msgs.length)]);
+    }
+  }
+}
+
+function addChatLine(name, text){
+  const log = $('chatlog');
+  const d = document.createElement('div');
+  d.className = 'chatline';
+  const b = document.createElement('b');
+  b.textContent = name + ': ';
+  d.appendChild(b);
+  d.appendChild(document.createTextNode(text));
+  log.appendChild(d);
+  while(log.children.length > 8) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ── Map & coords ───────────────────────────────────────── */
+function drawMap(){
+  const c = $('mapcanvas'), ctx = c.getContext('2d');
+  ctx.clearRect(0,0,180,180);
+  ctx.fillStyle = '#164e61'; ctx.fillRect(0,0,180,180);
+  ctx.fillStyle = '#55a96e'; ctx.beginPath(); ctx.arc(90,90,72,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#d2c49a'; ctx.beginPath(); ctx.ellipse(90,93,34,22,-0.15,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#9fe4f4'; ctx.beginPath(); ctx.arc(90,93,7,0,Math.PI*2); ctx.fill();
+  // Player dot
+  if(avatarRoot){
+    const mx = 90 + avatarRoot.position.x * 3.5;
+    const mz = 90 + avatarRoot.position.z * 3.5;
+    ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.arc(mx, mz, 4, 0, Math.PI*2); ctx.fill();
+    // Direction
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(mx, mz);
+    ctx.lineTo(mx + Math.sin(state.yaw)*10, mz - Math.cos(state.yaw)*10);
+    ctx.stroke();
+  }
+  // Bots
+  ctx.fillStyle = '#6cf4ff';
+  for(const bot of bots){
+    const mx = 90 + bot.position.x * 3.5;
+    const mz = 90 + bot.position.z * 3.5;
+    ctx.beginPath(); ctx.arc(mx, mz, 3, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle = '#fff'; ctx.font = '11px sans-serif'; ctx.fillText('N', 84, 16);
+}
+
+/* ── Animate loop ───────────────────────────────────────── */
+function animate(){
+  animId = requestAnimationFrame(animate);
+  if(!renderer || !scene) return;
+  const dt = Math.min(clock.getDelta(), 0.05);
+  dayTime += dt;
+
+  updateMovement(dt);
+  updateBots(dt);
+
+  // Companion follows
+  if(cat){
+    cat.position.x += (avatarRoot.position.x - 1.3 - cat.position.x) * Math.min(1, dt * 2.2);
+    cat.position.z += (avatarRoot.position.z + 1.0 - cat.position.z) * Math.min(1, dt * 2.2);
+    cat.position.y = 0.03 + Math.abs(Math.sin(dayTime * 2.6)) * 0.09;
+    cat.rotation.y = Math.sin(dayTime * 0.7) * 0.25;
+  }
+
+  // Floating objects
+  for(const o of worldObjects){
+    if(o.userData && o.userData.float) o.position.y = 10.5 + Math.sin(dayTime * 0.7) * 0.55;
+  }
+
+  // Water gentle motion
+  water.material.color.setHSL(0.53, 0.72, 0.36 + Math.sin(dayTime * 0.35) * 0.02);
+  water.position.y = -1.85 + Math.sin(dayTime * 0.55) * 0.035;
+
+  // Soft day cycle (light intensity)
+  const dayFactor = 0.85 + Math.sin(dayTime * 0.08) * 0.15;
+  sunLight.intensity = 2.5 * dayFactor;
+  ambientLight.intensity = 1.7 * dayFactor;
+
+  moveCamera(dt);
+  renderer.render(scene, camera);
+  drawMap();
+  $('coords').textContent = 'X: ' + Math.round(avatarRoot.position.x) + ' · Z: ' + Math.round(avatarRoot.position.z);
+}
+
+/* ── UI modals ──────────────────────────────────────────── */
+function openModal(title, body){
+  $('modtitle').textContent = title;
+  $('modbody').innerHTML = body;
+  $('modal').classList.add('open');
+}
+function closeModal(){ $('modal').classList.remove('open'); }
+
+function inventoryModal(){
+  const items = Object.entries(state.inventory).map(([k,v]) =>
+    `<button class="btn" data-pick="${k}">${BLOCK_ICONS[k]||'⬜'} ${BLOCK_LABELS[k]||k} · ${v}</button>`
+  ).join('');
+  openModal('🎒 کوله‌پشتی',
+    `<p>وسایل دنیای تو</p><div class="rowbtn">${items}</div>
+     <p class="smallnote">یک بلوک را انتخاب کن، سپس دکمه «قرار دادن» را بزن یا روی زمین ضربه بزن.</p>`);
+  $('modbody').querySelectorAll('[data-pick]').forEach(b => {
+    b.onclick = () => { state.selected = b.dataset.pick; updateHUD(); closeModal(); toast('بلوک انتخاب شد'); };
+  });
+}
+function settingsModal(){
+  openModal('⚙️ تنظیمات',
+    `<p>کیفیت گرافیک</p>
+     <select id="quality">
+       <option value="high">بالا — سایه و نور کامل</option>
+       <option value="medium">متوسط — مناسب بیشتر گوشی‌ها</option>
+       <option value="low">اقتصادی — مصرف کمتر باتری</option>
+     </select>
+     <p class="smallnote">در صورت افت فریم، کیفیت اقتصادی را انتخاب کن. ذخیره فقط روی همین مرورگر است.</p>
+     <p>حالت افقی و عمودی هر دو پشتیبانی می‌شوند.</p>`);
+  $('quality').value = state.quality;
+  $('quality').onchange = e => {
+    state.quality = e.target.value;
+    renderer.shadowMap.enabled = state.quality !== 'low';
+    const pr = state.quality === 'high' ? 1.6 : state.quality === 'medium' ? 1.2 : 1;
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1, pr));
+    toast('کیفیت به‌روزرسانی شد');
+  };
+}
+function shopModal(){
+  const packs = [
+    {t:'wood', n:'۱۰ چوب', c:30, a:10}, {t:'stone', n:'۱۰ سنگ', c:40, a:10},
+    {t:'brick', n:'۸ آجر', c:35, a:8}, {t:'grass', n:'۱۰ چمن', c:28, a:10},
+    {t:'glass', n:'۶ شیشه', c:50, a:6}, {t:'neon', n:'۴ نئون', c:60, a:4},
+    {t:'metal', n:'۶ فلز', c:55, a:6}, {t:'sand', n:'۱۲ ماسه', c:25, a:12}
+  ];
+  const btns = packs.map(p =>
+    `<button class="btn gold" data-buy="${p.t}" data-cost="${p.c}" data-amt="${p.a}">
+      ${BLOCK_ICONS[p.t]} ${p.n} · ${p.c} 🪙</button>`
+  ).join('');
+  openModal('🏪 فروشگاه جزیره',
+    `<p>با سکه‌های بازی بسته بلوک بخر.</p><div class="rowbtn">${btns}</div>
+     <p class="smallnote">سکه‌ها فقط امتیاز داخل بازی‌اند و ارزش مالی ندارند.</p>`);
+  $('modbody').querySelectorAll('[data-buy]').forEach(b => {
+    b.onclick = () => {
+      const t = b.dataset.buy, cost = +b.dataset.cost, amt = +b.dataset.amt;
+      if(state.coins < cost){ toast('سکه کافی نیست'); return; }
+      state.coins -= cost;
+      state.inventory[t] = (state.inventory[t]||0) + amt;
+      updateHUD(); saveLocal(); toast('بسته به کوله اضافه شد');
+    };
+  });
+}
+function friendsModal(){
+  openModal('👥 بازیکنان آنلاین (شبیه‌سازی)',
+    `<p>در این نسخه بازیکنان نمونه با هوش مصنوعی حرکت و چت می‌کنند تا حس آنلاین بودن بدهد.</p>
+     <p>👤 تو — سازنده جزیره (سطح ${state.level})</p>
+     <p>🧑🏻 سارا — بازدیدکننده</p>
+     <p>🧑🏽 رضا — سازنده</p>
+     <p>👩 آیدا — گردشگر</p>
+     <p>🧑 امیر — کاوشگر</p>
+     <p class="smallnote">برای چندنفره واقعی به سرور (مثل Supabase Realtime یا Photon) نیاز است. این نسخه کاملاً محلی و بدون نیاز به حساب کاربری کار می‌کند.</p>`);
+}
+function showTab(t){
+  document.querySelectorAll('.navbtn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  if(t === 'build'){ state.buildMode = true; toast('حالت ساخت فعال · بلوک انتخاب و قرار بده'); }
+  else if(t === 'worlds'){
+    openModal('🌐 دنیاها',
+      `<p>🌴 جزیره همدلی — دنیای فعلی</p>
+       <p>🏔️ جزیره کوهستان — به‌زودی</p>
+       <p>🌌 جزیره آسمانی — به‌زودی</p>
+       <p class="smallnote">در این نسخه فقط دنیای محلی فعلی قابل‌بازی است.</p>`);
+  } else if(t === 'home') toast('به خانه‌ات خوش آمدی!');
+}
+
+/* ── Input setup ────────────────────────────────────────── */
 function setupUI(){
- document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{let t=b.dataset.open;if(t==='inventory')inventoryModal();else if(t==='settings')settingsModal();else if(t==='shop')shopModal();else if(t==='friends')friendsModal()}));
- $('modok').onclick=closeModal;$('modclose').onclick=closeModal;$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
- document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{state.selected=b.dataset.block;updateHUD();toast('بلوک انتخاب شد')});
- $('placebtn').onclick=placeBlock;$('deletebtn').onclick=removeBlock;$('buildbtn').onclick=()=>{state.buildMode=!state.buildMode;toast(state.buildMode?'حالت ساخت فعال شد':'حالت حرکت فعال شد')};
- $('jump').onclick=()=>{if(state.onGround){state.jumpV=7.2;state.onGround=false}};
- $('emote').onclick=()=>toast('👋 سلام به همه سازنده‌ها!');
- document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
- $('sendchat').onclick=()=>{let s=$('chattext').value.trim();if(!s)return;let d=document.createElement('div');d.className='chatline';let b=document.createElement('b');b.textContent='تو: ';d.appendChild(b);d.appendChild(document.createTextNode(s));$('chatmore').appendChild(d);$('chattext').value='';$('chatmore').scrollTop=$('chatmore').scrollHeight;toast('پیام فقط در همین نشست نمایش داده شد')};
- $('chattext').addEventListener('keydown',e=>{if(e.key==='Enter')$('sendchat').click()});
- window.addEventListener('keydown',e=>{keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Space')$('jump').click();if(e.code==='KeyE')placeBlock()});
- window.addEventListener('keyup',e=>keys[e.code]=false);
- // joystick supports touch and mouse pointer
- let joy=$('joystick'),stick=$('stick'),joyId=null;function joyMove(e){let r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.32,l=Math.hypot(dx,dy);if(l>max){dx*=max/l;dy*=max/l}stick.style.transform='translate('+dx+'px,'+dy+'px)';state.moveX=dx/max;state.moveZ=dy/max}
- joy.addEventListener('pointerdown',e=>{joyId=e.pointerId;joy.setPointerCapture(e.pointerId);joyMove(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});function endJoy(){joyId=null;state.moveX=0;state.moveZ=0;stick.style.transform='translate(0,0)'}joy.addEventListener('pointerup',endJoy);joy.addEventListener('pointercancel',endJoy);
- const c=$('world');c.addEventListener('pointerdown',e=>{if(e.target!==renderer.domElement)return;cameraDrag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};renderer.domElement.setPointerCapture?.(e.pointerId)});
- c.addEventListener('pointermove',e=>{if(!cameraDrag||cameraDrag.id!==e.pointerId)return;let dx=e.clientX-cameraDrag.x,dy=e.clientY-cameraDrag.y;if(Math.abs(dx)+Math.abs(dy)>2)cameraDrag.moved=true;state.yaw-=dx*.006;state.pitch=Math.max(-.1,Math.min(.7,state.pitch+dy*.003));cameraDrag.x=e.clientX;cameraDrag.y=e.clientY});
- c.addEventListener('pointerup',e=>{if(cameraDrag&&cameraDrag.id===e.pointerId&&!cameraDrag.moved){if(state.buildMode)placeBlock()}cameraDrag=null});c.addEventListener('pointercancel',()=>cameraDrag=null);
- window.addEventListener('resize',()=>{if(!camera||!renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);drawMap()});
- document.addEventListener('visibilitychange',()=>{if(document.hidden)saveLocal()});window.addEventListener('pagehide',saveLocal)
+  document.querySelectorAll('[data-open]').forEach(b => {
+    b.addEventListener('click', () => {
+      const t = b.dataset.open;
+      if(t==='inventory') inventoryModal();
+      else if(t==='settings') settingsModal();
+      else if(t==='shop') shopModal();
+      else if(t==='friends') friendsModal();
+    });
+  });
+  $('modok').onclick = closeModal;
+  $('modclose').onclick = closeModal;
+  $('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
+
+  document.querySelectorAll('.slot').forEach(b => {
+    b.onclick = () => { state.selected = b.dataset.block; updateHUD(); toast('بلوک انتخاب شد'); };
+  });
+  $('placebtn').onclick = placeBlock;
+  $('deletebtn').onclick = removeBlock;
+  $('buildbtn').onclick = () => {
+    state.buildMode = !state.buildMode;
+    toast(state.buildMode ? 'حالت ساخت فعال شد' : 'حالت حرکت فعال شد');
+  };
+  $('jump').onclick = () => {
+    if(state.onGround){ state.jumpV = 8.5; state.onGround = false; }
+  };
+  $('emote').onclick = () => {
+    toast('👋 سلام به همه سازنده‌ها!');
+    addChatLine('تو', '👋 سلام!');
+  };
+  $('runbtn').onclick = () => {
+    state.running = !state.running;
+    $('runbtn').style.background = state.running ? '#ff6b6b55' : '';
+    toast(state.running ? 'حالت دویدن فعال' : 'راه رفتن عادی');
+  };
+  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+  $('sendchat').onclick = () => {
+    const s = $('chattext').value.trim();
+    if(!s) return;
+    addChatLine('تو', s);
+    $('chattext').value = '';
+  };
+  $('chattext').addEventListener('keydown', e => { if(e.key === 'Enter') $('sendchat').click(); });
+
+  // Keyboard
+  window.addEventListener('keydown', e => {
+    keys[e.code] = true;
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+    if(e.code === 'Space') $('jump').click();
+    if(e.code === 'KeyE') placeBlock();
+    if(e.code === 'KeyQ') removeBlock();
+    if(e.code === 'ShiftLeft' || e.code === 'ShiftRight'){ state.running = true; $('runbtn').style.background = '#ff6b6b55'; }
+    // Number keys for hotbar
+    const num = parseInt(e.key);
+    if(num >= 1 && num <= 8){
+      const slots = document.querySelectorAll('.slot');
+      if(slots[num-1]){ state.selected = slots[num-1].dataset.block; updateHUD(); }
+    }
+  });
+  window.addEventListener('keyup', e => {
+    keys[e.code] = false;
+    if(e.code === 'ShiftLeft' || e.code === 'ShiftRight'){ state.running = false; $('runbtn').style.background = ''; }
+  });
+
+  // Joystick (touch + mouse)
+  const joy = $('joystick'), stick = $('stick');
+  let joyId = null;
+  function joyMove(e){
+    const r = joy.getBoundingClientRect();
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    let dx = e.clientX - cx, dy = e.clientY - cy;
+    const max = r.width * 0.32;
+    const l = Math.hypot(dx, dy);
+    if(l > max){ dx *= max/l; dy *= max/l; }
+    stick.style.transform = `translate(${dx}px,${dy}px)`;
+    state.moveX = dx / max;
+    state.moveZ = dy / max;
+  }
+  joy.addEventListener('pointerdown', e => {
+    joyId = e.pointerId; joy.setPointerCapture(e.pointerId); joyMove(e);
+  });
+  joy.addEventListener('pointermove', e => { if(e.pointerId === joyId) joyMove(e); });
+  function endJoy(){ joyId = null; state.moveX = 0; state.moveZ = 0; stick.style.transform = 'translate(0,0)'; }
+  joy.addEventListener('pointerup', endJoy);
+  joy.addEventListener('pointercancel', endJoy);
+
+  // Camera drag + tap to place
+  const worldEl = $('world');
+  worldEl.addEventListener('pointerdown', e => {
+    if(e.target !== renderer.domElement) return;
+    cameraDrag = {x:e.clientX, y:e.clientY, id:e.pointerId, moved:false};
+    renderer.domElement.setPointerCapture?.(e.pointerId);
+  });
+  worldEl.addEventListener('pointermove', e => {
+    if(!cameraDrag || cameraDrag.id !== e.pointerId) return;
+    const dx = e.clientX - cameraDrag.x, dy = e.clientY - cameraDrag.y;
+    if(Math.abs(dx) + Math.abs(dy) > 3) cameraDrag.moved = true;
+    state.yaw -= dx * 0.0055;
+    state.pitch = Math.max(-0.15, Math.min(0.65, state.pitch + dy * 0.0028));
+    cameraDrag.x = e.clientX; cameraDrag.y = e.clientY;
+  });
+  worldEl.addEventListener('pointerup', e => {
+    if(cameraDrag && cameraDrag.id === e.pointerId && !cameraDrag.moved){
+      if(state.buildMode) placeBlock();
+    }
+    cameraDrag = null;
+  });
+  worldEl.addEventListener('pointercancel', () => { cameraDrag = null; });
+
+  window.addEventListener('resize', () => {
+    if(!camera || !renderer) return;
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+    drawMap();
+  });
+  document.addEventListener('visibilitychange', () => { if(document.hidden) saveLocal(); });
+  window.addEventListener('pagehide', saveLocal);
+
+  // Auto-save every 30s
+  setInterval(saveLocal, 30000);
 }
-function start(){try{if(!window.THREE)throw new Error('Three.js did not load');setLoad(25,'راه‌اندازی موتور رندر…');buildWorld();setLoad(60,'ساخت جزیره و شهر…');loadLocal();setupUI();setLoad(90,'آماده‌سازی کنترل‌های لمسی…');updateHUD();animate();setLoad(100,'آماده بازی!');setTimeout(()=>{$('loading').style.opacity='0';setTimeout(()=>$('loading').remove(),550)},350);started=true}catch(e){$('loadtext').textContent='خطا در بارگذاری: '+e.message;$('loading').querySelector('p').textContent='اتصال اینترنت را بررسی کن. موتور سه‌بعدی از CDN بارگیری می‌شود.';console.error(e)}}
+
+/* ── Start ──────────────────────────────────────────────── */
+function start(){
+  try{
+    if(!window.THREE) throw new Error('Three.js بارگذاری نشد');
+    setLoad(20, 'راه‌اندازی موتور رندر…');
+    buildWorld();
+    setLoad(55, 'ساخت جزیره و شهر…');
+    loadLocal();
+    setupUI();
+    setLoad(85, 'آماده‌سازی کنترل‌ها و بازیکنان آنلاین…');
+    updateHUD();
+    animate();
+    setLoad(100, 'آماده بازی!');
+    setTimeout(() => {
+      $('loading').style.opacity = '0';
+      setTimeout(() => $('loading').remove(), 500);
+    }, 320);
+    started = true;
+    toast('🌍 به دنیای همدلی خوش آمدی!');
+  }catch(e){
+    $('loadtext').textContent = 'خطا: ' + e.message;
+    $('loading').querySelector('p').textContent = 'اتصال اینترنت را بررسی کن. موتور سه‌بعدی از CDN بارگیری می‌شود.';
+    console.error(e);
+  }
+}
 start();
 })();
 </script>
