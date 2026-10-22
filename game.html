@@ -1261,4 +1261,268 @@ function updateOnlineUI(){
     count.textContent = onlineCount + ' آنلاین';
   } else {
     dot.classList.remove('on');
-    count.textContent = sb ? '
+    count.textContent = sb ? 'در حال اتصال…' : 'آفلاین';
+  }
+  const footer = $('menu-footer');
+  if(footer) footer.textContent = sb ? 'نسخه ۴.۰ · آنلاین' : 'نسخه ۴.۰ · آفلاین (Supabase پیکربندی نشده)';
+}
+
+/* ── UI Modals ── */
+function openModal(title, body){
+  $('modtitle').textContent = title;
+  $('modbody').innerHTML = body;
+  $('modal').classList.add('open');
+}
+function closeModal(){ $('modal').classList.remove('open'); }
+
+function inventoryModal(){
+  const items = Object.entries(state.inventory).map(([k,v]) =>
+    `<button class="btn" data-pick="${k}">${BLOCK_ICONS[k]||'⬜'} ${BLOCK_LABELS[k]||k} · ${v}</button>`
+  ).join('');
+  openModal('🎒 کوله‌پشتی',
+    `<p>وسایل دنیای تو</p><div class="rowbtn">${items}</div>
+     <p class="smallnote">تپ روی بلوک = ماین · تپ روی ربات = دزدی · تپ روی زمین = ساخت</p>`);
+  $('modbody').querySelectorAll('[data-pick]').forEach(b => {
+    b.onclick = () => { state.selected = b.dataset.pick; updateHUD(); closeModal(); toast('بلوک انتخاب شد'); };
+  });
+}
+function settingsModal(){
+  openModal('⚙️ تنظیمات',
+    `<p>کیفیت گرافیک</p>
+     <select id="quality">
+       <option value="high">بالا</option><option value="medium">متوسط</option><option value="low">اقتصادی</option>
+     </select>
+     <p class="smallnote">وضعیت آنلاین: ${sb ? '✅ متصل به Supabase' : '❌ آفلاین (URL/Key خالی است)'}</p>`);
+  $('quality').value = state.quality;
+  $('quality').onchange = e => {
+    state.quality = e.target.value;
+    renderer.shadowMap.enabled = state.quality !== 'low';
+    const pr = state.quality === 'high' ? 1.6 : state.quality === 'medium' ? 1.2 : 1;
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1, pr));
+    toast('کیفیت به‌روزرسانی شد');
+  };
+}
+function shopModal(){
+  const packs = [
+    {t:'wood', n:'۱۰ چوب', c:30, a:10}, {t:'stone', n:'۱۰ سنگ', c:40, a:10},
+    {t:'brick', n:'۸ آجر', c:35, a:8}, {t:'grass', n:'۱۰ چمن', c:28, a:10},
+    {t:'glass', n:'۶ شیشه', c:50, a:6}, {t:'neon', n:'۴ نئون', c:60, a:4},
+    {t:'metal', n:'۶ فلز', c:55, a:6}, {t:'sand', n:'۱۲ ماسه', c:25, a:12}
+  ];
+  const btns = packs.map(p =>
+    `<button class="btn gold" data-buy="${p.t}" data-cost="${p.c}" data-amt="${p.a}">
+      ${BLOCK_ICONS[p.t]} ${p.n} · ${p.c} 🪙</button>`
+  ).join('');
+  openModal('🏪 فروشگاه', `<p>بسته بلوک بخر.</p><div class="rowbtn">${btns}</div>`);
+  $('modbody').querySelectorAll('[data-buy]').forEach(b => {
+    b.onclick = () => {
+      const t = b.dataset.buy, cost = +b.dataset.cost, amt = +b.dataset.amt;
+      if(state.coins < cost){ toast('سکه کافی نیست'); return; }
+      state.coins -= cost;
+      state.inventory[t] = (state.inventory[t]||0) + amt;
+      updateHUD(); saveLocal(); toast('بسته اضافه شد');
+    };
+  });
+}
+function friendsModal(){
+  const rpList = Object.keys(remotePlayers).map(id => `<p>🌐 بازیکن آنلاین (${id.slice(0,6)}…)</p>`).join('');
+  openModal('👥 بازیکنان',
+    `<p>${sb ? '🟢 آنلاین — ' + onlineCount + ' نفر متصل' : '🔴 آفلاین'}</p>
+     <p>👤 تو — سازنده جزیره (سطح ${state.level})</p>
+     <p>👩 سارا (ربات)</p><p>🧑 رضا (ربات)</p><p>👧 آیدا (ربات)</p><p>🧑 امیر (ربات)</p>
+     ${rpList}`);
+}
+function showTab(t){
+  document.querySelectorAll('.navbtn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  if(t === 'build'){ state.buildMode = true; toast('حالت ساخت فعال'); }
+  else if(t === 'worlds'){ openModal('🌐 دنیاها', `<p>🌴 جزیره همدلی — فعال</p><p>🏔️ کوهستان — به‌زودی</p>`); }
+  else if(t === 'home') toast('به خانه خوش آمدی!');
+}
+
+function startGame(){
+  if(state.gameStarted) return;
+  state.gameStarted = true;
+  $('mainmenu').classList.add('hidden');
+  setTimeout(() => { $('mainmenu').style.display = 'none'; }, 500);
+  toast('🌍 به دنیای همدلی خوش آمدی!');
+}
+
+/* ── Input Setup ── */
+function setupUI(){
+  document.querySelectorAll('[data-open]').forEach(b => {
+    b.addEventListener('click', () => {
+      if(!state.gameStarted) return;
+      const t = b.dataset.open;
+      if(t==='inventory') inventoryModal();
+      else if(t==='settings') settingsModal();
+      else if(t==='shop') shopModal();
+      else if(t==='friends') friendsModal();
+    });
+  });
+  $('modok').onclick = closeModal;
+  $('modclose').onclick = closeModal;
+  $('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
+
+  document.querySelectorAll('.slot').forEach(b => {
+    b.onclick = () => {
+      if(!state.gameStarted) return;
+      state.selected = b.dataset.block;
+      updateHUD();
+      toast('بلوک: ' + (BLOCK_LABELS[b.dataset.block]||''));
+    };
+  });
+
+  $('placebtn').onclick = () => {
+    if(!state.gameStarted) return;
+    const fwdX = Math.sin(state.charYaw);
+    const fwdZ = Math.cos(state.charYaw);
+    placeBlockAt(state.selected,
+      avatarRoot.position.x + fwdX * 2.4,
+      avatarRoot.position.z + fwdZ * 2.4);
+  };
+  $('buildbtn').onclick = () => {
+    state.buildMode = !state.buildMode;
+    toast(state.buildMode ? 'ساخت فعال' : 'ساخت غیرفعال');
+  };
+  $('attackbtn').onclick = () => { if(state.gameStarted) attackNearestBot(); };
+  $('jump').onclick = () => { if(state.gameStarted && state.onGround){ state.jumpV = 9; state.onGround = false; } };
+  $('emote').onclick = () => {
+    if(!state.gameStarted) return;
+    toast('👋 سلام!');
+    addChatLine('تو', '👋 سلام!');
+  };
+  $('runbtn').onclick = () => {
+    if(!state.gameStarted) return;
+    state.running = !state.running;
+    $('runbtn').style.background = state.running ? '#ff5252' : '#00a2ff';
+  };
+  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+  $('sendchat').onclick = () => {
+    if(!state.gameStarted) return;
+    const s = $('chattext').value.trim();
+    if(!s) return;
+    addChatLine('تو', s);
+    $('chattext').value = '';
+  };
+  $('chattext').addEventListener('keydown', e => { if(e.key === 'Enter') $('sendchat').click(); });
+
+  $('playbtn').onclick = startGame;
+  $('menu-settings').onclick = settingsModal;
+  $('menu-credits').onclick = () => openModal('ℹ اعتبارها',
+    `<p>دنیای همدلی 3D · Roblox Style</p><p>Three.js + Supabase</p><p>نسخه ۴.۰</p>`);
+
+  // Keyboard
+  window.addEventListener('keydown', e => {
+    if(!state.gameStarted) return;
+    keys[e.code] = true;
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+    if(e.code === 'Space') $('jump').click();
+    if(e.code === 'KeyE') $('placebtn').click();
+    if(e.code === 'KeyQ') $('attackbtn').click();
+    if(e.code === 'ShiftLeft' || e.code === 'ShiftRight'){ state.running = true; $('runbtn').style.background = '#ff5252'; }
+    const num = parseInt(e.key);
+    if(num >= 1 && num <= 8){
+      const slots = document.querySelectorAll('.slot');
+      if(slots[num-1]){ state.selected = slots[num-1].dataset.block; updateHUD(); }
+    }
+  });
+  window.addEventListener('keyup', e => {
+    keys[e.code] = false;
+    if(e.code === 'ShiftLeft' || e.code === 'ShiftRight'){ state.running = false; $('runbtn').style.background = '#00a2ff'; }
+  });
+
+  // Joystick
+  const joy = $('joystick'), stick = $('stick');
+  let joyId = null;
+  function joyMove(e){
+    const r = joy.getBoundingClientRect();
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    let dx = e.clientX - cx, dy = e.clientY - cy;
+    const max = r.width * 0.32;
+    const l = Math.hypot(dx, dy);
+    if(l > max){ dx *= max/l; dy *= max/l; }
+    stick.style.transform = `translate(${dx}px,${dy}px)`;
+    state.moveX = dx / max;
+    state.moveZ = dy / max;
+  }
+  joy.addEventListener('pointerdown', e => {
+    if(!state.gameStarted) return;
+    joyId = e.pointerId;
+    joy.setPointerCapture(e.pointerId);
+    joyMove(e);
+    e.stopPropagation();
+  });
+  joy.addEventListener('pointermove', e => { if(e.pointerId === joyId) joyMove(e); });
+  function endJoy(){ joyId = null; state.moveX = 0; state.moveZ = 0; stick.style.transform = 'translate(0,0)'; }
+  joy.addEventListener('pointerup', endJoy);
+  joy.addEventListener('pointercancel', endJoy);
+
+  // Camera drag + smart tap
+  let cameraDrag = null;
+  const worldEl = $('world');
+  worldEl.addEventListener('pointerdown', e => {
+    if(!state.gameStarted) return;
+    if(e.target !== renderer.domElement) return;
+    cameraDrag = {x:e.clientX, y:e.clientY, id:e.pointerId, moved:false};
+    renderer.domElement.setPointerCapture?.(e.pointerId);
+  });
+  worldEl.addEventListener('pointermove', e => {
+    if(!cameraDrag || cameraDrag.id !== e.pointerId) return;
+    const dx = e.clientX - cameraDrag.x, dy = e.clientY - cameraDrag.y;
+    if(Math.abs(dx) + Math.abs(dy) > 5) cameraDrag.moved = true;
+    state.camYaw -= dx * 0.0055;
+    state.pitch = Math.max(-0.15, Math.min(0.65, state.pitch + dy * 0.0028));
+    cameraDrag.x = e.clientX; cameraDrag.y = e.clientY;
+  });
+  worldEl.addEventListener('pointerup', e => {
+    if(cameraDrag && cameraDrag.id === e.pointerId && !cameraDrag.moved){
+      onWorldTap(e.clientX, e.clientY);
+    }
+    cameraDrag = null;
+  });
+  worldEl.addEventListener('pointercancel', () => { cameraDrag = null; });
+
+  window.addEventListener('resize', () => {
+    if(!camera || !renderer) return;
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+  document.addEventListener('visibilitychange', () => { if(document.hidden && state.gameStarted) saveLocal(); });
+  window.addEventListener('pagehide', () => { if(state.gameStarted) saveLocal(); });
+  setInterval(() => { if(state.gameStarted) saveLocal(); }, 30000);
+}
+
+/* ── Boot ── */
+async function start(){
+  try{
+    if(!window.THREE) throw new Error('Three.js بارگذاری نشد');
+    setLoad(15, 'راه‌اندازی موتور رندر…');
+    buildWorld();
+    setLoad(45, 'ساخت جزیره…');
+    loadLocal();
+    setupUI();
+    updateHUD();
+    animate();
+    setLoad(70, 'اتصال به سرور…');
+    await initOnline();
+    setLoad(100, 'آماده!');
+    setTimeout(() => {
+      $('loading').style.opacity = '0';
+      setTimeout(() => {
+        $('loading').remove();
+        $('mainmenu').classList.remove('hidden');
+        updateOnlineUI();
+      }, 500);
+    }, 600);
+  }catch(e){
+    $('loadtext').textContent = 'خطا: ' + e.message;
+    console.error(e);
+  }
+}
+start();
+})();
+</script>
+</body>
+</html>
