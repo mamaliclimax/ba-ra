@@ -3,785 +3,599 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#07182b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>دنیای همدلی 3D · نسخه حرفه‌ای نهایی</title>
+<meta name="theme-color" content="#191B1D">
+<title>Roblox Style 3D · دنیای همدلی</title>
 <style>
-:root{
-  --glass:rgba(7,22,42,.82);--line:rgba(255,255,255,.2);--cyan:#6cf4ff;--gold:#ffd36b;
-  --white:#f7fbff;--accent:#56f3b3;--bg:#071a2e;
+:root {
+  --rbx-bg: #191B1D;
+  --rbx-panel: rgba(25, 27, 29, 0.85);
+  --rbx-red: #E2231A;
+  --rbx-text: #FFFFFF;
+  --rbx-border: rgba(255, 255, 255, 0.15);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--white);
-  font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-#world{position:fixed;inset:0}#world canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}
-.glass{background:var(--glass);border:1px solid var(--line);box-shadow:0 8px 28px #00152b55;
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:16px}
-/* Top bar */
-.top{position:fixed;top:calc(env(safe-area-inset-top,0px)+6px);left:8px;right:8px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:6px;pointer-events:none;z-index:10}
-.profile{display:flex;gap:8px;align-items:center;padding:6px 10px;min-width:140px;max-width:48vw}
-.avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#59dfff,#665cff);
-  display:grid;place-items:center;font-size:24px;border:2px solid #fff8}
-.pname{font-weight:900;font-size:12px}.level{font-size:9px;color:#c8d9ec}
-.xp{height:5px;background:#ffffff22;border-radius:9px;margin-top:4px;overflow:hidden}
-.xp span{display:block;height:100%;background:linear-gradient(90deg,#56f3b3,#b7ff7d);transition:width .3s}
-.wallet{display:flex;gap:4px}
-.money{padding:7px 9px;display:flex;align-items:center;gap:4px;font-weight:900;font-size:11px;white-space:nowrap}
-.money .symbol{font-size:16px}
-.circlebtn{width:32px;height:32px;border-radius:10px;border:1px solid #ffffff26;background:#ffffff14;color:white;font-size:17px;pointer-events:auto;cursor:pointer}
-/* Tools & quest */
-.toptools{position:fixed;top:calc(env(safe-area-inset-top,0px)+68px);left:8px;display:flex;gap:5px;z-index:10}
-.tool{width:40px;height:40px;display:grid;place-items:center;font-size:18px;pointer-events:auto;cursor:pointer;border:none}
-.quest{position:fixed;top:calc(env(safe-area-inset-top,0px)+72px);right:8px;width:min(175px,46vw);padding:9px 11px;z-index:10}
-.quest strong{font-size:11px;color:var(--gold)}.quest p{font-size:10px;margin:5px 0;color:#e1eaf6;line-height:1.45}
-.progress{height:5px;background:#ffffff1e;border-radius:8px;overflow:hidden}
-.progress span{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff9c54);transition:width .35s}
-/* Mini map */
-.map{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px)+175px);width:96px;height:96px;
-  border-radius:50%;border:2px solid #e9fbffaa;overflow:hidden;background:#123c53ee;box-shadow:0 6px 20px #001a3390;z-index:10}
-.map canvas{width:100%;height:100%}
-.coords{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px)+278px);font-size:9px;padding:5px 7px;z-index:10}
-/* Right actions */
-.rightactions{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px)+145px);
-  display:flex;flex-direction:column;gap:6px;z-index:10}
-.action{width:52px;min-height:48px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:1px;color:white;font-size:20px;pointer-events:auto;cursor:pointer;border:none}
-.action small{font-size:8px}
-/* Bottom nav */
-.bottomnav{position:fixed;bottom:0;left:0;right:0;padding:6px 4px calc(env(safe-area-inset-bottom,0px)+4px);
-  display:flex;justify-content:space-around;background:linear-gradient(0deg,#061427f8,#0b1e36f0);
-  border-top:1px solid #ffffff20;z-index:12}
-.navbtn{background:none;border:0;color:#b9c9db;display:flex;flex-direction:column;align-items:center;gap:1px;
-  min-width:48px;font-size:18px;cursor:pointer}.navbtn span{font-size:8px}
-.navbtn.active{color:#78efff;text-shadow:0 0 12px #32dfff}
-/* Joystick & buttons */
-.joystick{position:fixed;left:24px;bottom:calc(env(safe-area-inset-bottom,0px)+85px);width:110px;height:110px;
-  border-radius:50%;border:2px solid #ffffff66;background:#071a35b0;box-shadow:inset 0 0 16px #ffffff12;touch-action:none;z-index:99}
-.stick{position:absolute;width:46px;height:46px;left:30px;top:30px;border-radius:50%;
-  background:radial-gradient(circle at 35% 25%,#ffffffdd,#6cc9eab8);border:2px solid #fff9;
-  box-shadow:0 3px 10px #00182d80;pointer-events:none;transition:transform .05s}
-.jump{position:fixed;right:78px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);width:66px;height:66px;
-  border-radius:50%;font-size:28px;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
-.emote{position:fixed;right:88px;bottom:calc(env(safe-area-inset-bottom,0px)+148px);width:42px;height:42px;
-  border-radius:50%;font-size:18px;pointer-events:auto;cursor:pointer;border:none;z-index:11}
-.runbtn{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);width:50px;height:50px;
-  border-radius:50%;font-size:14px;font-weight:800;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
-/* Hotbar */
-.hotbar{position:fixed;left:145px;right:155px;bottom:calc(env(safe-area-inset-bottom,0px)+70px);
-  display:flex;gap:4px;justify-content:center;z-index:11;flex-wrap:wrap}
-.slot{flex:1;max-width:45px;min-width:32px;height:45px;border-radius:10px;background:#0b2038e0;
-  border:1px solid #ffffff2e;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-size:18px;position:relative;pointer-events:auto;cursor:pointer}
-.slot small{font-size:8px;color:#d4e2f1}.slot.active{border:2px solid var(--gold);box-shadow:0 0 10px #ffd16650}
-.slot em{position:absolute;top:1px;right:3px;font-size:8px;font-style:normal;color:#b9c9db}
-/* Chat */
-.chat{position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px)+130px);width:min(240px,50vw);
-  padding:7px;font-size:9px;max-height:140px;overflow-y:auto;z-index:10; pointer-events:none;}
-.chatline{margin:2px 0;color:#e2efff; text-shadow: 0 1px 2px #000;}.chatline b{color:#6fefff}
-.chatinput{position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px)+275px);display:flex;gap:4px;width:min(240px,50vw);z-index:11;}
-.chatinput input{min-width:0;width:100%;border:1px solid #ffffff44;background:#07182bd8;color:white;
-  border-radius:8px;padding:6px;font:inherit;outline:none; pointer-events:auto;}
-.chatinput button{border:0;background:#52d6f3;color:#062139;border-radius:8px;padding:0 8px;font-weight:900;cursor:pointer; pointer-events:auto;}
-/* Toast & modal */
-.toast{position:fixed;left:50%;top:20%;transform:translate(-50%,-50%);background:#06182df0;
-  border:1px solid #65eaff;border-radius:14px;padding:10px 15px;font-size:12px;max-width:85vw;
-  text-align:center;display:none;box-shadow:0 10px 32px #00182d80;z-index:100}
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;
-  background:#03101cd0;z-index:150}.modal.open{display:flex}
-.modalcard{width:min(400px,100%);padding:16px;background:#0c2038;border:1px solid #ffffff28;
-  border-radius:18px;max-height:82vh;overflow:auto}
-.modalcard h2{font-size:17px;margin:0 0 8px}.modalcard p{font-size:12px;line-height:1.75;color:#c4d7e9}
-.modalcard input,.modalcard select{width:100%;padding:10px;border:1px solid #ffffff2a;border-radius:10px;
-  background:#06172a;color:white;margin:4px 0 8px;direction:ltr}
-.rowbtn{display:flex;gap:6px;flex-wrap:wrap}
-.btn{border:1px solid #ffffff22;border-radius:10px;background:#183654;color:white;padding:9px 11px;
-  font-weight:800;font-size:11px;cursor:pointer}.btn.primary{background:#66e6ef;color:#062039}
-.btn.gold{background:#ffd166;color:#332100}.btn:active{transform:scale(.97)}
-.smallnote{font-size:10px;color:#a9bfd6;line-height:1.65}
-/* Loading */
-#loading{position:fixed;inset:0;background:linear-gradient(155deg,#082543,#2785a7);display:flex;
-  align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px;text-align:center;
-  padding:24px;transition:opacity .45s}
-#loading .logo{font-size:52px}#loading strong{font-size:20px}
-#loading p{max-width:290px;color:#d8f3ff;font-size:12px;line-height:1.75}
-.loaderbar{height:6px;width:200px;background:#ffffff30;border-radius:9px;overflow:hidden}
-.loaderbar span{display:block;height:100%;width:0;background:#6fffc7;transition:width .2s}
-/* Landscape orientation */
-@media (orientation:landscape) and (max-height:520px){
-  .joystick{width:90px;height:90px;bottom:calc(env(safe-area-inset-bottom,0px)+55px);left:20px}
-  .stick{width:36px;height:36px;left:25px;top:25px}
-  .chat{top:calc(env(safe-area-inset-top,0px)+65px);max-height:90px;width:min(200px,35vw);font-size:8px}
-  .chatinput{top:calc(env(safe-area-inset-top,0px)+160px);width:min(200px,35vw);}
-  .hotbar{bottom:calc(env(safe-area-inset-bottom,0px)+55px);left:125px;right:150px;gap:2px}
-  .slot{height:38px;font-size:14px;min-width:28px}
-  .rightactions{bottom:calc(env(safe-area-inset-bottom,0px)+55px);right:10px}
-  .jump{width:54px;height:54px;bottom:calc(env(safe-area-inset-bottom,0px)+55px);right:70px}
-  .runbtn{width:42px;height:42px;bottom:calc(env(safe-area-inset-bottom,0px)+55px);right:130px}
-  .emote{bottom:calc(env(safe-area-inset-bottom,0px)+115px);right:75px;}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--rbx-bg); color: var(--rbx-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  touch-action: none; user-select: none; -webkit-user-select: none;
 }
+#world { position: fixed; inset: 0; }
+#world canvas { display: block; width: 100%; height: 100%; outline: none; }
+
+/* صفحه ورود شبیه روبلاکس */
+#roblox-loading {
+  position: fixed; inset: 0; background: #191B1D; z-index: 999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; transition: opacity 0.5s ease;
+}
+.rbx-logo {
+  width: 72px; height: 72px; background: #E2231A; border-radius: 14px;
+  transform: rotate(-15deg); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 25px rgba(226, 35, 26, 0.4);
+}
+.rbx-logo-inner {
+  width: 24px; height: 24px; background: #191B1D; border-radius: 4px;
+}
+.rbx-loader-bar {
+  width: 220px; height: 8px; background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px; overflow: hidden; margin-top: 15px;
+}
+.rbx-loader-progress {
+  width: 0%; height: 100%; background: #E2231A; transition: width 0.2s;
+}
+
+/* نوار بالای صفحه روبلاکس */
+.topbar {
+  position: fixed; top: 10px; left: 10px; right: 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none; z-index: 50;
+}
+.rbx-menu-btn {
+  pointer-events: auto; width: 44px; height: 44px;
+  background: var(--rbx-panel); border: 1px solid var(--rbx-border);
+  border-radius: 12px; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 4px; cursor: pointer;
+}
+.rbx-menu-btn span { width: 20px; height: 2px; background: white; border-radius: 2px; }
+.stats-badge {
+  background: var(--rbx-panel); border: 1px solid var(--rbx-border);
+  padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px;
+  display: flex; gap: 8px; align-items: center; pointer-events: auto;
+}
+
+/* لیدربورد بالا سمت راست شبیه سرورهای روبلاکس */
+.leaderboard {
+  position: fixed; top: 62px; right: 10px;
+  background: var(--rbx-panel); border: 1px solid var(--rbx-border);
+  border-radius: 10px; padding: 8px; font-size: 11px; z-index: 40;
+  min-width: 130px; pointer-events: none;
+}
+.leaderboard div { margin: 3px 0; display: flex; justify-content: space-between; gap: 10px; }
+
+/* چت باکس روبلاکس */
+.chat-box {
+  position: fixed; top: 62px; left: 10px; width: 220px;
+  background: rgba(25, 27, 29, 0.7); border-radius: 8px;
+  padding: 8px; font-size: 11px; z-index: 40; pointer-events: none;
+  max-height: 120px; overflow-y: hidden;
+}
+.chat-line { margin-bottom: 4px; text-shadow: 1px 1px 2px #000; }
+.chat-line b { color: #55b2ff; }
+
+/* کنترل‌های لمسی روبلاکس - پایین صفحه */
+.controls-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 160px; pointer-events: none; z-index: 60;
+}
+/* جوی‌استیک دینامیک */
+.joystick-zone {
+  position: absolute; left: 24px; bottom: 30px;
+  width: 110px; height: 110px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  pointer-events: auto; touch-action: none;
+}
+.joystick-thumb {
+  position: absolute; width: 48px; height: 48px;
+  left: 31px; top: 31px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #cfcfcf);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none;
+}
+/* دکمه پرش روبلاکس (گرد با علامت فلش) */
+.jump-btn {
+  position: absolute; right: 28px; bottom: 38px;
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  pointer-events: auto; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; outline: none;
+}
+.jump-btn svg { width: 32px; height: 32px; fill: white; }
+.jump-btn:active { background: rgba(255, 255, 255, 0.4); }
+
+/* نوار ابزار پایین روبلاکس (Backpack Hotbar) */
+.rbx-hotbar {
+  position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 60; pointer-events: auto;
+}
+.rbx-slot {
+  width: 50px; height: 50px; background: var(--rbx-panel);
+  border: 1px solid var(--rbx-border); border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 20px; cursor: pointer; position: relative;
+}
+.rbx-slot.active { border: 2px solid #55b2ff; background: rgba(85, 178, 255, 0.2); }
+.rbx-slot span { position: absolute; top: 2px; right: 4px; font-size: 9px; opacity: 0.7; }
 </style>
 </head>
 <body>
+
+<div id="roblox-loading">
+  <div class="rbx-logo"><div class="rbx-logo-inner"></div></div>
+  <h2 style="font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">در حال اتصال به سرور…</h2>
+  <div class="rbx-loader-bar"><div class="rbx-loader-progress" id="load-progress"></div></div>
+  <p id="load-status" style="font-size: 12px; color: #888;">بارگذاری دارایی‌های R6 و Baseplate…</p>
+</div>
+
 <div id="world"></div>
-<div id="loading">
-  <div class="logo">🌍</div>
-  <strong>دنیای همدلی 3D</strong>
-  <p>نسخه جامع حرفه‌ای · گرافیک واقع‌گرایانه · مپ‌های جدید</p>
-  <div class="loaderbar"><span id="loadbar"></span></div>
-  <small id="loadtext">آماده‌سازی موتور سه‌بعدی…</small>
-</div>
 
-<div class="top">
-  <div class="profile glass">
-    <div class="avatar">🧑🏻‍🚀</div>
-    <div style="flex:1;min-width:0">
-      <div class="pname">ماجراجو <span style="color:#6cf4ff">✦</span></div>
-      <div class="level">سطح <b id="level">3</b> · کاوشگر دنیاها</div>
-      <div class="xp"><span id="xpbar"></span></div>
-    </div>
+<div class="topbar">
+  <div class="rbx-menu-btn" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
   </div>
-  <div class="wallet">
-    <div class="money glass"><span class="symbol">🪙</span><span id="coins">1250</span>
-      <button class="circlebtn" data-open="shop">＋</button></div>
-    <div class="money glass"><span class="symbol">💎</span><span id="gems">32</span></div>
+  <div class="stats-badge">
+    <span>🪙 <span id="coins">250</span></span>
+    <span>👥 آنلاین: <span id="online-count">4</span></span>
   </div>
 </div>
 
-<div class="toptools">
-  <button class="tool glass" data-open="friends" title="بازیکنان">👥</button>
-  <button class="tool glass" data-open="inventory" title="کوله">🎒</button>
-  <button class="tool glass" data-open="settings" title="تنظیمات">⚙️</button>
+<div class="leaderboard">
+  <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 3px; font-weight: bold;">بازیکنان</div>
+  <div><span>🧑 شما</span><b id="my-score">10</b></div>
+  <div><span>👧 سارا (Girl R6)</span><b>8</b></div>
+  <div><span>👦 آرین (Boy R6)</span><b>5</b></div>
+  <div><span>👧 نیلوفر</span><b>12</b></div>
 </div>
 
-<div class="quest glass">
-  <strong>🏅 مأموریت روزانه</strong>
-  <p id="questText">سه بلوک در دنیا بساز</p>
-  <div class="progress"><span id="questbar"></span></div>
-  <p><span id="questcount">0</span> / 3 بلوک · پاداش ۱۰۰ 🪙</p>
+<div class="chat-box" id="chat-box">
+  <div class="chat-line"><b>سیستم:</b> به سرور خوش آمدید!</div>
 </div>
 
-<div class="map"><canvas id="mapcanvas" width="180" height="180"></canvas></div>
-<div class="coords glass">📍 مکان: <span id="zonename">جزیره مرکزی</span><br><span id="coords">X: 0 · Z: 0</span></div>
-
-<div class="rightactions">
-  <button class="action glass" id="buildbtn">🔨<small>ساخت</small></button>
-  <button class="action glass" data-open="inventory">🎒<small>کوله</small></button>
-  <button class="action glass" id="placebtn">🧱<small>قرار دادن</small></button>
-  <button class="action glass" id="deletebtn">🧹<small>برداشتن</small></button>
-</div>
-
-<div class="chat">
-  <div id="chatlog">
-    <div class="chatline"><b>سیستم:</b> خوش آمدی به دنیای همدلی! ۴ مرحله باز شد.</div>
+<div class="controls-bottom">
+  <!-- جوی‌استیک پایین سمت چپ -->
+  <div class="joystick-zone" id="joystick-zone">
+    <div class="joystick-thumb" id="joystick-thumb"></div>
   </div>
-</div>
-<div class="chatinput">
-  <input id="chattext" placeholder="پیام بنویس…" maxlength="100">
-  <button id="sendchat">➤</button>
-</div>
-
-<div class="joystick" id="joystick"><div class="stick" id="stick"></div></div>
-<button class="jump glass" id="jump">⬆</button>
-<button class="emote glass" id="emote">👋</button>
-<button class="runbtn glass" id="runbtn">دویدن</button>
-
-<div class="hotbar" id="hotbar">
-  <button class="slot active" data-block="wood"><em>1</em>🪵<small>48</small></button>
-  <button class="slot" data-block="stone"><em>2</em>🧱<small>32</small></button>
-  <button class="slot" data-block="brick"><em>3</em>🧱<small>20</small></button>
-  <button class="slot" data-block="grass"><em>4</em>🌿<small>18</small></button>
-  <button class="slot" data-block="glass"><em>5</em>💠<small>15</small></button>
-  <button class="slot" data-block="neon"><em>6</em>💡<small>8</small></button>
-  <button class="slot" data-block="metal"><em>7</em>⚙️<small>10</small></button>
+  <!-- دکمه پرش استاندارد روبلاکس پایین سمت راست -->
+  <button class="jump-btn" id="jump-btn">
+    <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+  </button>
 </div>
 
-<div class="bottomnav">
-  <button class="navbtn active" data-tab="home">🏠<span>مرکز</span></button>
-  <button class="navbtn" data-tab="worlds">🌐<span>دنیاها</span></button>
-  <button class="navbtn" data-tab="build">🔨<span>ساخت</span></button>
-  <button class="navbtn" data-open="friends">👥<span>آنلاین</span></button>
-  <button class="navbtn" data-open="shop">🏪<span>فروشگاه</span></button>
-</div>
-
-<div class="toast" id="toast"></div>
-<div class="modal" id="modal">
-  <div class="modalcard">
-    <h2 id="modtitle">منو</h2>
-    <div id="modbody"></div>
-    <div class="rowbtn" style="margin-top:10px">
-      <button class="btn primary" id="modok">باشه</button>
-      <button class="btn" id="modclose">بستن</button>
-    </div>
-  </div>
+<div class="rbx-hotbar">
+  <div class="rbx-slot active" data-type="brick"><span>1</span>🧱</div>
+  <div class="rbx-slot" data-type="wood"><span>2</span>🪵</div>
+  <div class="rbx-slot" data-type="glass"><span>3</span>💠</div>
+  <div class="rbx-slot" data-type="spawn"><span>4</span>⛳</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 (function(){
 'use strict';
+
 const $ = id => document.getElementById(id);
 
-/* ── State ─────────────────────────────────────────────── */
-const state = {
-  coins:1250, gems:32, blocks:0, level:3, xp:2450,
-  selected:'wood', buildMode:true,
-  moveX:0, moveZ:0,
-  camYaw:0, charYaw:0, pitch:0.18, 
-  velX:0, velZ:0, jumpV:0, onGround:true,
-  running:false, placed:[],
-  inventory:{wood:48,stone:32,brick:20,grass:18,glass:15,neon:8,metal:10,sand:25},
-  quality:'high', questDone:false,
-  bots:[]
-};
+let scene, camera, renderer, clock;
+let avatarRoot, playerModel;
+let bots = [];
+let keys = {};
+let moveX = 0, moveZ = 0;
+let camYaw = 0, pitch = 0.25;
+let velX = 0, velZ = 0, jumpV = 0, onGround = true;
+let walkTime = 0;
+let selectedBlock = 'brick';
+let placedBlocks = [];
 
-let scene, camera, renderer, clock, player, avatarRoot, cat;
-let water, sunLight, ambientLight, raycaster;
-let cameraDrag = null, keys = {}, worldObjects = [], animId = 0;
-let walkTime = 0, dayTime = 0;
-let collisionBoxes = [];
+/* بافت صورت روبلاکس با Canvas */
+function createRobloxFace(isGirl) {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#FED59D'; // رنگ پوست صورت
+  ctx.fillRect(0,0,128,128);
 
-/* ── Helpers ────────────────────────────────────────────── */
-function toast(s){
-  const t = $('toast'); t.textContent = s; t.style.display = 'block';
-  clearTimeout(toast._t); toast._t = setTimeout(()=> t.style.display='none', 2500);
-}
-function setLoad(p,t){ $('loadbar').style.width = p+'%'; $('loadtext').textContent = t; }
-function mat(color, rough=0.8, metal=0){
-  return new THREE.MeshStandardMaterial({color, roughness:rough, metalness:metal});
-}
-function box(w,h,d,m,x,y,z, add=true, parent=scene){
-  const o = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m);
-  o.position.set(x,y,z); o.castShadow = true; o.receiveShadow = true;
-  if(add) parent.add(o); return o;
-}
-function group(parent=scene){ const g = new THREE.Group(); parent.add(g); return g; }
-function rand(a,b){ return a + Math.random()*(b-a); }
-
-/* ── Block materials ──────────────────── */
-function blockMaterial(type){
-  switch(type){
-    case 'wood':   return mat(0x9b7045, 0.85, 0.05);
-    case 'stone':  return mat(0x7b8c9c, 0.9, 0.1);
-    case 'brick':  return mat(0xa05a3c, 0.8, 0.05);
-    case 'grass':  return mat(0x42b86c, 0.95, 0);
-    case 'glass':  return new THREE.MeshPhysicalMaterial({color:0xa3e9ff, transparent:true, opacity:0.45, roughness:0.05, metalness:0.3});
-    case 'neon':   return new THREE.MeshStandardMaterial({color:0xff66cc, emissive:0xff3399, emissiveIntensity:2, roughness:0.2});
-    case 'metal':  return mat(0xa8b4c0, 0.3, 0.85);
-    case 'sand':   return mat(0xe6d3a0, 0.95, 0);
-    default: return mat(0x9b7045);
-  }
-}
-const BLOCK_LABELS = { wood:'چوب', stone:'سنگ', brick:'آجر', grass:'چمن', glass:'شیشه', neon:'نئون', metal:'فلز', sand:'ماسه' };
-const BLOCK_ICONS = { wood:'🪵', stone:'🪨', brick:'🧱', grass:'🌿', glass:'💠', neon:'💡', metal:'⚙️', sand:'🏖️' };
-
-/* ── World builders ─────────────────────────────────────── */
-function makeTree(x,z,scale=1){
-  const g = group();
-  const trunk = box(0.35*scale, 1.8*scale, 0.35*scale, mat(0x523318), x, 0.75*scale, z, false);
-  const leaves = box(1.6*scale, 1.8*scale, 1.6*scale, mat(0x36854b), x, 2.1*scale, z, false);
-  leaves.rotation.y = rand(0,1);
-  g.add(trunk, leaves); worldObjects.push(g);
-  collisionBoxes.push({x, z, r: 0.5}); // Soft collision
-}
-function makeHouse(x,z,color=0xffc66b, scale=1){
-  const g = group();
-  box(3*scale, 1.8*scale, 2.8*scale, mat(0xf0ecd8), x, 0.9*scale, z, false, g); // Base
-  const roof = box(3.6*scale, 0.4*scale, 3.2*scale, mat(color), x, 2.0*scale, z, false, g); // Roof
-  roof.rotation.z = 0.12;
-  box(0.6*scale, 1.1*scale, 0.1, mat(0x4a2e1b), x, 0.55*scale, z+1.45*scale, false, g); // Door
-  const win = mat(0x7edff6, 0.1, 0.4);
-  box(0.5*scale, 0.5*scale, 0.1, win, x-0.9*scale, 1.1*scale, z+1.45*scale, false, g);
-  box(0.5*scale, 0.5*scale, 0.1, win, x+0.9*scale, 1.1*scale, z+1.45*scale, false, g);
-  worldObjects.push(g);
-  collisionBoxes.push({x, z, r: 1.8}); 
-}
-function makeIsland(cx,cz,r,top=0, color=0x5a9e68){
-  const shape = new THREE.Shape();
-  shape.absarc(0,0,r,0,Math.PI*2,false);
-  const geo = new THREE.ExtrudeGeometry(shape,{depth:1.9, bevelEnabled:true, bevelSegments:2, steps:1, bevelSize:0.4, bevelThickness:0.3, curveSegments:32});
-  geo.rotateX(Math.PI/2);
-  const m = new THREE.Mesh(geo, mat(color, 0.95));
-  m.position.set(cx, top, cz); m.receiveShadow = true; m.castShadow = true; scene.add(m);
-  const cliff = new THREE.Mesh(new THREE.CylinderGeometry(r*0.9, r*0.6, 2.5, 24, 1), mat(0x7a634e, 0.9));
-  cliff.position.set(cx, top-1.2, cz); cliff.receiveShadow = true; scene.add(cliff);
-}
-function makeBridge(x1,z1,x2,z2,y=0.2){
-  const dx=x2-x1, dz=z2-z1, len=Math.hypot(dx,dz), ang=Math.atan2(dz,dx);
-  const deck = box(len, 0.2, 1.2, mat(0x8a5d33), (x1+x2)/2, y, (z1+z2)/2);
-  deck.rotation.y = -ang;
-}
-
-/* ── Detailed Characters (Faces & Hair) ─────────────────── */
-function addFaceAndHair(head, style, isGirl){
-  // Eyes
-  box(0.06, 0.08, 0.04, mat(0x0a0a0a), -0.12, 0.05, 0.24, false, head);
-  box(0.06, 0.08, 0.04, mat(0x0a0a0a),  0.12, 0.05, 0.24, false, head);
-  // Mouth (smile)
-  box(0.14, 0.03, 0.04, mat(0xaa3333), 0, -0.12, 0.24, false, head);
-  
-  // Hair
-  const hMat = mat(style.hair);
-  if(isGirl){
-    box(0.48, 0.18, 0.48, hMat, 0, 0.25, 0, false, head); // Top
-    box(0.52, 0.45, 0.25, hMat, 0, -0.05, -0.15, false, head); // Back
+  // چشم‌های بیضی روبلاکس
+  ctx.fillStyle = '#111';
+  if(isGirl) {
+    // مژه‌ها و چشم دخترانه روبلاکس
+    ctx.beginPath(); ctx.ellipse(40, 52, 9, 13, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(88, 52, 9, 13, 0, 0, Math.PI*2); ctx.fill();
+    // مژه
+    ctx.lineWidth = 3; ctx.strokeStyle = '#111';
+    ctx.beginPath(); ctx.moveTo(32, 42); ctx.lineTo(24, 34); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(96, 42); ctx.lineTo(104, 34); ctx.stroke();
+    // لبخند لطیف
+    ctx.beginPath(); ctx.arc(64, 76, 16, 0.2, Math.PI - 0.2); ctx.stroke();
   } else {
-    box(0.48, 0.16, 0.48, hMat, 0, 0.25, -0.02, false, head); // Short hair
+    // چشم و لبخند کلاسیک روبلاکس
+    ctx.beginPath(); ctx.arc(42, 54, 8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(86, 54, 8, 0, Math.PI*2); ctx.fill();
+    // لبخند معروف روبلاکس
+    ctx.lineWidth = 4; ctx.strokeStyle = '#111';
+    ctx.beginPath(); ctx.arc(64, 74, 22, 0.2, Math.PI - 0.2); ctx.stroke();
   }
+  return new THREE.CanvasTexture(c);
 }
 
-function buildCharacterMesh(colorConfig, isGirl=false){
-  const root = group();
-  const skin = mat(colorConfig.skin||0xffc69b);
-  const shirt = mat(colorConfig.shirt||0x287bd9);
-  const pants = mat(colorConfig.pants||0x172c48);
-  const shoe = mat(0x111b2a);
+/* ساخت آواتار R6 استاندارد روبلاکس */
+function buildRobloxR6(colorConfig, isGirl) {
+  const root = new THREE.Group();
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xFED59D, roughness: 0.6 });
+  const torsoMat = new THREE.MeshStandardMaterial({ color: colorConfig.torso, roughness: 0.5 });
+  const pantsMat = new THREE.MeshStandardMaterial({ color: colorConfig.pants, roughness: 0.5 });
   
-  const torso = box(0.66, 0.82, 0.36, shirt, 0, 1.12, 0, false, root);
-  const head  = box(0.46, 0.46, 0.46, skin, 0, 1.85, 0, false, root);
-  addFaceAndHair(head, colorConfig, isGirl);
+  // صورت روبلاکس
+  const faceTexture = createRobloxFace(isGirl);
+  const headMaterials = [
+    skinMat, skinMat, skinMat, skinMat,
+    new THREE.MeshStandardMaterial({ map: faceTexture, roughness: 0.6 }), // جلو
+    skinMat
+  ];
 
-  const legL  = box(0.22, 0.55, 0.26, pants, -0.17, 0.42, 0, false, root);
-  const legR  = box(0.22, 0.55, 0.26, pants,  0.17, 0.42, 0, false, root);
-  box(0.26, 0.14, 0.36, shoe, 0, -0.25, 0.04, false, legL);
-  box(0.26, 0.14, 0.36, shoe, 0, -0.25, 0.04, false, legR);
-  
-  const armL  = box(0.18, 0.64, 0.2, skin, -0.46, 1.15, 0, false, root);
-  const armR  = box(0.18, 0.64, 0.2, skin,  0.46, 1.15, 0, false, root);
+  // Head (سر مکعبی روبلاکس با لبه‌های نرم)
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), headMaterials);
+  head.position.y = 2.0; head.castShadow = true; root.add(head);
 
-  return { root, legL, legR, armL, armR, head };
+  // موی دختر یا پسر
+  if(isGirl) {
+    const hairMat = new THREE.MeshStandardMaterial({ color: colorConfig.hair, roughness: 0.7 });
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.5, 1.15), hairMat);
+    hair.position.set(0, 2.35, 0); root.add(hair);
+    // دم اسبی یا موی بلند پشت
+    const ponytail = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.4), hairMat);
+    ponytail.position.set(0, 1.8, -0.6); root.add(ponytail);
+  } else {
+    // کلاه یا موی کوتاه پسرانه
+    const capMat = new THREE.MeshStandardMaterial({ color: colorConfig.hair, roughness: 0.6 });
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.35, 1.1), capMat);
+    cap.position.set(0, 2.4, 0); root.add(cap);
+    const brim = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.4), capMat);
+    brim.position.set(0, 2.25, 0.65); root.add(brim);
+  }
+
+  // Torso (بالاتنه کلاسیک 2x2x1)
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 0.8), torsoMat);
+  torso.position.y = 0.9; torso.castShadow = true; root.add(torso);
+
+  // دست‌ها و پاها
+  const armGeo = new THREE.BoxGeometry(0.7, 1.5, 0.7);
+  const legGeo = new THREE.BoxGeometry(0.75, 1.5, 0.75);
+
+  const armL = new THREE.Mesh(armGeo, skinMat);
+  armL.position.set(-1.25, 0.95, 0); armL.castShadow = true; root.add(armL);
+
+  const armR = new THREE.Mesh(armGeo, skinMat);
+  armR.position.set(1.25, 0.95, 0); armR.castShadow = true; root.add(armR);
+
+  const legL = new THREE.Mesh(legGeo, pantsMat);
+  legL.position.set(-0.42, -0.5, 0); legL.castShadow = true; root.add(legL);
+
+  const legR = new THREE.Mesh(legGeo, pantsMat);
+  legR.position.set(0.42, -0.5, 0); legR.castShadow = true; root.add(legR);
+
+  return { root, armL, armR, legL, legR };
 }
 
-function makePlayer(){
-  avatarRoot = group();
-  const char = buildCharacterMesh({shirt:0x2962ff, pants:0x263238, hair:0x3e2723, skin:0xffccaa}, false);
-  player = char.root;
-  player.userData = char;
-  avatarRoot.add(player);
-  avatarRoot.position.set(0,0,0);
-}
-
-function makeBot(name, cfg, isGirl, x, z){
-  const char = buildCharacterMesh(cfg, isGirl);
-  char.root.position.set(x, 0, z);
-  char.root.userData = {name, targetX:x, targetZ:z, walkT:0, charData:char, chatTimer:rand(5,15)};
-  scene.add(char.root); state.bots.push(char.root);
-}
-
-/* ── Build Multi-Level World ────────────────────────────── */
-function buildWorld(){
+/* ساخت مپ Baseplate روبلاکس */
+function buildBaseplate() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x75bdf0);
-  scene.fog = new THREE.Fog(0x8bcaf5, 30, 140); // Realistic fog
+  scene.background = new THREE.Color(0x87CEEB); // آسمان کلاسیک روبلاکس
+  scene.fog = new THREE.Fog(0x87CEEB, 40, 160);
 
-  camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 250);
-  
-  renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio||1, 1.5));
+  camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 300);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(innerWidth, innerHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; // Cinematic lighting
-  renderer.toneMappingExposure = 1.15;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   $('world').appendChild(renderer.domElement);
 
-  ambientLight = new THREE.HemisphereLight(0xffffff, 0x446655, 0.8);
-  scene.add(ambientLight);
-  sunLight = new THREE.DirectionalLight(0xfffaed, 2.2);
-  sunLight.position.set(-25, 35, 20);
-  sunLight.castShadow = true;
-  sunLight.shadow.mapSize.set(1024, 1024);
-  sunLight.shadow.camera.left = -35; sunLight.shadow.camera.right = 35;
-  sunLight.shadow.camera.top = 35; sunLight.shadow.camera.bottom = -35;
-  sunLight.shadow.bias = -0.0005;
-  scene.add(sunLight);
+  // نورپردازی بازی
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.9);
+  scene.add(hemiLight);
 
-  // Water
-  const waterGeo = new THREE.PlaneGeometry(350, 350);
-  const waterMat = new THREE.MeshStandardMaterial({color:0x1a8cbf, roughness:0.1, metalness:0.6, transparent:true, opacity:0.85});
-  water = new THREE.Mesh(waterGeo, waterMat);
-  water.rotation.x = -Math.PI/2; water.position.y = -1.8; scene.add(water);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+  dirLight.position.set(30, 60, 40);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.set(1024, 1024);
+  scene.add(dirLight);
 
-  /* --- Level 1: Central Island --- */
-  makeIsland(0, 0, 20, 0, 0x56a366);
-  makeHouse(-6, 2, 0xffa95e, 1.1); makeHouse(6, -4, 0x6ed7ed, 1.0);
-  for(let i=0;i<15;i++) makeTree(rand(-16,16), rand(-16,16), rand(0.7, 1.2));
-  
-  /* --- Level 2: Desert (East) --- */
-  makeIsland(45, 0, 18, 0, 0xe0c88b);
-  makeHouse(45, 0, 0xd4a373, 1.2);
-  makeBridge(18, 0, 28, 0, 0.2); // Bridge to Desert
+  // بیس‌پلیت اصلی (Baseplate 200x200 با رنگ سبز خاکستری روبلاکس)
+  const groundGeo = new THREE.PlaneGeometry(250, 250);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x4D6542, roughness: 0.9, metalness: 0.1
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -1.25;
+  ground.receiveShadow = true;
+  scene.add(ground);
 
-  /* --- Level 3: Ice (West) --- */
-  makeIsland(-45, 0, 17, 0, 0xdff5f5);
-  makeBridge(-18, 0, -29, 0, 0.2); // Bridge to Ice
+  // اسپاون پوینت روبلاکس (SpawnLocation)
+  const spawnMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(6, 0.3, 6),
+    new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.4 })
+  );
+  spawnMesh.position.set(0, -1.1, 0);
+  scene.add(spawnMesh);
 
-  /* --- Level 4: Magic (North) --- */
-  makeIsland(0, -45, 19, 0, 0x3d2857);
-  makeBridge(0, -18, 0, -28, 0.2); // Bridge to Magic
+  // موانع شبیه مپ‌های Obby روبلاکس
+  for (let i = 0; i < 7; i++) {
+    const obbyBlock = new THREE.Mesh(
+      new THREE.BoxGeometry(3, 0.6, 3),
+      new THREE.MeshStandardMaterial({ color: 0xE2231A, roughness: 0.3 })
+    );
+    obbyBlock.position.set(0, -0.9 + i * 0.8, -10 - i * 4);
+    scene.add(obbyBlock);
+  }
 
-  // Add Players
-  makePlayer();
-  makeBot('سارا', {shirt:0xff6b9d, pants:0xffffff, hair:0xffcc00, skin:0xffd1b3}, true, 5, 2);
-  makeBot('رضا', {shirt:0x00bfa5, pants:0x263238, hair:0x111111, skin:0xe5a073}, false, -5, 5);
-  makeBot('آیدا', {shirt:0x7e57c2, pants:0x111111, hair:0x8d6e63, skin:0xffccaa}, true, 0, -6);
-  
-  raycaster = new THREE.Raycaster();
+  // کاراکتر پلیر اصلی
+  avatarRoot = new THREE.Group();
+  playerModel = buildRobloxR6({ torso: 0x00A2FF, pants: 0x1B2A35, hair: 0x332211 }, false);
+  avatarRoot.add(playerModel.root);
+  scene.add(avatarRoot);
+
+  // ربات‌های آنلاین در سرور (سارا دختر و آرین پسر)
+  addBot('سارا', { torso: 0xFF69B4, pants: 0xEFEFEF, hair: 0xFFA500 }, true, 6, -4);
+  addBot('آرین', { torso: 0x2ECC71, pants: 0x2C3E50, hair: 0x111111 }, false, -6, -6);
+  addBot('نیلوفر', { torso: 0x9B59B6, pants: 0x34495E, hair: 0x4A2E1B }, true, -2, -12);
+
   clock = new THREE.Clock();
 }
 
-/* ── Standardized Movement (Fixing the inverted controls) ─ */
-function updateMovement(dt){
-  // Joystick mapping
-  let moveX = state.moveX; // -1 (left) to 1 (right)
-  let moveY = state.moveZ; // -1 (up) to 1 (down)
+function addBot(name, colors, isGirl, x, z) {
+  const model = buildRobloxR6(colors, isGirl);
+  model.root.position.set(x, 0, z);
+  scene.add(model.root);
+  bots.push({ name, model, targetX: x, targetZ: z, walkTime: 0, timer: 5 + Math.random()*10 });
+}
 
-  // Keyboard overrides
-  if(keys.ArrowUp || keys.KeyW) moveY = -1;
-  if(keys.ArrowDown || keys.KeyS) moveY = 1;
-  if(keys.ArrowLeft || keys.KeyA) moveX = -1;
-  if(keys.ArrowRight || keys.KeyD) moveX = 1;
+/* کنترل و حرکت کاراکتر (اصلاح کامل جهت‌ها و جوی‌استیک) */
+function updateControls(dt) {
+  let mX = moveX;
+  let mZ = moveZ;
 
-  // Camera direction calculations
-  // camYaw=0 means camera looks at -Z.
-  const sin = Math.sin(state.camYaw);
-  const cos = Math.cos(state.camYaw);
-  
-  // Forward vector of the camera on XZ plane
-  const fwdX = sin, fwdZ = -cos; 
-  // Right vector of the camera on XZ plane
+  if (keys.KeyW || keys.ArrowUp) mZ = -1;
+  if (keys.KeyS || keys.ArrowDown) mZ = 1;
+  if (keys.KeyA || keys.ArrowLeft) mX = -1;
+  if (keys.KeyD || keys.ArrowRight) mX = 1;
+
+  // همگام‌سازی بردارها نسبت به زاویه دوربین
+  const sin = Math.sin(camYaw);
+  const cos = Math.cos(camYaw);
+
+  const forwardX = sin, forwardZ = -cos;
   const rightX = cos, rightZ = sin;
 
-  // IMPORTANT FIX: 
-  // If user pushes joystick UP (moveY < 0), they want to go FORWARD.
-  // So inputFwd should be positive when moveY is negative.
-  const inputFwd = -moveY; 
-  // If user pushes RIGHT (moveX > 0), they want to go RIGHT.
-  const inputRight = moveX;
+  // با حرکت استیک رو به بالا (-mZ)، کاراکتر مستقیم به جلو حرکت می‌کند
+  const dirX = forwardX * (-mZ) + rightX * mX;
+  const dirZ = forwardZ * (-mZ) + rightZ * mX;
 
-  // Desired movement direction
-  let dx = fwdX * inputFwd + rightX * inputRight;
-  let dz = fwdZ * inputFwd + rightZ * inputRight;
+  const len = Math.hypot(dirX, dirZ);
+  const isMoving = len > 0.05;
 
-  const inputLen = Math.hypot(dx, dz);
-  if(inputLen > 0.01){ dx /= inputLen; dz /= inputLen; }
-
-  const maxSpeed = state.running ? 8.5 : 4.8;
-  const accel = state.running ? 30 : 20;
-  const friction = 14;
-
-  if(inputLen > 0.01){
-    state.velX += dx * accel * dt;
-    state.velZ += dz * accel * dt;
-    const spd = Math.hypot(state.velX, state.velZ);
-    if(spd > maxSpeed){
-      state.velX = (state.velX / spd) * maxSpeed;
-      state.velZ = (state.velZ / spd) * maxSpeed;
-    }
+  const speed = 7.5;
+  if (isMoving) {
+    velX = (dirX / len) * speed;
+    velZ = (dirZ / len) * speed;
+    // چرخش دقیق کاراکتر روبلاکس به سمت مسیر حرکت
+    avatarRoot.rotation.y = Math.atan2(velX, -velZ);
   } else {
-    const spd = Math.hypot(state.velX, state.velZ);
-    if(spd > 0.05){
-      const f = Math.max(0, 1 - friction * dt);
-      state.velX *= f; state.velZ *= f;
-    } else {
-      state.velX = 0; state.velZ = 0;
-    }
+    velX *= 0.8; velZ *= 0.8;
   }
 
-  const moving = Math.hypot(state.velX, state.velZ) > 0.1;
-  let nx = avatarRoot.position.x + state.velX * dt;
-  let nz = avatarRoot.position.z + state.velZ * dt;
+  avatarRoot.position.x += velX * dt;
+  avatarRoot.position.z += velZ * dt;
 
-  // Soft bounds (Don't fall off edge of map)
-  if(Math.hypot(nx, nz) > 60){ nx = avatarRoot.position.x; nz = avatarRoot.position.z; }
-  
-  // Apply position
-  avatarRoot.position.x = nx;
-  avatarRoot.position.z = nz;
-
-  // Update Location Name
-  let zone = 'جزیره مرکزی';
-  if(nx > 25) zone = 'صحرای طلایی';
-  else if(nx < -25) zone = 'سرزمین یخی';
-  else if(nz < -25) zone = 'جزیره جادویی';
-  $('zonename').textContent = zone;
-
-  // Smooth character rotation towards movement direction
-  if(moving){
-    // Math.atan2(x, z) gives angle. We use atan2(dx, dz).
-    const targetCharYaw = Math.atan2(state.velX, state.velZ);
-    let dy = targetCharYaw - state.charYaw;
-    while(dy > Math.PI) dy -= Math.PI * 2;
-    while(dy < -Math.PI) dy += Math.PI * 2;
-    state.charYaw += dy * Math.min(1, 15 * dt);
-  }
-  // Apply rotation to mesh
-  if(player) player.rotation.y = state.charYaw;
-
-  // Physics / Jump
-  if(!state.onGround){
-    state.jumpV -= 25 * dt; // Gravity
-    avatarRoot.position.y += state.jumpV * dt;
-    if(avatarRoot.position.y <= 0){
+  // پرش (Jump)
+  if (!onGround) {
+    jumpV -= 28 * dt; // جاذبه
+    avatarRoot.position.y += jumpV * dt;
+    if (avatarRoot.position.y <= 0) {
       avatarRoot.position.y = 0;
-      state.jumpV = 0;
-      state.onGround = true;
+      jumpV = 0;
+      onGround = true;
     }
   }
 
-  // Animation Walk
-  if(player && player.userData.legL){
-    if(moving){
-      walkTime += dt * (state.running ? 14 : 9);
-      const swing = Math.sin(walkTime) * (state.running ? 0.7 : 0.5);
-      player.userData.legL.rotation.x = swing;
-      player.userData.legR.rotation.x = -swing;
-      player.userData.armL.rotation.x = -swing * 0.6;
-      player.userData.armR.rotation.x = swing * 0.6;
+  // انیمیشن حرکت دست و پا شبیه راه رفتن روبلاکس
+  if (playerModel) {
+    if (isMoving) {
+      walkTime += dt * 10;
+      const angle = Math.sin(walkTime) * 0.7;
+      playerModel.legL.rotation.x = angle;
+      playerModel.legR.rotation.x = -angle;
+      playerModel.armL.rotation.x = -angle;
+      playerModel.armR.rotation.x = angle;
     } else {
-      player.userData.legL.rotation.x *= 0.8;
-      player.userData.legR.rotation.x *= 0.8;
-      player.userData.armL.rotation.x *= 0.8;
-      player.userData.armR.rotation.x *= 0.8;
+      playerModel.legL.rotation.x *= 0.8;
+      playerModel.legR.rotation.x *= 0.8;
+      playerModel.armL.rotation.x *= 0.8;
+      playerModel.armR.rotation.x *= 0.8;
     }
   }
 }
 
-function moveCamera(dt){
-  const p = avatarRoot.position;
-  const dist = 7.5, height = 3.5;
-  const offset = new THREE.Vector3(
-    Math.sin(state.camYaw) * dist,
-    height + state.pitch * 3.5,
-    Math.cos(state.camYaw) * dist
-  );
-  // Prevent camera clipping under ground
-  if(offset.y < 1.0) offset.y = 1.0;
-  
-  const target = new THREE.Vector3(p.x + offset.x, p.y + offset.y, p.z + offset.z);
-  camera.position.lerp(target, 1 - Math.exp(-8 * dt));
-  camera.lookAt(p.x, p.y + 1.2, p.z);
-}
-
-/* ── Place / Remove Blocks ──────────────────────────────── */
-function placeBlock(){
-  const type = state.selected;
-  if((state.inventory[type]||0) <= 0){ toast('از این بلوک نداری!'); return; }
-  
-  // Place in front of player
-  const fwd = new THREE.Vector3(Math.sin(state.charYaw), 0, Math.cos(state.charYaw));
-  let x = Math.round(avatarRoot.position.x + fwd.x * 2.5);
-  let z = Math.round(avatarRoot.position.z + fwd.z * 2.5);
-  let y = 0.5;
-  for(const b of state.placed){ if(b.x === x && b.z === z) y = Math.max(y, b.y + 1); }
-  
-  if(y > 10){ toast('خیلی بلند شد!'); return; }
-  const mesh = box(1, 1, 1, blockMaterial(type), x, y, z);
-  state.placed.push({x, y, z, type, mesh});
-  state.inventory[type]--;
-  state.blocks++; state.xp += 20; state.coins += 5;
-  updateHUD();
-  if(state.blocks >= 3 && !state.questDone){
-    state.questDone = true; state.coins += 100;
-    toast('🎉 مأموریت روزانه تکمیل شد! +۱۰۰ سکه'); updateHUD();
-  }
-}
-
-function removeBlock(){
-  if(!state.placed.length){ toast('بلوکی نیست!'); return; }
-  const px = avatarRoot.position.x, pz = avatarRoot.position.z;
-  let best = -1, bestD = 99;
-  state.placed.forEach((b,i)=>{
-    const d = Math.hypot(b.x - px, b.z - pz);
-    if(d < bestD && d < 4){ bestD = d; best = i; }
-  });
-  if(best < 0) best = state.placed.length - 1;
-  const b = state.placed.splice(best, 1)[0];
-  scene.remove(b.mesh);
-  state.inventory[b.type] = (state.inventory[b.type]||0) + 1;
-  updateHUD();
-}
-
-/* ── Multiplayer Simulation ─────────────────────────────── */
-function updateBots(dt){
-  for(const bot of state.bots){
-    const ud = bot.userData;
-    if(Math.hypot(bot.position.x - ud.targetX, bot.position.z - ud.targetZ) < 1.0){
-      ud.targetX = bot.position.x + rand(-10, 10);
-      ud.targetZ = bot.position.z + rand(-10, 10);
+/* هوش مصنوعی ربات‌ها (شبیه‌ساز مولتی‌پلیر آنلاین روبلاکس) */
+function updateBots(dt) {
+  for (const bot of bots) {
+    if (Math.hypot(bot.model.root.position.x - bot.targetX, bot.model.root.position.z - bot.targetZ) < 1) {
+      bot.targetX = (Math.random() - 0.5) * 30;
+      bot.targetZ = (Math.random() - 0.5) * 30;
     }
-    const dx = ud.targetX - bot.position.x;
-    const dz = ud.targetZ - bot.position.z;
-    const len = Math.hypot(dx, dz) || 1;
-    bot.position.x += (dx/len) * 2.5 * dt;
-    bot.position.z += (dz/len) * 2.5 * dt;
-    bot.rotation.y = Math.atan2(dx, dz);
-    
-    ud.walkT += dt * 9;
-    if(ud.charData){
-      ud.charData.legL.rotation.x = Math.sin(ud.walkT) * 0.45;
-      ud.charData.legR.rotation.x = -Math.sin(ud.walkT) * 0.45;
-    }
-    
-    // Chat Simulation
-    ud.chatTimer -= dt;
-    if(ud.chatTimer <= 0){
-      ud.chatTimer = rand(15, 30);
-      const msgs = ['چقدر قشنگه! 🌸', 'بیایید بریم مرحله بعد', 'سلام 👋', 'دارم خونه می‌سازم 🏠', 'کسی اینجا هست؟'];
-      addChatLine(ud.name, msgs[Math.floor(Math.random()*msgs.length)]);
+    const dx = bot.targetX - bot.model.root.position.x;
+    const dz = bot.targetZ - bot.model.root.position.z;
+    const dLen = Math.hypot(dx, dz) || 1;
+    bot.model.root.position.x += (dx / dLen) * 3 * dt;
+    bot.model.root.position.z += (dz / dLen) * 3 * dt;
+    bot.model.root.rotation.y = Math.atan2(dx, dz);
+
+    bot.walkTime += dt * 8;
+    bot.model.legL.rotation.x = Math.sin(bot.walkTime) * 0.5;
+    bot.model.legR.rotation.x = -Math.sin(bot.walkTime) * 0.5;
+
+    // چت خودکار در سرور
+    bot.timer -= dt;
+    if(bot.timer <= 0) {
+      bot.timer = 15 + Math.random() * 20;
+      const msgs = ['کسی با من بلوک می‌سازه؟', 'بریم مرحله Obby رو رد کنیم!', 'سلام به سرور!'];
+      addChatMessage(bot.name, msgs[Math.floor(Math.random()*msgs.length)]);
     }
   }
 }
 
-function addChatLine(name, text){
-  const log = $('chatlog');
+function addChatMessage(user, msg) {
+  const box = $('chat-box');
   const d = document.createElement('div');
-  d.className = 'chatline';
-  d.innerHTML = `<b>${name}:</b> ${text}`;
-  log.appendChild(d);
-  while(log.children.length > 6) log.removeChild(log.firstChild);
-  log.scrollTop = log.scrollHeight;
+  d.className = 'chat-line';
+  d.innerHTML = `<b>${user}:</b> ${msg}`;
+  box.appendChild(d);
+  if(box.children.length > 5) box.removeChild(box.firstChild);
 }
 
-function updateHUD(){
-  $('coins').textContent = state.coins;
-  $('gems').textContent = state.gems;
-  $('level').textContent = Math.floor(state.xp/1000) + 1;
-  $('xpbar').style.width = Math.min(100, (state.xp % 1000)/10) + '%';
-  $('questcount').textContent = Math.min(3, state.blocks);
-  $('questbar').style.width = Math.min(100, state.blocks / 3 * 100) + '%';
-  document.querySelectorAll('.slot').forEach(el=>{
-    const t = el.dataset.block;
-    el.classList.toggle('active', t === state.selected);
-    el.querySelector('small').textContent = state.inventory[t] || 0;
+/* دوربین سوم شخص روبلاکس */
+function updateCamera(dt) {
+  const targetPos = avatarRoot.position;
+  const dist = 9.0;
+  const height = 4.0;
+
+  const cx = targetPos.x + Math.sin(camYaw) * dist;
+  const cz = targetPos.z + Math.cos(camYaw) * dist;
+  const cy = targetPos.y + height + pitch * 4.0;
+
+  camera.position.set(cx, cy, cz);
+  camera.lookAt(targetPos.x, targetPos.y + 1.2, targetPos.z);
+}
+
+/* سیستم رویدادها، جوی‌استیک پایین صفحه و لمس */
+function setupInput() {
+  const joyZone = $('joystick-zone');
+  const joyThumb = $('joystick-thumb');
+  let joyId = null;
+
+  function handleJoy(e) {
+    const rect = joyZone.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let dx = e.clientX - cx;
+    let dy = e.clientY - cy;
+    const maxR = rect.width * 0.35;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > maxR) {
+      dx = (dx / dist) * maxR;
+      dy = (dy / dist) * maxR;
+    }
+    joyThumb.style.transform = `translate(${dx}px, ${dy}px)`;
+    moveX = dx / maxR;
+    moveZ = dy / maxR;
+  }
+
+  joyZone.addEventListener('pointerdown', e => {
+    joyId = e.pointerId;
+    handleJoy(e);
   });
-}
 
-/* ── Animate Loop ───────────────────────────────────────── */
-function animate(){
-  animId = requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  dayTime += dt;
-
-  updateMovement(dt);
-  updateBots(dt);
-
-  // Water Animation
-  water.position.y = -1.8 + Math.sin(dayTime * 0.6) * 0.04;
-  
-  moveCamera(dt);
-  renderer.render(scene, camera);
-  
-  // Mini Map update
-  const ctx = $('mapcanvas').getContext('2d');
-  ctx.clearRect(0,0,180,180);
-  ctx.fillStyle = '#55a96e'; ctx.beginPath(); ctx.arc(90,90,30,0,Math.PI*2); ctx.fill(); // Main
-  ctx.fillStyle = '#e0c88b'; ctx.beginPath(); ctx.arc(150,90,25,0,Math.PI*2); ctx.fill(); // Desert
-  ctx.fillStyle = '#dff5f5'; ctx.beginPath(); ctx.arc(30,90,25,0,Math.PI*2); ctx.fill(); // Ice
-  ctx.fillStyle = '#3d2857'; ctx.beginPath(); ctx.arc(90,30,25,0,Math.PI*2); ctx.fill(); // Magic
-  // Player blip
-  const mx = 90 + avatarRoot.position.x * 1.33;
-  const mz = 90 + avatarRoot.position.z * 1.33;
-  ctx.fillStyle = '#ff3366'; ctx.beginPath(); ctx.arc(mx, mz, 4, 0, Math.PI*2); ctx.fill();
-  $('coords').textContent = `X: ${Math.round(avatarRoot.position.x)} · Z: ${Math.round(avatarRoot.position.z)}`;
-}
-
-/* ── Input Setup (Fixed Joystick globally) ──────────────── */
-function setupUI(){
-  // Tabs & Modals (Standard from previous version)
-  document.querySelectorAll('[data-open]').forEach(b => {
-    b.onclick = () => {
-      if(b.dataset.open==='inventory'){
-        const items = Object.entries(state.inventory).map(([k,v]) => `<button class="btn" onclick="state.selected='${k}';$('modclose').click();updateHUD()">${BLOCK_ICONS[k]} ${BLOCK_LABELS[k]} (${v})</button>`).join('');
-        $('modtitle').textContent = '🎒 کوله'; $('modbody').innerHTML = `<div class="rowbtn">${items}</div>`; $('modal').classList.add('open');
-      }
-      if(b.dataset.open==='friends'){
-        $('modtitle').textContent = '👥 بازیکنان آنلاین (آماده اتصال)'; $('modbody').innerHTML = `<p>ربات‌ها در حال شبیه‌سازی کاربران هستند. این نسخه کاملاً آماده اتصال به سرور (Socket.io/Firebase) است!</p>`; $('modal').classList.add('open');
-      }
-    };
+  window.addEventListener('pointermove', e => {
+    if (e.pointerId === joyId) handleJoy(e);
   });
-  $('modclose').onclick = () => $('modal').classList.remove('open');
-  $('modok').onclick = () => $('modal').classList.remove('open');
 
-  document.querySelectorAll('.slot').forEach(b => b.onclick = () => { state.selected = b.dataset.block; updateHUD(); });
-  $('placebtn').onclick = placeBlock;
-  $('deletebtn').onclick = removeBlock;
-  $('buildbtn').onclick = () => toast('حالت ساخت: فعال');
-  $('jump').onclick = () => { if(state.onGround){ state.jumpV = 9; state.onGround = false; } };
-  $('emote').onclick = () => { addChatLine('تو', '👋 سلام به همه!'); };
-  $('runbtn').onclick = () => { state.running = !state.running; $('runbtn').style.background = state.running ? '#ff6b6b55' : ''; };
-  $('sendchat').onclick = () => { if($('chattext').value){ addChatLine('تو', $('chattext').value); $('chattext').value=''; } };
+  function stopJoy(e) {
+    if (e.pointerId === joyId) {
+      joyId = null;
+      moveX = 0; moveZ = 0;
+      joyThumb.style.transform = 'translate(0,0)';
+    }
+  }
+  window.addEventListener('pointerup', stopJoy);
+  window.addEventListener('pointercancel', stopJoy);
 
-  // Keyboard
+  // دکمه پرش
+  $('jump-btn').addEventListener('pointerdown', () => {
+    if (onGround) { jumpV = 10.5; onGround = false; }
+  });
+
+  // کنترل چرخش دوربین در محیط لمسی (سمت راست صفحه)
+  let camDrag = null;
+  window.addEventListener('pointerdown', e => {
+    if (e.clientX > window.innerWidth / 3 && e.clientY < window.innerHeight - 100) {
+      camDrag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    }
+  });
+
+  window.addEventListener('pointermove', e => {
+    if (camDrag && e.pointerId === camDrag.id) {
+      const dx = e.clientX - camDrag.x;
+      const dy = e.clientY - camDrag.y;
+      camYaw -= dx * 0.006;
+      pitch = Math.max(-0.2, Math.min(0.65, pitch + dy * 0.003));
+      camDrag.x = e.clientX; camDrag.y = e.clientY;
+    }
+  });
+
+  window.addEventListener('pointerup', e => {
+    if (camDrag && e.pointerId === camDrag.id) camDrag = null;
+  });
+
+  // کلیدهای کیبورد کامپیوتر
   window.addEventListener('keydown', e => {
     keys[e.code] = true;
-    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
-    if(e.code === 'Space') $('jump').click();
-    if(e.code === 'KeyE') placeBlock();
+    if (e.code === 'Space' && onGround) { jumpV = 10.5; onGround = false; }
   });
   window.addEventListener('keyup', e => keys[e.code] = false);
 
-  // BUG-FREE JOYSTICK
-  const joy = $('joystick'), stick = $('stick');
-  let joyId = null;
-  function joyMove(e){
-    const r = joy.getBoundingClientRect();
-    const cx = r.left + r.width/2, cy = r.top + r.height/2;
-    let dx = e.clientX - cx, dy = e.clientY - cy;
-    const max = r.width * 0.35;
-    const l = Math.hypot(dx, dy);
-    if(l > max){ dx *= max/l; dy *= max/l; }
-    stick.style.transform = `translate(${dx}px,${dy}px)`;
-    state.moveX = dx / max; 
-    state.moveZ = dy / max;
-  }
-  joy.addEventListener('pointerdown', e => { joyId = e.pointerId; joyMove(e); });
-  // Attach pointermove/up to WINDOW to prevent joystick getting stuck!
-  window.addEventListener('pointermove', e => { if(joyId === e.pointerId) joyMove(e); });
-  window.addEventListener('pointerup', e => { if(joyId === e.pointerId){ joyId = null; state.moveX = 0; state.moveZ = 0; stick.style.transform = 'translate(0,0)'; } });
-  window.addEventListener('pointercancel', e => { if(joyId === e.pointerId){ joyId = null; state.moveX = 0; state.moveZ = 0; stick.style.transform = 'translate(0,0)'; } });
-
-  // Camera Pan
-  const worldEl = $('world');
-  worldEl.addEventListener('pointerdown', e => {
-    if(e.target === renderer.domElement) cameraDrag = {x:e.clientX, y:e.clientY, id:e.pointerId, moved:false};
-  });
-  window.addEventListener('pointermove', e => {
-    if(!cameraDrag || cameraDrag.id !== e.pointerId) return;
-    const dx = e.clientX - cameraDrag.x, dy = e.clientY - cameraDrag.y;
-    if(Math.abs(dx) + Math.abs(dy) > 4) cameraDrag.moved = true;
-    state.camYaw -= dx * 0.006;
-    state.pitch = Math.max(-0.1, Math.min(0.6, state.pitch + dy * 0.003));
-    cameraDrag.x = e.clientX; cameraDrag.y = e.clientY;
-  });
-  window.addEventListener('pointerup', e => {
-    if(cameraDrag && cameraDrag.id === e.pointerId){
-      if(!cameraDrag.moved) placeBlock(); // Tap to build
-      cameraDrag = null;
-    }
-  });
-
   window.addEventListener('resize', () => {
-    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
   });
 }
 
-/* ── Start ──────────────────────────────────────────────── */
-function start(){
-  setLoad(30, 'رندرینگ محیط واقعی…');
-  buildWorld();
-  setLoad(70, 'شبیه‌سازی دنیا و کاراکترها…');
-  setupUI(); updateHUD();
-  setLoad(95, 'تنظیمات کنترلر…');
-  animate();
-  setTimeout(() => {
-    $('loading').style.opacity = '0';
-    setTimeout(() => $('loading').remove(), 500);
-  }, 400);
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  updateControls(dt);
+  updateBots(dt);
+  updateCamera(dt);
+
+  renderer.render(scene, camera);
 }
-start();
+
+function start() {
+  let progress = 0;
+  const bar = $('load-progress');
+  const timer = setInterval(() => {
+    progress += 25;
+    bar.style.width = progress + '%';
+    if (progress >= 100) {
+      clearInterval(timer);
+      setTimeout(() => {
+        $('roblox-loading').style.opacity = '0';
+        setTimeout(() => $('roblox-loading').style.display = 'none', 500);
+      }, 400);
+    }
+  }, 180);
+
+  buildBaseplate();
+  setupInput();
+  animate();
+}
+
+window.onload = start;
 })();
 </script>
 </body>
