@@ -1,939 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="screen-orientation" content="any" />
-<title>مکعب‌لند — بازی سه‌بعدی</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07182b">
+<title>دنیای همدلی 3D</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#5eb3e8;
-    font-family:system-ui,"Segoe UI",Tahoma,sans-serif;user-select:none;
-    touch-action:none;position:fixed;inset:0;margin:0}
-  canvas{display:block;touch-action:none;position:fixed;inset:0;width:100%!important;height:100%!important;z-index:1}
-
-  #hud{position:fixed;inset:0;pointer-events:none;z-index:10}
-
-  #cross{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:.85}
-  #cross::before,#cross::after{content:"";position:absolute;background:#fff;
-    box-shadow:0 0 3px rgba(0,0,0,.8);border-radius:2px}
-  #cross::before{left:50%;top:0;width:2px;height:100%;margin-left:-1px}
-  #cross::after{top:50%;left:0;height:2px;width:100%;margin-top:-1px}
-
-  #topbar{position:absolute;top:max(8px,env(safe-area-inset-top));right:8px;left:8px;
-    display:flex;gap:6px;align-items:center;flex-wrap:wrap;pointer-events:none}
-  .pill{pointer-events:auto;background:rgba(15,25,40,.62);backdrop-filter:blur(8px);
-    color:#eaf4ff;border:1px solid rgba(255,255,255,.16);border-radius:12px;
-    padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;
-    touch-action:manipulation}
-  .pill:hover,.pill:active{background:rgba(30,60,100,.85)}
-  .pill.on{background:linear-gradient(135deg,#31c46b,#1f9e52);border-color:#7bffb0;color:#03220f}
-  #stats{margin-inline-start:auto;font-size:11px;color:#dff0ff;opacity:.9;
-    background:rgba(15,25,40,.55);padding:6px 10px;border-radius:12px;direction:ltr}
-
-  #hotbar{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;
-    transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;
-    background:rgba(15,25,40,.55);padding:6px;border-radius:16px;backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.13);max-width:96vw;overflow-x:auto}
-  .slot{width:48px;height:48px;min-width:44px;border-radius:11px;border:2px solid rgba(255,255,255,.22);
-    cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-    position:relative;transition:.12s;overflow:hidden;touch-action:manipulation}
-  .slot span.lbl{font-size:9px;color:#fff;text-shadow:0 1px 3px #000;padding-bottom:1px;font-weight:700}
-  .slot span.cnt{position:absolute;top:2px;left:3px;font-size:10px;font-weight:800;
-    color:#fff;text-shadow:0 1px 2px #000;background:rgba(0,0,0,.35);border-radius:6px;padding:0 4px}
-  .slot.on{border-color:#fff;transform:translateY(-4px) scale(1.06);
-    box-shadow:0 6px 18px rgba(0,0,0,.45)}
-
-  #start{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:14px;text-align:center;
-    background:radial-gradient(circle at 50% 35%,#3aa0e8,#0b2b4a 75%);
-    color:#fff;padding:20px;cursor:pointer}
-  #start h1{font-size:clamp(24px,6vw,44px);text-shadow:0 4px 22px rgba(0,0,0,.5)}
-  #start p{max-width:520px;line-height:1.9;font-size:clamp(13px,3.2vw,15px);opacity:.92}
-  #start .go{margin-top:6px;background:linear-gradient(135deg,#45d47c,#1f9e52);
-    color:#03220f;font-weight:800;padding:14px 42px;border-radius:14px;font-size:18px;
-    box-shadow:0 10px 32px rgba(70,220,130,.4);border:none;cursor:pointer;
-    touch-action:manipulation;-webkit-user-select:none;user-select:none}
-  #start .go:disabled{opacity:.55;cursor:wait}
-  kbd{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
-    border-radius:6px;padding:2px 7px;font-family:inherit;font-size:.9em}
-
-  #touch{display:block;z-index:20;pointer-events:none}
-  #stick{pointer-events:auto;position:fixed;bottom:max(88px,calc(env(safe-area-inset-bottom) + 72px));
-    right:max(16px,env(safe-area-inset-right));width:130px;height:130px;border-radius:50%;
-    background:rgba(15,25,40,.55);border:2px solid rgba(255,255,255,.35);touch-action:none;z-index:25}
-  #knob{position:absolute;left:50%;top:50%;width:54px;height:54px;border-radius:50%;
-    background:rgba(255,255,255,.78);transform:translate(-50%,-50%);
-    box-shadow:0 4px 14px rgba(0,0,0,.35);pointer-events:none}
-  .tbtn{pointer-events:auto;position:fixed;width:70px;height:70px;border-radius:50%;
-    background:rgba(15,25,40,.58);border:2px solid rgba(255,255,255,.28);
-    color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;
-    justify-content:center;touch-action:manipulation;user-select:none;
-    -webkit-user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
-  .tbtn:active,.tbtn.active{background:rgba(45,120,200,.75);transform:scale(.94)}
-  #btnJump{bottom:max(100px,calc(env(safe-area-inset-bottom) + 84px));
-    left:max(18px,env(safe-area-inset-left));width:76px;height:76px;font-size:15px;
-    background:rgba(31,158,82,.7);border-color:rgba(123,255,176,.5)}
-  #btnBreak{bottom:max(186px,calc(env(safe-area-inset-bottom) + 168px));
-    left:max(18px,env(safe-area-inset-left));width:60px;height:60px;font-size:22px}
-  #btnPlace{bottom:max(186px,calc(env(safe-area-inset-bottom) + 168px));
-    left:max(90px,calc(env(safe-area-inset-left) + 72px));width:60px;height:60px;font-size:22px}
-
-  /* افقی: کنترل‌ها جمع‌وجورتر */
-  @media (orientation: landscape) and (max-height: 500px){
-    #hotbar{bottom:max(6px,env(safe-area-inset-bottom));padding:4px;gap:4px}
-    .slot{width:40px;height:40px}
-    #stick{width:110px;height:110px;bottom:max(12px,env(safe-area-inset-bottom));right:12px}
-    #btnJump{width:64px;height:64px;bottom:max(16px,env(safe-area-inset-bottom));left:16px}
-    #btnBreak{bottom:max(90px,env(safe-area-inset-bottom));left:16px;width:52px;height:52px}
-    #btnPlace{bottom:max(90px,env(safe-area-inset-bottom));left:76px;width:52px;height:52px}
-    #topbar{top:4px}
-    .pill{padding:5px 8px;font-size:11px}
-  }
+:root{--glass:rgba(7,22,42,.78);--line:rgba(255,255,255,.19);--cyan:#6cf4ff;--gold:#ffd36b;--white:#f7fbff}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--white);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+#world{position:fixed;inset:0}#world canvas{display:block;width:100%;height:100%;outline:none}
+.glass{background:var(--glass);border:1px solid var(--line);box-shadow:0 8px 28px #00152b45;backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);border-radius:16px}
+.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:9px;right:9px;display:flex;justify-content:space-between;align-items:flex-start;gap:7px;pointer-events:none}
+.profile{display:flex;gap:9px;align-items:center;padding:7px 10px;min-width:150px;max-width:47vw}.avatar{width:43px;height:43px;border-radius:13px;background:linear-gradient(145deg,#59dfff,#665cff);display:grid;place-items:center;font-size:27px;border:2px solid #fff8}.pname{font-weight:900;font-size:13px}.level{font-size:10px;color:#c8d9ec}.xp{height:5px;background:#ffffff24;border-radius:9px;margin-top:5px;overflow:hidden}.xp span{display:block;width:42%;height:100%;background:linear-gradient(90deg,#56f3b3,#b7ff7d)}
+.wallet{display:flex;gap:5px}.money{padding:8px 10px;display:flex;align-items:center;gap:5px;font-weight:900;font-size:12px;white-space:nowrap}.money .symbol{font-size:18px}.circlebtn{width:36px;height:36px;border-radius:12px;border:1px solid #ffffff26;background:#ffffff12;color:white;font-size:19px;pointer-events:auto}
+.toptools{position:fixed;top:calc(env(safe-area-inset-top,0px) + 73px);left:10px;display:flex;gap:6px}.tool{width:42px;height:43px;display:grid;place-items:center;font-size:19px;pointer-events:auto}
+.quest{position:fixed;top:calc(env(safe-area-inset-top,0px) + 77px);right:10px;width:min(180px,47vw);padding:10px 12px}.quest strong{font-size:12px;color:var(--gold)}.quest p{font-size:11px;margin:6px 0;color:#e1eaf6;line-height:1.5}.progress{height:6px;background:#ffffff20;border-radius:8px;overflow:hidden}.progress span{display:block;width:33%;height:100%;background:linear-gradient(90deg,#ffd166,#ff9c54)}
+.map{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 185px);width:102px;height:102px;border-radius:50%;border:2px solid #e9fbffad;overflow:hidden;background:#123c53e8;box-shadow:0 6px 24px #001a33a0}.map canvas{width:100%;height:100%}.coords{position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 292px);font-size:10px;padding:6px 8px}
+.rightactions{position:fixed;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);display:flex;flex-direction:column;gap:7px}.action{width:55px;min-height:52px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:white;font-size:21px;pointer-events:auto}.action small{font-size:9px}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;padding:7px 5px calc(env(safe-area-inset-bottom,0px) + 5px);display:flex;justify-content:space-around;background:linear-gradient(0deg,#061427f5,#0b1e36ed);border-top:1px solid #ffffff22}.navbtn{background:none;border:0;color:#b9c9db;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:51px;font-size:19px}.navbtn span{font-size:9px}.navbtn.active{color:#78efff;text-shadow:0 0 14px #32dfff}
+.joystick{position:fixed;left:15px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);width:112px;height:112px;border-radius:50%;border:1px solid #ffffff70;background:#071a35a6;box-shadow:inset 0 0 18px #ffffff14;touch-action:none}.stick{position:absolute;width:44px;height:44px;left:34px;top:34px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#ffffffd9,#6cc9eab5);border:2px solid #fff9;box-shadow:0 3px 12px #00182d80;pointer-events:none}
+.jump{position:fixed;right:83px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);width:70px;height:70px;border-radius:50%;font-size:31px;color:white;pointer-events:auto}.emote{position:fixed;right:94px;bottom:calc(env(safe-area-inset-bottom,0px) + 157px);width:44px;height:44px;border-radius:50%;font-size:20px;pointer-events:auto}
+.hotbar{position:fixed;left:143px;right:82px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;gap:4px;justify-content:center}.slot{flex:1;max-width:52px;min-width:34px;height:49px;border-radius:10px;background:#0b2038d9;border:1px solid #ffffff30;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative;pointer-events:auto}.slot small{font-size:9px;color:#d4e2f1}.slot.active{border:2px solid var(--gold);box-shadow:0 0 12px #ffd16655}.slot em{position:absolute;top:1px;right:4px;font-size:9px;font-style:normal;color:#b9c9db}
+.chat{position:fixed;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 202px);width:min(255px,64vw);padding:8px;font-size:10px}.chatline{margin:3px 0;color:#e2efff}.chatline b{color:#6fefff}.chatinput{display:flex;gap:5px;margin-top:7px}.chatinput input{min-width:0;width:100%;border:1px solid #ffffff24;background:#07182bd9;color:white;border-radius:9px;padding:7px;font:inherit;outline:none}.chatinput button{border:0;background:#52d6f3;color:#062139;border-radius:9px;padding:0 9px;font-weight:900}
+.toast{position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);background:#06182deF;border:1px solid #65eaff;border-radius:14px;padding:11px 16px;font-size:12px;max-width:85vw;text-align:center;display:none;box-shadow:0 10px 35px #00182d80;z-index:30}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:#03101cce;z-index:25}.modal.open{display:flex}.modalcard{width:min(390px,100%);padding:17px;background:#0c2038;border:1px solid #ffffff2a;border-radius:20px;max-height:85vh;overflow:auto}.modalcard h2{font-size:18px;margin:0 0 9px}.modalcard p{font-size:12px;line-height:1.8;color:#c4d7e9}.modalcard input,.modalcard select{width:100%;padding:11px;border:1px solid #ffffff2c;border-radius:10px;background:#06172a;color:white;margin:4px 0 9px;direction:ltr}.rowbtn{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #ffffff24;border-radius:11px;background:#183654;color:white;padding:10px 12px;font-weight:800;font-size:12px;cursor:pointer}.btn.primary{background:#66e6ef;color:#062039}.btn.gold{background:#ffd166;color:#332100}.smallnote{font-size:10px;color:#a9bfd6;line-height:1.7}
+#loading{position:fixed;inset:0;background:linear-gradient(155deg,#082543,#2785a7);display:flex;align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:12px;text-align:center;padding:28px;transition:opacity .5s}#loading .logo{font-size:54px}#loading strong{font-size:22px}#loading p{max-width:300px;color:#d8f3ff;font-size:12px;line-height:1.8}.loaderbar{height:6px;width:200px;background:#ffffff30;border-radius:9px;overflow:hidden}.loaderbar span{display:block;height:100%;width:0;background:#6fffc7;transition:width .25s}
+@media(min-width:700px){.quest{width:210px}.map{width:130px;height:130px}.coords{top:330px}.chat{width:280px}.joystick{width:130px;height:130px}.stick{left:42px;top:42px}.rightactions{right:calc(50% - 380px)}}
 </style>
 </head>
 <body>
-
-<div id="hud">
-  <div id="cross"></div>
-  <div id="topbar">
-    <button type="button" class="pill" data-q="battery">🔋 باتری</button>
-    <button type="button" class="pill on" data-q="balanced">⚖️ متعادل</button>
-    <button type="button" class="pill" data-q="ultra">✨ کیفیت</button>
-    <button type="button" class="pill" id="btnFs" title="تمام‌صفحه">⛶ تمام‌صفحه</button>
-    <div id="stats">-- FPS</div>
-  </div>
-  <div id="hotbar"></div>
+<div id="world"></div>
+<div id="loading"><div class="logo">🌍</div><strong>دنیای همدلی 3D</strong><p>در حال ساخت جزیره، شهر، آبشارها و دنیای سه‌بعدی…<br>برای نمایش گرافیک سه‌بعدی به اینترنت و WebGL نیاز است.</p><div class="loaderbar"><span id="loadbar"></span></div><small id="loadtext">آماده‌سازی موتور سه‌بعدی…</small></div>
+<div class="top">
+ <div class="profile glass"><div class="avatar">🧑🏻‍🚀</div><div style="flex:1;min-width:0"><div class="pname">ماجراجو <span style="color:#6cf4ff">✦</span></div><div class="level">سطح <b id="level">3</b> · سازنده جزیره</div><div class="xp"><span id="xpbar"></span></div></div></div>
+ <div class="wallet"><div class="money glass"><span class="symbol">🪙</span><span id="coins">1250</span><button class="circlebtn" data-open="shop">＋</button></div><div class="money glass"><span class="symbol">💎</span><span id="gems">32</span></div></div>
 </div>
-
-<div id="touch">
-  <div id="stick"><div id="knob"></div></div>
-  <div class="tbtn" id="btnJump">پرش</div>
-  <div class="tbtn" id="btnBreak">⛏</div>
-  <div class="tbtn" id="btnPlace">🧱</div>
-</div>
-
-<div id="start">
-  <h1>🌍 مکعب‌لند</h1>
-  <p>
-    <b>موبایل:</b> جوی‌استیک حرکت — پرش / ⛏ شکستن / 🧱 گذاشتن<br>
-    <b>کامپیوتر:</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> —
-    <kbd>Space</kbd> پرش — کلیک چپ/راست — <kbd>1</kbd>–<kbd>8</kbd> بلوک
-  </p>
-  <p id="loadStatus" style="opacity:.85;font-size:14px">⏳ در حال آماده‌سازی بازی…</p>
-  <button type="button" class="go" id="btnStart" disabled>شروع بازی</button>
-</div>
-
+<div class="toptools"><button class="tool glass" data-open="friends" title="دوستان">👥</button><button class="tool glass" data-open="inventory" title="کوله">🎒</button><button class="tool glass" data-open="settings" title="تنظیمات">⚙️</button></div>
+<div class="quest glass"><strong>🏅 مأموریت روزانه</strong><p id="questText">سه بلوک در جزیره‌ات بساز</p><div class="progress"><span id="questbar"></span></div><p><span id="questcount">0</span> / 3 بلوک · پاداش 100 🪙</p></div>
+<div class="map"><canvas id="mapcanvas" width="180" height="180"></canvas></div><div class="coords glass">📍 جزیره همدلی<br><span id="coords">X: 0 · Z: 0</span></div>
+<div class="rightactions"><button class="action glass" id="buildbtn">🔨<small>ساخت‌وساز</small></button><button class="action glass" data-open="inventory">🎒<small>کوله‌پشتی</small></button><button class="action glass" id="placebtn">🧱<small>قرار دادن</small></button><button class="action glass" id="deletebtn">🧹<small>برداشتن</small></button></div>
+<div class="chat glass"><div class="chatline"><b>سارا:</b> چه جزیره قشنگی! 🌺</div><div class="chatline"><b>رضا:</b> بیایید پل بسازیم!</div><div class="chatline"><b>سیستم:</b> خوش آمدی به دنیای همدلی</div><div id="chatmore"></div><div class="chatinput"><input id="chattext" placeholder="پیام محلی بنویس…" maxlength="120"><button id="sendchat">➤</button></div></div>
+<div class="joystick" id="joystick"><div class="stick" id="stick"></div></div><button class="jump glass" id="jump">⬆</button><button class="emote glass" id="emote">👋</button>
+<div class="hotbar" id="hotbar"><button class="slot active" data-block="wood"><em>1</em>🪵<small>48</small></button><button class="slot" data-block="stone"><em>2</em>🧱<small>32</small></button><button class="slot" data-block="leaf"><em>3</em>🌿<small>12</small></button><button class="slot" data-block="lamp"><em>4</em>🏮<small>6</small></button><button class="slot" data-block="glass"><em>5</em>💠<small>20</small></button></div>
+<div class="bottomnav"><button class="navbtn active" data-tab="home">🏠<span>خانه</span></button><button class="navbtn" data-tab="worlds">🌐<span>دنیاها</span></button><button class="navbtn" data-tab="build">🔨<span>ساخت‌وساز</span></button><button class="navbtn" data-open="friends">👥<span>بازیکنان</span></button><button class="navbtn" data-open="shop">🏪<span>فروشگاه</span></button></div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="modalcard"><h2 id="modtitle">منو</h2><div id="modbody"></div><div class="rowbtn" style="margin-top:10px"><button class="btn primary" id="modok">باشه</button><button class="btn" id="modclose">بستن</button></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 (function(){
-  window.__gameReady=false; window.__wantStart=false; window.__startGame=null;
-  function tryStart(e){
-    if(e){e.preventDefault();e.stopPropagation()}
-    window.__wantStart=true;
-    var st=document.getElementById('loadStatus');
-    if(window.__startGame){try{window.__startGame()}catch(err){if(st)st.textContent='خطا: '+err}}
-    else if(st) st.textContent='⏳ هنوز در حال بارگذاری… صبر کنید';
-  }
-  function bind(){
-    var btn=document.getElementById('btnStart');
-    if(!btn) return;
-    ['click','touchend','pointerup'].forEach(function(ev){
-      btn.addEventListener(ev, tryStart, {passive:false});
-    });
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
-  else bind();
+'use strict';
+const $=id=>document.getElementById(id);const state={coins:1250,gems:32,blocks:0,level:3,xp:2450,selected:'wood',buildMode:true,moveX:0,moveZ:0,yaw:0,pitch:.22,jumpV:0,onGround:true,placed:[],inventory:{wood:48,stone:32,leaf:12,lamp:6,glass:20},chat:[],sound:false,quality:'high',lastSave:0};
+let scene,camera,renderer,clock,player,avatarRoot,cat,water,raycaster,mouse=new THREE.Vector2(),cameraDrag=null,keys={},worldObjects=[],colliders=[],walkTime=0,animId=0,started=false,dayTime=0;
+const mats={};
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').style.display='none',2100)}
+function setLoad(p,t){$('loadbar').style.width=p+'%';$('loadtext').textContent=t}
+function mat(color,rough=.8,metal=0){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal})}
+function box(w,h,d,m,x,y,z,add=true){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);if(add)scene.add(o);return o}
+function group(parent=scene){let g=new THREE.Group();parent.add(g);return g}
+function rand(a,b){return a+Math.random()*(b-a)}
+function noiseColor(){return [0x58b878,0x69c987,0x4caf77,0x7bd38d][Math.floor(Math.random()*4)]}
+function makeTree(x,z,scale=1){let g=group();let trunk=box(.32*scale,1.5*scale,.32*scale,mat(0x79533b),x,.6*scale,z);let leaves=box(1.55*scale,1.65*scale,1.55*scale,mat(noiseColor()),x,1.9*scale,z);leaves.rotation.y=rand(0,1);g.add(trunk,leaves);let shadow=new THREE.Mesh(new THREE.CircleGeometry(.65*scale,12),new THREE.MeshBasicMaterial({color:0x214f3a,transparent:true,opacity:.18}));shadow.rotation.x=-Math.PI/2;shadow.position.set(x,.012,z);scene.add(shadow);worldObjects.push(g);return g}
+function makeHouse(x,z,color=0xffc66b,scale=1){let g=group();let base=box(3*scale,1.7*scale,2.6*scale,mat(0xf5e4c6),x,.86*scale,z);let roof=box(3.5*scale,.28*scale,3*scale,mat(color),x,1.85*scale,z);roof.rotation.z=.12;let door=box(.52*scale,1.05*scale,.08,mat(0x70452e),x,0.52*scale,z+1.34*scale);let winmat=mat(0x7edff6,.25,.2);let win1=box(.55*scale,.55*scale,.08,winmat,x-.9*scale,1.05*scale,z+1.34*scale);let win2=box(.55*scale,.55*scale,.08,winmat,x+.9*scale,1.05*scale,z+1.34*scale);g.add(base,roof,door,win1,win2);worldObjects.push(g);return g}
+function makeRock(x,y,z,s){let m=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x647e91));m.position.set(x,y,z);m.rotation.set(rand(0,1),rand(0,2),rand(0,1));scene.add(m);worldObjects.push(m)}
+function makeIsland(cx,cz,r,top=0){let shape=new THREE.Shape();shape.absarc(0,0,r,0,Math.PI*2,false);let geo=new THREE.ExtrudeGeometry(shape,{depth:1.8,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.3,bevelThickness:.22,curveSegments:20});geo.rotateX(Math.PI/2);let m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x5a9e68,roughness:1}));m.position.set(cx,top,cz);scene.add(m);let cliff=new THREE.Mesh(new THREE.CylinderGeometry(r*.85,r*.58,1.6,20,1),mat(0x8c7052));cliff.position.set(cx,top-.9,cz);scene.add(cliff);return {cx,cz,r,top}}
+function makeBridge(x1,z1,x2,z2,y=.2){let dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),ang=Math.atan2(dz,dx);let deck=box(len,.16,.85,mat(0x9c6d42),(x1+x2)/2,y,(z1+z2)/2);deck.rotation.y=-ang;for(let i=0;i<Math.floor(len/.8);i++){let t=i/Math.max(1,Math.floor(len/.8));let x=x1+dx*t,z=z1+dz*t;let rail=box(.12,.32,.12,mat(0xe5bd7a),x,y+.2,z);rail.rotation.y=-ang}return deck}
+function makeLamp(x,z){let pole=box(.13,1.5,.13,mat(0x5d4c40),x,.75,z);let light=box(.42,.38,.42,new THREE.MeshStandardMaterial({color:0xffdc87,emissive:0xffa52a,emissiveIntensity:1.8}),x,1.55,z);let l=new THREE.PointLight(0xffbb55,1.5,5);l.position.set(x,1.7,z);scene.add(l);return [pole,light,l]}
+function makePlayer(){
+ avatarRoot=group();player=group(avatarRoot);let skin=mat(0xffc69b),shirt=mat(0x287bd9),pants=mat(0x172c48),shoe=mat(0x111b2a),hair=mat(0x30251f);
+ let torso=box(.68,.85,.38,shirt,0,1.15,0,false);let head=box(.48,.5,.48,skin,0,1.88,0,false);let hairmesh=box(.5,.17,.5,hair,0,2.17,-.015,false);let legL=box(.24,.58,.28,pants,-.18,.43,0,false),legR=box(.24,.58,.28,pants,.18,.43,0,false);let shoeL=box(.28,.15,.38,shoe,-.18,.12,.045,false),shoeR=box(.28,.15,.38,shoe,.18,.12,.045,false);let armL=box(.2,.67,.22,skin,-.48,1.18,0,false),armR=box(.2,.67,.22,skin,.48,1.18,0,false);
+ [torso,head,hairmesh,legL,legR,shoeL,shoeR,armL,armR].forEach(o=>player.add(o));player.userData={legL,legR,armL,armR};avatarRoot.position.set(0,0,0);scene.add(avatarRoot);
+ // small friendly robot-cat companion
+ cat=group();let body=box(.58,.42,.42,mat(0xf6f8ff),0,.3,0,false);let headc=box(.42,.4,.4,mat(0xffffff),0,.62,0,false);let ear1=box(.13,.22,.13,mat(0xffffff),-.13,.91,0,false),ear2=box(.13,.22,.13,mat(0xffffff),.13,.91,0,false);let eyeMat=new THREE.MeshStandardMaterial({color:0x3be9ff,emissive:0x21cfff,emissiveIntensity:1.6});let e1=box(.07,.07,.04,eyeMat,-.1,.66,.215,false),e2=box(.07,.07,.04,eyeMat,.1,.66,.215,false);[body,headc,ear1,ear2,e1,e2].forEach(o=>cat.add(o));cat.position.set(-1,0,1);scene.add(cat)
+}
+function buildWorld(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x83c9f4);scene.fog=new THREE.Fog(0x9bd6f5,42,105);
+ camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,180);camera.position.set(0,7,10);
+ renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;$('world').appendChild(renderer.domElement);
+ scene.add(new THREE.HemisphereLight(0xdff5ff,0x43644d,2.2));let sun=new THREE.DirectionalLight(0xffe9c1,3.1);sun.position.set(-18,28,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;scene.add(sun);
+ // water plane
+ let waterGeo=new THREE.PlaneGeometry(180,180,1,1);let waterMat=new THREE.MeshStandardMaterial({color:0x158dbb,roughness:.2,metalness:.3,transparent:true,opacity:.91});water=new THREE.Mesh(waterGeo,waterMat);water.rotation.x=-Math.PI/2;water.position.y=-1.9;scene.add(water);
+ // main green island with layered rocky sides
+ const island=makeIsland(0,0,18,0);
+ // path plaza
+ let plaza=box(9,.12,7,mat(0xc9b48d),0,.09,1);plaza.rotation.y=.1;
+ let pathmat=mat(0xe6d3a5);for(let i=0;i<7;i++){let p=box(1.15,.07,1.15,pathmat,-3.6+i*1.2,.17,4.7);p.rotation.y=.08}
+ // garden terraces
+ for(let i=0;i<34;i++){let a=rand(0,Math.PI*2),r=rand(9,16.5),x=Math.cos(a)*r,z=Math.sin(a)*r;if(Math.abs(x)<4&&Math.abs(z)<5)continue;makeTree(x,z,rand(.65,1.2))}
+ // houses and community buildings
+ makeHouse(-5,1,0xffa95e,1.15);makeHouse(5,2,0x6ed7ed,1.05);makeHouse(-7,-5,0xef8fc7,.8);makeHouse(7,-6,0x897bff,.9);makeHouse(1,-9,0xffd166,.8);
+ // fountain in plaza
+ let pool=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.6,.25,32),mat(0x8bd8ed,.25,.2));pool.position.set(0,.23,-2);scene.add(pool);let waterjet=new THREE.Mesh(new THREE.CylinderGeometry(.12,.24,1.9,12),new THREE.MeshStandardMaterial({color:0x80edff,emissive:0x27c8ff,emissiveIntensity:.55,transparent:true,opacity:.8}));waterjet.position.set(0,1.25,-2);scene.add(waterjet);let ring=new THREE.Mesh(new THREE.TorusGeometry(.8,.06,8,32),mat(0x72f2ff,.2,.4));ring.rotation.x=Math.PI/2;ring.position.set(0,1.9,-2);scene.add(ring);
+ // docks and bridges
+ makeBridge(-1,7,1,15,.15);makeBridge(6,2,14,1,.12);makeBridge(-7,0,-15,-2,.12);
+ // little nearby islands and their landmarks
+ const i1=makeIsland(24,4,7,-.5);makeHouse(24,4,0x6cdeec,.7);for(let i=0;i<7;i++)makeTree(24+rand(-5,5),4+rand(-5,5),.65);
+ const i2=makeIsland(-23,-8,6,-.2);makeHouse(-23,-8,0xffb35e,.72);for(let i=0;i<5;i++)makeTree(-23+rand(-4,4),-8+rand(-4,4),.65);
+ const i3=makeIsland(6,29,5,-.1);for(let i=0;i<5;i++)makeTree(6+rand(-3,3),29+rand(-3,3),.7);makeLamp(6,29);
+ makeBridge(15,1,19,3,-.05);makeBridge(-15,-2,-18,-5,.1);
+ // rocks around coastline
+ for(let i=0;i<70;i++){let a=rand(0,Math.PI*2),r=rand(18,21);makeRock(Math.cos(a)*r,rand(-1.8,-.4),Math.sin(a)*r,rand(.25,.9))}
+ // glowing crystals
+ for(let i=0;i<9;i++){let x=rand(-12,12),z=rand(-12,12);if(Math.abs(x)<5&&Math.abs(z)<5)continue;let c=box(.32,rand(.5,1.2),.32,new THREE.MeshStandardMaterial({color:0x63f4ff,emissive:0x20bfff,emissiveIntensity:1.4,metalness:.25,roughness:.2}),x,.45,z);c.rotation.z=rand(-.2,.2)}
+ // clouds, sun and balloons
+ let cloudmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:1});for(let i=0;i<12;i++){let g=group();let x=rand(-45,45),y=rand(15,27),z=rand(-45,45);for(let j=0;j<4;j++){let s=box(rand(2,4),rand(1,2),rand(1.5,3),cloudmat,x+rand(-2,2),y+rand(-.5,.5),z+rand(-1,1),false);g.add(s)}worldObjects.push(g)}
+ let sunball=new THREE.Mesh(new THREE.SphereGeometry(3,20,16),new THREE.MeshBasicMaterial({color:0xfff1bb}));sunball.position.set(-35,27,-48);scene.add(sunball);
+ // floating island shards and little hot-air balloon
+ for(let i=0;i<5;i++){let a=rand(0,6.28),r=rand(27,43),x=Math.cos(a)*r,z=Math.sin(a)*r;let rock=new THREE.Mesh(new THREE.ConeGeometry(rand(1,2),rand(3,6),6),mat(0x766d78));rock.position.set(x,rand(4,11),z);rock.rotation.x=Math.PI;scene.add(rock)}
+ let balloon=group();let ball=new THREE.Mesh(new THREE.SphereGeometry(1.45,18,16),new THREE.MeshStandardMaterial({color:0xffa64d,roughness:.7}));ball.scale.set(.85,1.2,.85);balloon.add(ball);let stripe=new THREE.Mesh(new THREE.TorusGeometry(1.1,.2,8,20),mat(0x5a78ff));stripe.position.y=.25;stripe.rotation.x=Math.PI/2;balloon.add(stripe);let basket=box(.4,.3,.4,mat(0x8b5a38),0,-2,0,false);balloon.add(basket);balloon.position.set(-10,10,-9);scene.add(balloon);balloon.userData.float=true;worldObjects.push(balloon);
+ makePlayer();raycaster=new THREE.Raycaster();clock=new THREE.Clock();
+}
+function blockMaterial(type){switch(type){case'wood':return mat(0x9b7045);case'stone':return mat(0x8b9cac);case'leaf':return mat(0x42b86c);case'lamp':return new THREE.MeshStandardMaterial({color:0xffd66b,emissive:0xffa21a,emissiveIntensity:1.6});case'glass':return new THREE.MeshPhysicalMaterial({color:0x63e9ff,transparent:true,opacity:.62,roughness:.1,metalness:.1});default:return mat(0x9b7045)}}
+function placeBlock(){let type=state.selected;if(state.inventory[type]<=0){toast('از این بلوک نداری؛ از فروشگاه تهیه کن.');return}let fwd=new THREE.Vector3(Math.sin(state.yaw),0,-Math.cos(state.yaw));let x=Math.round(avatarRoot.position.x+fwd.x*2),z=Math.round(avatarRoot.position.z+fwd.z*2);x=Math.max(-17,Math.min(17,x));z=Math.max(-17,Math.min(17,z));let y=.55;for(let b of state.placed)if(b.x===x&&b.z===z)y=Math.max(y,b.y+1);let mesh=box(.98,.98,.98,blockMaterial(type),x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.placed=true;state.placed.push({x,y,z,type,mesh});state.inventory[type]--;state.blocks++;state.xp+=15;state.coins+=2;updateHUD();toast('بلوک '+({wood:'چوبی',stone:'سنگی',leaf:'سبز',lamp:'چراغ',glass:'شیشه‌ای'}[type]||'')+' ساخته شد!');if(state.blocks>=3&&!state.questDone){state.questDone=true;state.coins+=100;toast('🎉 مأموریت تکمیل شد! ۱۰۰ سکه جایزه');updateHUD()}saveLocal()}
+function removeBlock(){if(!state.placed.length){toast('هنوز سازه‌ای نساخته‌ای.');return}let b=state.placed.pop();scene.remove(b.mesh);state.inventory[b.type]=(state.inventory[b.type]||0)+1;state.blocks=Math.max(0,state.blocks-1);updateHUD();toast('بلوک برداشته شد.');saveLocal()}
+function updateHUD(){$('coins').textContent=state.coins;$('gems').textContent=state.gems;$('level').textContent=state.level;$('xpbar').style.width=(state.xp%5000/50)+'%';$('questcount').textContent=Math.min(3,state.blocks);$('questbar').style.width=Math.min(100,state.blocks/3*100)+'%';document.querySelectorAll('.slot').forEach(el=>{let t=el.dataset.block;el.classList.toggle('active',t===state.selected);el.querySelector('small').textContent=state.inventory[t]||0})}
+function saveLocal(){try{localStorage.setItem('hamdeli3d-save-v1',JSON.stringify({coins:state.coins,gems:state.gems,blocks:state.placed.map(b=>({x:b.x,y:b.y,z:b.z,type:b.type})),inventory:state.inventory,player:{x:avatarRoot.position.x,z:avatarRoot.position.z,yaw:state.yaw},xp:state.xp,questDone:!!state.questDone}));}catch(e){}}
+function loadLocal(){try{let d=JSON.parse(localStorage.getItem('hamdeli3d-save-v1')||'null');if(!d)return;state.coins=d.coins??state.coins;state.gems=d.gems??state.gems;state.inventory={...state.inventory,...d.inventory};state.xp=d.xp||state.xp;state.questDone=!!d.questDone;if(d.player){avatarRoot.position.set(d.player.x||0,0,d.player.z||0);state.yaw=d.player.yaw||0}for(let b of (d.blocks||[])){let mesh=box(.98,.98,.98,blockMaterial(b.type),b.x,b.y,b.z);mesh.userData.placed=true;state.placed.push({...b,mesh});state.blocks++}updateHUD()}catch(e){}}
+function moveCamera(dt){const p=avatarRoot.position;let offset=new THREE.Vector3(Math.sin(state.yaw)*8,4.8,Math.cos(state.yaw)*8);let target=new THREE.Vector3(p.x+offset.x,p.y+offset.y+state.pitch*4,p.z+offset.z);camera.position.lerp(target,1-Math.exp(-4*dt));camera.lookAt(p.x,p.y+1.05,p.z)}
+function animate(){animId=requestAnimationFrame(animate);if(!renderer||!scene)return;let dt=Math.min(clock.getDelta(),.04);dayTime+=dt;let moving=false;let forward=state.moveZ,side=state.moveX;if(keys.ArrowUp||keys.KeyW)forward=-1;if(keys.ArrowDown||keys.KeyS)forward=1;if(keys.ArrowLeft||keys.KeyA)side=-1;if(keys.ArrowRight||keys.KeyD)side=1;
+ let fx=Math.sin(state.yaw),fz=-Math.cos(state.yaw),rx=Math.cos(state.yaw),rz=Math.sin(state.yaw);let dx=(fx*(-forward)+rx*side),dz=(fz*(-forward)+rz*side);let len=Math.hypot(dx,dz);if(len>.01){dx/=len;dz/=len;let speed=state.quality==='low'?4.2:5.1;avatarRoot.position.x+=dx*speed*dt;avatarRoot.position.z+=dz*speed*dt;state.yaw=Math.atan2(dx,-dz);moving=true;walkTime+=dt*9}
+ avatarRoot.position.x=Math.max(-17,Math.min(17,avatarRoot.position.x));avatarRoot.position.z=Math.max(-17,Math.min(17,avatarRoot.position.z));
+ if(!state.onGround){state.jumpV-=18*dt;avatarRoot.position.y+=state.jumpV*dt;if(avatarRoot.position.y<=0){avatarRoot.position.y=0;state.jumpV=0;state.onGround=true}}
+ if(player&&player.userData.legL){let swing=moving?Math.sin(walkTime)*.55:0;player.userData.legL.rotation.x=swing;player.userData.legR.rotation.x=-swing;player.userData.armL.rotation.x=-swing*.65;player.userData.armR.rotation.x=swing*.65}
+ cat.position.x+=(avatarRoot.position.x-1-cat.position.x)*Math.min(1,dt*2.5);cat.position.z+=(avatarRoot.position.z+1-cat.position.z)*Math.min(1,dt*2.5);cat.position.y=.04+Math.abs(Math.sin(dayTime*2.8))*.1;cat.rotation.y=Math.sin(dayTime)*.2;
+ for(let o of worldObjects)if(o.userData.float)o.position.y=10+Math.sin(dayTime*.8)*.6;
+ water.material.color.setHSL(.53,.72,.36+Math.sin(dayTime*.4)*.025);water.position.y=-1.9+Math.sin(dayTime*.65)*.04;
+ moveCamera(dt);renderer.render(scene,camera);drawMap();$('coords').textContent='X: '+Math.round(avatarRoot.position.x)+' · Z: '+Math.round(avatarRoot.position.z)}
+function drawMap(){let c=$('mapcanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,180,180);ctx.fillStyle='#164e61';ctx.fillRect(0,0,180,180);ctx.fillStyle='#55a96e';ctx.beginPath();ctx.arc(90,90,70,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d2c49a';ctx.beginPath();ctx.ellipse(90,93,36,24,-.2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#9fe4f4';ctx.beginPath();ctx.arc(90,93,8,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f8d56b';ctx.beginPath();ctx.moveTo(90,73);ctx.lineTo(82,96);ctx.lineTo(90,91);ctx.lineTo(98,96);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.font='12px sans-serif';ctx.fillText('N',86,17)}
+function openModal(title,body){$('modtitle').textContent=title;$('modbody').innerHTML=body;$('modal').classList.add('open')}
+function closeModal(){$('modal').classList.remove('open')}
+function inventoryModal(){openModal('🎒 کوله‌پشتی','<p>وسایل دنیای تو</p><div class="rowbtn">'+Object.entries(state.inventory).map(([k,v])=>'<button class="btn" data-pick="'+k+'">'+({wood:'🪵 چوب',stone:'🧱 سنگ',leaf:'🌿 برگ',lamp:'🏮 چراغ',glass:'💠 شیشه'}[k])+' · '+v+'</button>').join('')+'</div><p class="smallnote">یک بلوک را انتخاب کن، سپس دکمه «قرار دادن» را بزن.</p>');$('modbody').querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{state.selected=b.dataset.pick;updateHUD();closeModal();toast('بلوک انتخاب شد')})}
+function settingsModal(){openModal('⚙️ تنظیمات','<p>کیفیت گرافیک</p><select id="quality"><option value="high">بالا — سایه و نور</option><option value="medium">متوسط — مناسب بیشتر گوشی‌ها</option><option value="low">اقتصادی — مصرف کمتر باتری</option></select><p class="smallnote">نسخه وب از امکانات دستگاه و WebGL استفاده می‌کند. در صورت افت فریم، کیفیت اقتصادی را انتخاب کن.</p><p>ذخیره فعلی فقط روی همین مرورگر است.</p>');$('quality').value=state.quality;$('quality').onchange=e=>{state.quality=e.target.value;renderer.shadowMap.enabled=state.quality==='high';renderer.setPixelRatio(Math.min(devicePixelRatio||1,state.quality==='high'?1.7:state.quality==='medium'?1.25:1));toast('کیفیت به‌روزرسانی شد')}}
+function shopModal(){openModal('🏪 فروشگاه جزیره','<p>با سکه‌های بازی، بسته بلوک بخرید.</p><div class="rowbtn"><button class="btn gold" data-buy="wood">🪵 10 چوب · 30 🪙</button><button class="btn gold" data-buy="stone">🧱 10 سنگ · 40 🪙</button><button class="btn gold" data-buy="leaf">🌿 5 برگ · 25 🪙</button><button class="btn gold" data-buy="lamp">🏮 3 چراغ · 45 🪙</button><button class="btn gold" data-buy="glass">💠 5 شیشه · 50 🪙</button></div><p class="smallnote">این سکه‌ها صرفاً امتیاز داخل بازی‌اند و ارزش مالی ندارند.</p>');$('modbody').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{let t=b.dataset.buy,cost={wood:30,stone:40,leaf:25,lamp:45,glass:50}[t];if(state.coins<cost){toast('سکه کافی نیست');return}state.coins-=cost;state.inventory[t]+={wood:10,stone:10,leaf:5,lamp:3,glass:5}[t];updateHUD();saveLocal();toast('بسته به کوله اضافه شد')})}
+function friendsModal(){openModal('👥 بازیکنان','<p>در این نسخه محیط سه‌بعدی و شخصیت همراه به‌صورت محلی اجرا می‌شوند.</p><p>👤 تو — سازنده جزیره</p><p>🧑🏻 سارا — بازدیدکننده نمونه</p><p>🧑🏽 رضا — سازنده نمونه</p><p class="smallnote">بازیکنان نمونه واقعی و آنلاین نیستند. برای چندنفره واقعی باید احراز هویت، جدول حضور و کانال Realtime در Supabase با سیاست‌های امن راه‌اندازی شود.</p>')}
+function showTab(t){document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));if(t==='build'){state.buildMode=true;toast('حالت ساخت فعال است؛ بلوک را انتخاب و قرار بده.')}else if(t==='worlds'){openModal('🌐 دنیاها','<p>🌴 جزیره همدلی — دنیای فعلی</p><p>🏔️ جزیره کوهستان — به‌زودی</p><p>🌌 جزیره آسمانی — به‌زودی</p><p class="smallnote">در این نسخه فقط دنیای محلی فعلی قابل‌بازی است.</p>')}else if(t==='home')toast('به خانه‌ات خوش آمدی!')}
+function setupUI(){
+ document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{let t=b.dataset.open;if(t==='inventory')inventoryModal();else if(t==='settings')settingsModal();else if(t==='shop')shopModal();else if(t==='friends')friendsModal()}));
+ $('modok').onclick=closeModal;$('modclose').onclick=closeModal;$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
+ document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{state.selected=b.dataset.block;updateHUD();toast('بلوک انتخاب شد')});
+ $('placebtn').onclick=placeBlock;$('deletebtn').onclick=removeBlock;$('buildbtn').onclick=()=>{state.buildMode=!state.buildMode;toast(state.buildMode?'حالت ساخت فعال شد':'حالت حرکت فعال شد')};
+ $('jump').onclick=()=>{if(state.onGround){state.jumpV=7.2;state.onGround=false}};
+ $('emote').onclick=()=>toast('👋 سلام به همه سازنده‌ها!');
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+ $('sendchat').onclick=()=>{let s=$('chattext').value.trim();if(!s)return;let d=document.createElement('div');d.className='chatline';let b=document.createElement('b');b.textContent='تو: ';d.appendChild(b);d.appendChild(document.createTextNode(s));$('chatmore').appendChild(d);$('chattext').value='';$('chatmore').scrollTop=$('chatmore').scrollHeight;toast('پیام فقط در همین نشست نمایش داده شد')};
+ $('chattext').addEventListener('keydown',e=>{if(e.key==='Enter')$('sendchat').click()});
+ window.addEventListener('keydown',e=>{keys[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Space')$('jump').click();if(e.code==='KeyE')placeBlock()});
+ window.addEventListener('keyup',e=>keys[e.code]=false);
+ // joystick supports touch and mouse pointer
+ let joy=$('joystick'),stick=$('stick'),joyId=null;function joyMove(e){let r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.32,l=Math.hypot(dx,dy);if(l>max){dx*=max/l;dy*=max/l}stick.style.transform='translate('+dx+'px,'+dy+'px)';state.moveX=dx/max;state.moveZ=dy/max}
+ joy.addEventListener('pointerdown',e=>{joyId=e.pointerId;joy.setPointerCapture(e.pointerId);joyMove(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});function endJoy(){joyId=null;state.moveX=0;state.moveZ=0;stick.style.transform='translate(0,0)'}joy.addEventListener('pointerup',endJoy);joy.addEventListener('pointercancel',endJoy);
+ const c=$('world');c.addEventListener('pointerdown',e=>{if(e.target!==renderer.domElement)return;cameraDrag={x:e.clientX,y:e.clientY,id:e.pointerId,moved:false};renderer.domElement.setPointerCapture?.(e.pointerId)});
+ c.addEventListener('pointermove',e=>{if(!cameraDrag||cameraDrag.id!==e.pointerId)return;let dx=e.clientX-cameraDrag.x,dy=e.clientY-cameraDrag.y;if(Math.abs(dx)+Math.abs(dy)>2)cameraDrag.moved=true;state.yaw-=dx*.006;state.pitch=Math.max(-.1,Math.min(.7,state.pitch+dy*.003));cameraDrag.x=e.clientX;cameraDrag.y=e.clientY});
+ c.addEventListener('pointerup',e=>{if(cameraDrag&&cameraDrag.id===e.pointerId&&!cameraDrag.moved){if(state.buildMode)placeBlock()}cameraDrag=null});c.addEventListener('pointercancel',()=>cameraDrag=null);
+ window.addEventListener('resize',()=>{if(!camera||!renderer)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);drawMap()});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)saveLocal()});window.addEventListener('pagehide',saveLocal)
+}
+function start(){try{if(!window.THREE)throw new Error('Three.js did not load');setLoad(25,'راه‌اندازی موتور رندر…');buildWorld();setLoad(60,'ساخت جزیره و شهر…');loadLocal();setupUI();setLoad(90,'آماده‌سازی کنترل‌های لمسی…');updateHUD();animate();setLoad(100,'آماده بازی!');setTimeout(()=>{$('loading').style.opacity='0';setTimeout(()=>$('loading').remove(),550)},350);started=true}catch(e){$('loadtext').textContent='خطا در بارگذاری: '+e.message;$('loading').querySelector('p').textContent='اتصال اینترنت را بررسی کن. موتور سه‌بعدی از CDN بارگیری می‌شود.';console.error(e)}}
+start();
 })();
-</script>
-
-<script type="module">
-const THREE_URLS = [
-  "https://unpkg.com/three@0.160.0/build/three.module.js",
-  "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "https://esm.sh/three@0.160.0",
-];
-let THREE=null, loadErr=null;
-for (const u of THREE_URLS){
-  try{
-    THREE = await import(u);
-    if (THREE && (THREE.WebGLRenderer || THREE.default?.WebGLRenderer)){
-      if (THREE.default && !THREE.WebGLRenderer) THREE = THREE.default;
-      break;
-    }
-  }catch(e){ loadErr=e; THREE=null; }
-}
-if(!THREE){
-  const st=document.getElementById("loadStatus");
-  if(st) st.textContent="❌ بارگذاری موتور سه‌بعدی ناموفق";
-  document.getElementById("start").innerHTML="<h1>خطا</h1><p>موتور سه‌بعدی لود نشد. اینترنت را چک کنید.</p>";
-  throw loadErr||new Error("three failed");
-}
-{
-  const st=document.getElementById("loadStatus");
-  if(st) st.textContent="⏳ ساخت دنیا…";
-}
-
-THREE.ColorManagement.enabled = false;
-
-const CHUNK=16, HEIGHT=48, AIR=0;
-const GRASS=1,DIRT=2,STONE=3,SAND=4,LOG=5,LEAVES=6,BRICK=7,GLOW=8;
-
-const BLOCKS = {
-  [GRASS]:{top:0x8ddb4f,side:0x6fb03c,bottom:0x7a5230,label:'چمن',css:'#8ddb4f'},
-  [DIRT]:{top:0x8a5c34,side:0x7a5230,bottom:0x6b4729,label:'خاک',css:'#7a5230'},
-  [STONE]:{top:0xa2a2a2,side:0x8d8d8d,bottom:0x7d7d7d,label:'سنگ',css:'#8d8d8d'},
-  [SAND]:{top:0xf5e6ad,side:0xe9d79a,bottom:0xdcc98c,label:'شن',css:'#e9d79a'},
-  [LOG]:{top:0xc09a5e,side:0x6b4a2b,bottom:0xc09a5e,label:'چوب',css:'#6b4a2b'},
-  [LEAVES]:{top:0x54b34a,side:0x43993e,bottom:0x3a8a37,label:'برگ',css:'#43993e'},
-  [BRICK]:{top:0xd25a44,side:0xb84a38,bottom:0xa04232,label:'آجر',css:'#c05040'},
-  [GLOW]:{top:0xfff3a8,side:0xffe27a,bottom:0xffd86a,label:'نور',css:'#ffe27a'},
-};
-
-const FACES = [
-  {n:[1,0,0], v:[[1,0,0],[1,1,0],[1,1,1],[1,0,1]], k:'side'},
-  {n:[-1,0,0],v:[[0,0,1],[0,1,1],[0,1,0],[0,0,0]], k:'side'},
-  {n:[0,1,0], v:[[0,1,0],[0,1,1],[1,1,1],[1,1,0]], k:'top'},
-  {n:[0,-1,0],v:[[0,0,1],[0,0,0],[1,0,0],[1,0,1]], k:'bottom'},
-  {n:[0,0,1], v:[[0,0,1],[1,0,1],[1,1,1],[0,1,1]], k:'side'},
-  {n:[0,0,-1],v:[[1,0,0],[0,0,0],[0,1,0],[1,1,0]], k:'side'},
-];
-
-function hash2(x,y,seed=1337){
-  let h=Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(seed,1442695041);
-  h=Math.imul(h^(h>>>13),1274126177);
-  return ((h^(h>>>16))>>>0)/4294967295;
-}
-function valueNoise(x,y){
-  const x0=Math.floor(x),y0=Math.floor(y),fx=x-x0,fy=y-y0;
-  const sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
-  const n00=hash2(x0,y0),n10=hash2(x0+1,y0),n01=hash2(x0,y0+1),n11=hash2(x0+1,y0+1);
-  return n00+(n10-n00)*sx + ((n01+(n11-n01)*sx)-(n00+(n10-n00)*sx))*sy;
-}
-function fbm(x,y){
-  let v=0,amp=0.5,f=1;
-  for(let i=0;i<4;i++){v+=valueNoise(x*f,y*f)*amp;f*=2;amp*=0.5}
-  return v;
-}
-function terrainHeight(wx,wz){
-  const a=fbm(wx*0.030,wz*0.030);
-  const b=fbm(wx*0.008+100,wz*0.008+100);
-  return Math.floor(5+a*10+b*21);
-}
-
-const chunks=new Map();
-const ckey=(cx,cz)=>cx+','+cz;
-const idx=(x,y,z)=>x+CHUNK*(z+CHUNK*y);
-
-function getBlock(wx,wy,wz){
-  if(wy<0) return STONE;
-  if(wy>=HEIGHT) return AIR;
-  const cx=Math.floor(wx/CHUNK),cz=Math.floor(wz/CHUNK);
-  const ch=chunks.get(ckey(cx,cz));
-  if(!ch) return AIR;
-  return ch.blocks[idx(wx-cx*CHUNK,wy,wz-cz*CHUNK)];
-}
-function setBlock(wx,wy,wz,val){
-  if(wy<0||wy>=HEIGHT) return false;
-  const cx=Math.floor(wx/CHUNK),cz=Math.floor(wz/CHUNK);
-  const ch=chunks.get(ckey(cx,cz));
-  if(!ch) return false;
-  ch.blocks[idx(wx-cx*CHUNK,wy,wz-cz*CHUNK)]=val;
-  ch.dirty=true;
-  const lx=wx-cx*CHUNK,lz=wz-cz*CHUNK;
-  const mark=(dx,dz)=>{const n=chunks.get(ckey(cx+dx,cz+dz));if(n)n.dirty=true};
-  if(lx===0) mark(-1,0);
-  if(lx===CHUNK-1) mark(1,0);
-  if(lz===0) mark(0,-1);
-  if(lz===CHUNK-1) mark(0,1);
-  return true;
-}
-
-function generateChunk(cx,cz){
-  const blocks=new Uint8Array(CHUNK*CHUNK*HEIGHT);
-  for(let lx=0;lx<CHUNK;lx++){
-    for(let lz=0;lz<CHUNK;lz++){
-      const wx=cx*CHUNK+lx,wz=cz*CHUNK+lz;
-      const h=Math.min(HEIGHT-10,terrainHeight(wx,wz));
-      for(let y=0;y<=h;y++){
-        let t=STONE;
-        if(y===h) t=h<=9?SAND:(h>=28?GLOW:GRASS);
-        else if(y>h-4) t=h<=9?SAND:DIRT;
-        blocks[idx(lx,y,lz)]=t;
-      }
-    }
-  }
-  for(let lx=2;lx<CHUNK-2;lx++){
-    for(let lz=2;lz<CHUNK-2;lz++){
-      const wx=cx*CHUNK+lx,wz=cz*CHUNK+lz;
-      const h=terrainHeight(wx,wz);
-      if(h<=9||h>=28) continue;
-      if(hash2(wx*7+3,wz*13+5)<0.988) continue;
-      const trunk=4+Math.floor(hash2(wx+11,wz+11)*3);
-      const top=h+trunk;
-      if(top+2>=HEIGHT) continue;
-      for(let i=1;i<=trunk;i++) blocks[idx(lx,h+i,lz)]=LOG;
-      for(let dy=-1;dy<=2;dy++){
-        const r=dy<=0?2:1;
-        for(let dx=-r;dx<=r;dx++){
-          for(let dz=-r;dz<=r;dz++){
-            if(Math.abs(dx)===r&&Math.abs(dz)===r&&dy>0) continue;
-            const bx=lx+dx,by=top+dy,bz=lz+dz;
-            if(bx<0||bx>=CHUNK||bz<0||bz>=CHUNK||by<0||by>=HEIGHT) continue;
-            if(blocks[idx(bx,by,bz)]===AIR) blocks[idx(bx,by,bz)]=LEAVES;
-          }
-        }
-      }
-    }
-  }
-  return {cx,cz,blocks,mesh:null,dirty:true};
-}
-function ensureChunk(cx,cz){
-  const k=ckey(cx,cz);
-  let ch=chunks.get(k);
-  if(!ch){ch=generateChunk(cx,cz);chunks.set(k,ch)}
-  return ch;
-}
-
-const chunkMaterial=new THREE.MeshLambertMaterial({vertexColors:true, side:THREE.FrontSide});
-chunkMaterial.vertexColors=true;
-function makeLocalGetter(ch){
-  const b=ch.blocks,ox=ch.cx*CHUNK,oz=ch.cz*CHUNK;
-  return (lx,ly,lz)=>{
-    if(ly<0) return STONE;
-    if(ly>=HEIGHT) return AIR;
-    if(lx>=0&&lx<CHUNK&&lz>=0&&lz<CHUNK) return b[idx(lx,ly,lz)];
-    return getBlock(ox+lx,ly,oz+lz);
-  };
-}
-const AO_LEVELS=[1.0,0.86,0.73,0.60];
-function buildChunkGeometry(ch){
-  const pos=[],nor=[],col=[],ind=[];
-  const get=makeLocalGetter(ch);
-  let vi=0;
-  for(let y=0;y<HEIGHT;y++){
-    for(let z=0;z<CHUNK;z++){
-      for(let x=0;x<CHUNK;x++){
-        const type=ch.blocks[idx(x,y,z)];
-        if(type===AIR) continue;
-        const def=BLOCKS[type];
-        for(let fi=0;fi<6;fi++){
-          const f=FACES[fi],n=f.n;
-          if(get(x+n[0],y+n[1],z+n[2])!==AIR) continue;
-          const hex=def[f.k];
-          const r=((hex>>16)&255)/255,g=((hex>>8)&255)/255,b=(hex&255)/255;
-          const na=n[0]!==0?0:(n[1]!==0?1:2);
-          const t1=na===0?1:0, t2=na===2?1:2;
-          const n0=n[0],n1=n[1],n2=n[2];
-          for(let k=0;k<4;k++){
-            const v=f.v[k];
-            const d1=v[t1]*2-1,d2=v[t2]*2-1;
-            const ax1=n0+(t1===0?d1:0),ay1=n1+(t1===1?d1:0),az1=n2+(t1===2?d1:0);
-            const ax2=n0+(t2===0?d2:0),ay2=n1+(t2===1?d2:0),az2=n2+(t2===2?d2:0);
-            const ax3=n0+(t1===0?d1:0)+(t2===0?d2:0),
-                  ay3=n1+(t1===1?d1:0)+(t2===1?d2:0),
-                  az3=n2+(t1===2?d1:0)+(t2===2?d2:0);
-            const s1=get(x+ax1,y+ay1,z+az1)!==AIR?1:0;
-            const s2=get(x+ax2,y+ay2,z+az2)!==AIR?1:0;
-            const s3=get(x+ax3,y+ay3,z+az3)!==AIR?1:0;
-            const ao=(s1&&s2)?3:(s1+s2+s3);
-            const br=AO_LEVELS[ao];
-            pos.push(x+v[0],y+v[1],z+v[2]);
-            nor.push(n0,n1,n2);
-            col.push(r*br,g*br,b*br);
-          }
-          ind.push(vi,vi+1,vi+2,vi,vi+2,vi+3);
-          vi+=4;
-        }
-      }
-    }
-  }
-  const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  geo.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));
-  geo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-  geo.setIndex(ind);
-  geo.computeBoundingSphere();
-  return geo;
-}
-function rebuildChunkMesh(ch){
-  ensureChunk(ch.cx+1,ch.cz);ensureChunk(ch.cx-1,ch.cz);
-  ensureChunk(ch.cx,ch.cz+1);ensureChunk(ch.cx,ch.cz-1);
-  const geo=buildChunkGeometry(ch);
-  if(ch.mesh){
-    ch.mesh.geometry.dispose();
-    ch.mesh.geometry=geo;
-  }else{
-    ch.mesh=new THREE.Mesh(geo,chunkMaterial);
-    ch.mesh.position.set(ch.cx*CHUNK,0,ch.cz*CHUNK);
-    scene.add(ch.mesh);
-  }
-  ch.dirty=false;
-}
-
-const scene=new THREE.Scene();
-const SKY=0x8fd3ff;
-scene.background=new THREE.Color(SKY);
-scene.fog=new THREE.Fog(SKY,40,90);
-const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,400);
-
-let renderer;
-try{
-  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'default',stencil:false,depth:true});
-}catch(e){
-  document.getElementById('start').style.display='flex';
-  document.getElementById('start').innerHTML='<h1>WebGL لازم است</h1><p>مرورگر از گرافیک سه‌بعدی پشتیبانی نمی‌کند.</p>';
-  throw e;
-}
-renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled=false;
-document.body.appendChild(renderer.domElement);
-
-const hemi=new THREE.HemisphereLight(0xffffff,0x7a9e5a,1.25); scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xfff5e0,1.4); sun.position.set(60,100,40); scene.add(sun);
-const ambient=new THREE.AmbientLight(0xffffff,0.45); scene.add(ambient);
-
-const highlight=new THREE.LineSegments(
-  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.01,1.01,1.01)),
-  new THREE.LineBasicMaterial({color:0xffffff})
-);
-highlight.visible=false; scene.add(highlight);
-
-const PRESETS={
-  battery:  {pixelRatio:0.7, radius:3, maxFPS:30, fogNear:28, fogFar:55},
-  balanced: {pixelRatio:1.0, radius:5, maxFPS:50, fogNear:40, fogFar:90},
-  ultra:    {pixelRatio:1.5, radius:7, maxFPS:60, fogNear:55, fogFar:130},
-};
-let presetName='balanced', preset=PRESETS.balanced;
-function applyPreset(name){
-  if(!PRESETS[name]) return;
-  presetName=name; preset=PRESETS[name];
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, preset.pixelRatio));
-  scene.fog.near=preset.fogNear; scene.fog.far=preset.fogFar;
-  document.querySelectorAll('.pill[data-q]').forEach(b=>b.classList.toggle('on', b.dataset.q===name));
-}
-document.querySelectorAll('.pill[data-q]').forEach(btn=>{
-  btn.addEventListener('click', e=>{e.stopPropagation(); applyPreset(btn.dataset.q)});
-});
-
-/* تمام‌صفحه */
-function toggleFullscreen(){
-  const el=document.documentElement;
-  try{
-    if(!document.fullscreenElement && !document.webkitFullscreenElement){
-      const req=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
-      if(req) req.call(el);
-    }else{
-      const ex=document.exitFullscreen||document.webkitExitFullscreen;
-      if(ex) ex.call(document);
-    }
-  }catch(_){}
-  // قفل جهت اختیاری نیست — هم افقی هم عمودی پشتیبانی می‌شود
-  try{
-    if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-  }catch(_){}
-}
-document.getElementById('btnFs').addEventListener('click', e=>{e.stopPropagation(); toggleFullscreen()});
-
-const player={
-  pos:new THREE.Vector3(0.5,20,0.5),
-  vel:new THREE.Vector3(0,0,0),
-  yaw:0, pitch:-0.35,
-  height:1.7, eye:1.55, radius:0.32,
-  onGround:false,
-};
-const keys={};
-let touchMoveX=0, touchMoveY=0;
-let wantJump=false, jumpBufferedUntil=0, coyoteUntil=0;
-
-function collides(x,y,z){
-  const r=player.radius;
-  const minX=Math.floor(x-r), maxX=Math.floor(x+r);
-  const minY=Math.floor(y), maxY=Math.floor(y+player.height-1e-4);
-  const minZ=Math.floor(z-r), maxZ=Math.floor(z+r);
-  for(let iy=minY;iy<=maxY;iy++)
-    for(let ix=minX;ix<=maxX;ix++)
-      for(let iz=minZ;iz<=maxZ;iz++)
-        if(getBlock(ix,iy,iz)!==AIR) return true;
-  return false;
-}
-
-function updatePlayer(dt){
-  let fwd=0, side=0;
-  if(keys['KeyW']||keys['ArrowUp']) fwd+=1;
-  if(keys['KeyS']||keys['ArrowDown']) fwd-=1;
-  if(keys['KeyD']||keys['ArrowRight']) side+=1;
-  if(keys['KeyA']||keys['ArrowLeft']) side-=1;
-  fwd-=touchMoveY; side+=touchMoveX;
-  const len=Math.hypot(fwd,side);
-  if(len>1){fwd/=len;side/=len}
-
-  const sprint=(keys['ShiftLeft']||keys['ShiftRight'])?1.75:1;
-  const speed=4.6*sprint;
-  const sinY=Math.sin(player.yaw), cosY=Math.cos(player.yaw);
-  const wishX=(-sinY*fwd)+(cosY*side);
-  const wishZ=(-cosY*fwd)-(sinY*side);
-  const accel=player.onGround?16:6;
-  player.vel.x+=(wishX*speed-player.vel.x)*Math.min(1,accel*dt);
-  player.vel.z+=(wishZ*speed-player.vel.z)*Math.min(1,accel*dt);
-
-  // coyote time + jump buffer — پرش قابل‌اعتماد روی موبایل
-  const now=performance.now();
-  if(player.onGround) coyoteUntil=now+140;
-  if(keys['Space']||wantJump){
-    jumpBufferedUntil=now+180;
-    wantJump=false;
-  }
-  if(now<=jumpBufferedUntil && now<=coyoteUntil){
-    player.vel.y=9.0;
-    player.onGround=false;
-    coyoteUntil=0;
-    jumpBufferedUntil=0;
-  }
-
-  player.vel.y-=28*dt;
-  if(player.vel.y<-52) player.vel.y=-52;
-
-  const p=player.pos;
-  p.x+=player.vel.x*dt;
-  if(collides(p.x,p.y,p.z)){p.x-=player.vel.x*dt;player.vel.x=0}
-  p.z+=player.vel.z*dt;
-  if(collides(p.x,p.y,p.z)){p.z-=player.vel.z*dt;player.vel.z=0}
-  p.y+=player.vel.y*dt;
-  if(collides(p.x,p.y,p.z)){
-    p.y-=player.vel.y*dt;
-    player.onGround=player.vel.y<0;
-    player.vel.y=0;
-  }else player.onGround=false;
-
-  if(p.y<-8) respawn();
-
-  camera.position.set(p.x,p.y+player.eye,p.z);
-  camera.rotation.set(0,0,0);
-  camera.rotateY(player.yaw);
-  camera.rotateX(player.pitch);
-  sun.position.set(p.x+55,p.y+95,p.z+40);
-  sun.target.position.set(p.x,p.y,p.z);
-  sun.target.updateMatrixWorld();
-}
-
-function respawn(){
-  const h=terrainHeight(0,0);
-  player.pos.set(0.5,h+2.2,0.5);
-  player.vel.set(0,0,0);
-}
-
-const _dir=new THREE.Vector3();
-function raycastVoxel(maxDist=6.5){
-  camera.getWorldDirection(_dir);
-  const o=camera.position;
-  let x=Math.floor(o.x),y=Math.floor(o.y),z=Math.floor(o.z);
-  const stepX=Math.sign(_dir.x),stepY=Math.sign(_dir.y),stepZ=Math.sign(_dir.z);
-  const tDeltaX=stepX!==0?Math.abs(1/_dir.x):Infinity;
-  const tDeltaY=stepY!==0?Math.abs(1/_dir.y):Infinity;
-  const tDeltaZ=stepZ!==0?Math.abs(1/_dir.z):Infinity;
-  let tMaxX=stepX!==0?((stepX>0?Math.floor(o.x)+1-o.x:Math.floor(o.x)-o.x)/_dir.x):Infinity;
-  let tMaxY=stepY!==0?((stepY>0?Math.floor(o.y)+1-o.y:Math.floor(o.y)-o.y)/_dir.y):Infinity;
-  let tMaxZ=stepZ!==0?((stepZ>0?Math.floor(o.z)+1-o.z:Math.floor(o.z)-o.z)/_dir.z):Infinity;
-  let nx=0,ny=0,nz=0,t=0;
-  for(let i=0;i<64;i++){
-    if(getBlock(x,y,z)!==AIR){
-      return {x,y,z,nx,ny,nz};
-    }
-    if(tMaxX<tMaxY&&tMaxX<tMaxZ){t=tMaxX;x+=stepX;tMaxX+=tDeltaX;nx=-stepX;ny=0;nz=0}
-    else if(tMaxY<tMaxZ){t=tMaxY;y+=stepY;tMaxY+=tDeltaY;nx=0;ny=-stepY;nz=0}
-    else{t=tMaxZ;z+=stepZ;tMaxZ+=tDeltaZ;nx=0;ny=0;nz=-stepZ}
-    if(t>maxDist) break;
-  }
-  return null;
-}
-function updateHighlight(){
-  const hit=raycastVoxel();
-  if(hit){
-    highlight.visible=true;
-    highlight.position.set(hit.x+0.5,hit.y+0.5,hit.z+0.5);
-    return hit;
-  }
-  highlight.visible=false;
-  return null;
-}
-
-/* —— موجودی / شمارش ماین‌شده —— */
-const inventory={};
-const TYPE_LIST=[GRASS,DIRT,STONE,SAND,LOG,LEAVES,BRICK,GLOW];
-TYPE_LIST.forEach(t=>{inventory[t]=0});
-let selectedType=GRASS;
-
-function faNum(n){
-  return String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
-}
-function updateHotbarCounts(){
-  document.querySelectorAll('.slot').forEach(s=>{
-    const t=+s.dataset.type;
-    const c=inventory[t]||0;
-    let el=s.querySelector('.cnt');
-    if(!el){el=document.createElement('span');el.className='cnt';s.appendChild(el)}
-    el.textContent=c>0?faNum(c):'';
-    el.style.display=c>0?'':'none';
-  });
-}
-
-function breakBlock(){
-  const hit=updateHighlight();
-  if(!hit||hit.y<=0) return;
-  const t=getBlock(hit.x,hit.y,hit.z);
-  if(t===AIR) return;
-  setBlock(hit.x,hit.y,hit.z,AIR);
-  if(inventory[t]!==undefined) inventory[t]++;
-  else inventory[t]=1;
-  updateHotbarCounts();
-  sfxPop(320);
-}
-function placeBlock(){
-  const hit=updateHighlight();
-  if(!hit) return;
-  if((inventory[selectedType]||0)<=0){
-    // اگر موجودی صفر است اجازه ساخت با بلوک نامحدود برای نوع انتخابی؟
-    // بهتر: فقط اگر موجودی داشته باشد بگذارد؛ برای شروع کمی به بازیکن بدهیم
-    return;
-  }
-  const px=hit.x+hit.nx,py=hit.y+hit.ny,pz=hit.z+hit.nz;
-  const r=player.radius+0.02;
-  if(px+1>player.pos.x-r&&px<player.pos.x+r&&
-     py+1>player.pos.y&&py<player.pos.y+player.height&&
-     pz+1>player.pos.z-r&&pz<player.pos.z+r) return;
-  if(getBlock(px,py,pz)!==AIR) return;
-  setBlock(px,py,pz,selectedType);
-  inventory[selectedType]--;
-  updateHotbarCounts();
-  sfxPop(520);
-}
-
-let actx=null;
-function sfxPop(freq=400){
-  try{
-    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
-    if(actx.state==='suspended') actx.resume();
-    const o=actx.createOscillator(),g=actx.createGain();
-    o.type='triangle';
-    o.frequency.setValueAtTime(freq,actx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(freq*0.6,actx.currentTime+0.09);
-    g.gain.setValueAtTime(0.06,actx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+0.11);
-    o.connect(g).connect(actx.destination);
-    o.start(); o.stop(actx.currentTime+0.12);
-  }catch(_){}
-}
-
-const hotbar=document.getElementById('hotbar');
-function shade(hex,amt){
-  const n=parseInt(hex.slice(1),16);
-  const r=Math.max(0,Math.min(255,(n>>16)+amt));
-  const g=Math.max(0,Math.min(255,((n>>8)&255)+amt));
-  const b=Math.max(0,Math.min(255,(n&255)+amt));
-  return `rgb(${r},${g},${b})`;
-}
-TYPE_LIST.forEach((t,i)=>{
-  const def=BLOCKS[t];
-  const el=document.createElement('div');
-  el.className='slot'+(i===0?' on':'');
-  el.style.background=`linear-gradient(160deg,${def.css},${shade(def.css,-30)})`;
-  el.innerHTML=`<span class="cnt"></span><span class="lbl">${def.label}</span>`;
-  el.dataset.type=t;
-  el.addEventListener('click',()=>selectType(t));
-  hotbar.appendChild(el);
-});
-// شروع: چند بلوک اولیه تا بازیکن گیر نکند
-inventory[GRASS]=16; inventory[DIRT]=8; inventory[STONE]=8; inventory[BRICK]=4;
-updateHotbarCounts();
-
-function selectType(t){
-  selectedType=t;
-  document.querySelectorAll('.slot').forEach(s=>s.classList.toggle('on',+s.dataset.type===t));
-}
-
-let meshBudget=2;
-function streamChunks(){
-  const pcx=Math.floor(player.pos.x/CHUNK);
-  const pcz=Math.floor(player.pos.z/CHUNK);
-  const R=preset.radius;
-  for(let dx=-R;dx<=R;dx++){
-    for(let dz=-R;dz<=R;dz++){
-      if(dx*dx+dz*dz>(R+0.5)*(R+0.5)) continue;
-      ensureChunk(pcx+dx,pcz+dz);
-    }
-  }
-  for(const [k,ch] of chunks){
-    if(Math.abs(ch.cx-pcx)>R+1||Math.abs(ch.cz-pcz)>R+1){
-      if(ch.mesh){scene.remove(ch.mesh);ch.mesh.geometry.dispose();ch.mesh=null}
-      chunks.delete(k);
-    }
-  }
-  const queue=[];
-  for(const ch of chunks.values()){
-    if(!ch.dirty) continue;
-    const dx=ch.cx-pcx,dz=ch.cz-pcz;
-    if(dx*dx+dz*dz>(R+0.5)*(R+0.5)) continue;
-    queue.push([dx*dx+dz*dz,ch]);
-  }
-  if(!queue.length) return;
-  queue.sort((a,b)=>a[0]-b[0]);
-  let built=0;
-  for(const [,ch] of queue){
-    if(built>=meshBudget) break;
-    rebuildChunkMesh(ch);
-    built++;
-  }
-}
-
-const canvas=renderer.domElement;
-canvas.tabIndex=0;
-
-addEventListener('keydown',e=>{
-  keys[e.code]=true;
-  if(e.code==='Space') e.preventDefault();
-  if(e.code==='KeyF') toggleFullscreen();
-  if(e.code>='Digit1'&&e.code<='Digit8'){
-    const t=TYPE_LIST[+e.code.slice(5)-1];
-    if(t) selectType(t);
-  }
-});
-addEventListener('keyup',e=>{keys[e.code]=false});
-
-canvas.addEventListener('mousedown',e=>{
-  if(document.pointerLockElement!==canvas && !isTouch) return;
-  if(e.button===0) breakBlock();
-  if(e.button===2) placeBlock();
-});
-canvas.addEventListener('contextmenu',e=>e.preventDefault());
-addEventListener('wheel',e=>{
-  const i=TYPE_LIST.indexOf(selectedType);
-  const n=(i+(e.deltaY>0?1:-1)+TYPE_LIST.length)%TYPE_LIST.length;
-  selectType(TYPE_LIST[n]);
-},{passive:true});
-
-const startOverlay=document.getElementById('start');
-// در مینی‌اپ بله تقریباً همیشه لمسی است — کنترل‌ها را نشان بده
-const isTouch = true;
-
-let gameStarted=false;
-function startGame(){
-  if(gameStarted) return;
-  gameStarted=true;
-  startOverlay.style.display='none';
-  const t=document.getElementById('touch');
-  if(t){ t.style.display='block'; t.style.pointerEvents='none'; }
-  // pointer lock فقط روی دسکتاپ واقعی
-  const coarse = matchMedia('(pointer: coarse)').matches || ('ontouchstart' in window);
-  if(!coarse){
-    try{
-      const p=canvas.requestPointerLock&&canvas.requestPointerLock();
-      if(p&&p.catch) p.catch(()=>{});
-    }catch(_){}
-  }
-  try{canvas.focus()}catch(_){}
-  try{if(actx&&actx.state==='suspended') actx.resume()}catch(_){}
-}
-window.__startGame=startGame;
-window.__gameReady=true;
-(function(){
-  const btn=document.getElementById('btnStart');
-  const st=document.getElementById('loadStatus');
-  if(btn){btn.disabled=false;btn.style.opacity='1';btn.style.pointerEvents='auto'}
-  if(st) st.textContent='✅ آماده است — شروع را بزنید';
-  if(window.__wantStart) try{startGame()}catch(e){}
-})();
-
-document.addEventListener('pointerlockchange',()=>{
-  if(document.pointerLockElement===canvas) startOverlay.style.display='none';
-  else if(!isTouch && gameStarted){
-    for(const k in keys) keys[k]=false;
-  }
-});
-document.addEventListener('mousemove',e=>{
-  if(document.pointerLockElement!==canvas) return;
-  player.yaw-=e.movementX*0.0024;
-  player.pitch-=e.movementY*0.0024;
-  player.pitch=Math.max(-1.54,Math.min(1.54,player.pitch));
-});
-
-/* کنترل لمسی — همیشه فعال در مینی‌اپ */
-if(true){
-  const stick=document.getElementById('stick');
-  const knob=document.getElementById('knob');
-  let stickId=null;
-  const setKnob=(dx,dy)=>{
-    knob.style.transform=`translate(calc(-50% + ${dx*36}px), calc(-50% + ${dy*36}px))`;
-  };
-  const readStick=e=>{
-    const r=stick.getBoundingClientRect();
-    let dx=(e.clientX-r.left-r.width/2)/(r.width/2);
-    let dy=(e.clientY-r.top-r.height/2)/(r.height/2);
-    const l=Math.hypot(dx,dy);
-    if(l>1){dx/=l;dy/=l}
-    touchMoveX=dx; touchMoveY=dy; setKnob(dx,dy);
-  };
-  stick.addEventListener('pointerdown',e=>{
-    stickId=e.pointerId; stick.setPointerCapture(e.pointerId); readStick(e);
-  });
-  stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId) readStick(e)});
-  const endStick=e=>{
-    if(e.pointerId!==stickId) return;
-    stickId=null; touchMoveX=touchMoveY=0; setKnob(0,0);
-  };
-  stick.addEventListener('pointerup',endStick);
-  stick.addEventListener('pointercancel',endStick);
-
-  let lookId=null,lastX=0,lastY=0;
-  canvas.addEventListener('pointerdown',e=>{
-    if(lookId!==null) return;
-    // اگر روی دکمه‌ها بود نادیده بگیر
-    lookId=e.pointerId; lastX=e.clientX; lastY=e.clientY;
-  });
-  canvas.addEventListener('pointermove',e=>{
-    if(e.pointerId!==lookId) return;
-    player.yaw-=(e.clientX-lastX)*0.0055;
-    player.pitch-=(e.clientY-lastY)*0.0055;
-    player.pitch=Math.max(-1.54,Math.min(1.54,player.pitch));
-    lastX=e.clientX; lastY=e.clientY;
-  });
-  const endLook=e=>{if(e.pointerId===lookId) lookId=null};
-  canvas.addEventListener('pointerup',endLook);
-  canvas.addEventListener('pointercancel',endLook);
-
-  const bindHold=(el,onDown,onUp)=>{
-    const down=e=>{e.preventDefault();e.stopPropagation();el.classList.add('active');onDown&&onDown(e)};
-    const up=e=>{e.preventDefault();e.stopPropagation();el.classList.remove('active');onUp&&onUp(e)};
-    el.addEventListener('pointerdown',down,{passive:false});
-    el.addEventListener('pointerup',up,{passive:false});
-    el.addEventListener('pointercancel',up,{passive:false});
-    el.addEventListener('pointerleave',up,{passive:false});
-  };
-
-  // پرش: با buffer — حتی اگر کمی زود بزنید کار می‌کند
-  bindHold(document.getElementById('btnJump'),
-    ()=>{ wantJump=true; jumpBufferedUntil=performance.now()+220; },
-    ()=>{}
-  );
-  bindHold(document.getElementById('btnBreak'), ()=>breakBlock(), ()=>{});
-  bindHold(document.getElementById('btnPlace'), ()=>placeBlock(), ()=>{});
-}
-
-const statsEl=document.getElementById('stats');
-let lastTime=performance.now(), lastRender=0, running=true;
-let fpsAcc=0,fpsCount=0,fpsTimer=0;
-
-function loop(now){
-  if(!running) return;
-  requestAnimationFrame(loop);
-  const rawDt=Math.min(0.1,(now-lastTime)/1000);
-  lastTime=now;
-  updatePlayer(rawDt);
-
-  const frameBudget=1000/preset.maxFPS;
-  if(now-lastRender<frameBudget-1) return;
-  const dt=(now-lastRender)/1000;
-  lastRender=now;
-
-  updateHighlight();
-  streamChunks();
-  renderer.render(scene,camera);
-
-  fpsAcc+=dt; fpsCount++; fpsTimer+=dt;
-  if(fpsTimer>0.5){
-    const fps=Math.round(fpsCount/fpsAcc);
-    let mc=0; for(const ch of chunks.values()) if(ch.mesh) mc++;
-    statsEl.textContent=`${fps} FPS · ${mc}/${chunks.size} mesh`;
-    fpsAcc=0; fpsCount=0; fpsTimer=0;
-  }
-}
-
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){ running=false; }
-  else if(!running){
-    running=true; lastTime=performance.now(); lastRender=0;
-    requestAnimationFrame(loop);
-  }
-});
-
-function onResize(){
-  const w=innerWidth, h=innerHeight;
-  camera.aspect=w/h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w,h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, preset.pixelRatio));
-}
-addEventListener('resize', onResize);
-addEventListener('orientationchange', ()=>setTimeout(onResize, 200));
-
-applyPreset('balanced');
-
-function buildSpawnWorld(){
-  // شعاع بیشتر برای اسپان
-  for(let dx=-3;dx<=3;dx++)
-    for(let dz=-3;dz<=3;dz++)
-      ensureChunk(dx,dz);
-  respawn();
-  // همه چانک‌های کثیف را همین الان بساز (نه بودجه‌دار)
-  const list=[...chunks.values()].filter(c=>c.dirty);
-  for(const ch of list){
-    try{ rebuildChunkMesh(ch); }catch(e){ console.error('mesh', ch.cx, ch.cz, e); }
-  }
-  // اگر هنوز مشی ساخته نشد دوباره تلاش کن
-  let meshes=0;
-  for(const ch of chunks.values()) if(ch.mesh) meshes++;
-  return meshes;
-}
-
-let spawnMeshes = buildSpawnWorld();
-meshBudget=2;
-
-function forceResize(){
-  const w=Math.max(1, window.innerWidth||document.documentElement.clientWidth||320);
-  const h=Math.max(1, window.innerHeight||document.documentElement.clientHeight||480);
-  camera.aspect=w/h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w,h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, preset.pixelRatio));
-  const c=renderer.domElement;
-  c.style.width='100%';
-  c.style.height='100%';
-  c.style.position='fixed';
-  c.style.inset='0';
-  c.style.zIndex='1';
-}
-
-forceResize();
-
-// بعد از شروع بازی دوباره resize + در صورت نیاز بازسازی
-const _prevStart = window.__startGame;
-window.__startGame = function(){
-  if(_prevStart) _prevStart();
-  forceResize();
-  if(spawnMeshes<3){
-    spawnMeshes = buildSpawnWorld();
-  }
-  // یک فریم رندر فوری
-  try{
-    updateHighlight();
-    streamChunks();
-    renderer.render(scene,camera);
-  }catch(e){ console.error(e); }
-};
-
-requestAnimationFrame(loop);
-// چند فریم اول حتماً دنیا را بسازد
-let bootFrames=0;
-const bootId=setInterval(function(){
-  bootFrames++;
-  forceResize();
-  streamChunks();
-  try{ renderer.render(scene,camera); }catch(e){}
-  let meshes=0;
-  for(const ch of chunks.values()) if(ch.mesh) meshes++;
-  if(meshes>=5 || bootFrames>30) clearInterval(bootId);
-}, 100);
 </script>
 </body>
 </html>
