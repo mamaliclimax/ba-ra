@@ -5,21 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#07182b">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>دنیای همدلی 3D · نسخه حرفه‌ای</title>
+<title>دنیای همدلی 3D · نسخه حرفه‌ای ۲</title>
 <style>
 :root{
   --glass:rgba(7,22,42,.82);--line:rgba(255,255,255,.2);--cyan:#6cf4ff;--gold:#ffd36b;
   --white:#f7fbff;--accent:#56f3b3;--bg:#071a2e;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--white);
   font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-#world{position:fixed;inset:0}#world canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}
+#world{position:fixed;inset:0}
+#world canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}
 .glass{background:var(--glass);border:1px solid var(--line);box-shadow:0 8px 28px #00152b55;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:16px}
-/* Top bar */
-.top{position:fixed;top:calc(env(safe-area-inset-top,0px)+6px);left:8px;right:8px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:6px;pointer-events:none;z-index:10}
+
+/* Top bar — with fallbacks for old env() */
+.top{position:fixed;top:6px;top:calc(env(safe-area-inset-top,0px)+6px);
+  left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:6px;pointer-events:none;z-index:10}
 .profile{display:flex;gap:8px;align-items:center;padding:6px 10px;min-width:140px;max-width:48vw}
 .avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#59dfff,#665cff);
   display:grid;place-items:center;font-size:24px;border:2px solid #fff8}
@@ -30,63 +32,73 @@ html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--
 .money{padding:7px 9px;display:flex;align-items:center;gap:4px;font-weight:900;font-size:11px;white-space:nowrap}
 .money .symbol{font-size:16px}
 .circlebtn{width:32px;height:32px;border-radius:10px;border:1px solid #ffffff26;background:#ffffff14;color:white;font-size:17px;pointer-events:auto;cursor:pointer}
-/* Tools & quest */
-.toptools{position:fixed;top:calc(env(safe-area-inset-top,0px)+68px);left:8px;display:flex;gap:5px;z-index:10}
+
+.toptools{position:fixed;top:68px;top:calc(env(safe-area-inset-top,0px)+68px);left:8px;display:flex;gap:5px;z-index:10}
 .tool{width:40px;height:40px;display:grid;place-items:center;font-size:18px;pointer-events:auto;cursor:pointer;border:none}
-.quest{position:fixed;top:calc(env(safe-area-inset-top,0px)+72px);right:8px;width:min(175px,46vw);padding:9px 11px;z-index:10}
+
+.quest{position:fixed;top:72px;top:calc(env(safe-area-inset-top,0px)+72px);
+  right:8px;width:min(175px,46vw);padding:9px 11px;z-index:10}
 .quest strong{font-size:11px;color:var(--gold)}.quest p{font-size:10px;margin:5px 0;color:#e1eaf6;line-height:1.45}
 .progress{height:5px;background:#ffffff1e;border-radius:8px;overflow:hidden}
 .progress span{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff9c54);transition:width .35s}
-/* Mini map */
-.map{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px)+175px);width:96px;height:96px;
-  border-radius:50%;border:2px solid #e9fbffaa;overflow:hidden;background:#123c53ee;box-shadow:0 6px 20px #001a3390;z-index:10}
+
+.map{position:fixed;right:8px;top:175px;top:calc(env(safe-area-inset-top,0px)+175px);
+  width:96px;height:96px;border-radius:50%;border:2px solid #e9fbffaa;overflow:hidden;
+  background:#123c53ee;box-shadow:0 6px 20px #001a3390;z-index:10}
 .map canvas{width:100%;height:100%}
-.coords{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px)+278px);font-size:9px;padding:5px 7px;z-index:10}
-/* Right actions */
-.rightactions{position:fixed;right:8px;bottom:calc(env(safe-area-inset-bottom,0px)+105px);
+.coords{position:fixed;right:8px;top:278px;top:calc(env(safe-area-inset-top,0px)+278px);
+  font-size:9px;padding:5px 7px;z-index:10}
+
+.rightactions{position:fixed;right:8px;bottom:105px;bottom:calc(env(safe-area-inset-bottom,0px)+105px);
   display:flex;flex-direction:column;gap:6px;z-index:10}
 .action{width:52px;min-height:48px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:1px;color:white;font-size:20px;pointer-events:auto;cursor:pointer;border:none}
 .action small{font-size:8px}
-/* Bottom nav */
-.bottomnav{position:fixed;bottom:0;left:0;right:0;padding:6px 4px calc(env(safe-area-inset-bottom,0px)+4px);
+
+.bottomnav{position:fixed;bottom:0;left:0;right:0;padding:6px 4px 4px;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px)+4px);
   display:flex;justify-content:space-around;background:linear-gradient(0deg,#061427f8,#0b1e36f0);
   border-top:1px solid #ffffff20;z-index:12}
 .navbtn{background:none;border:0;color:#b9c9db;display:flex;flex-direction:column;align-items:center;gap:1px;
   min-width:48px;font-size:18px;cursor:pointer}.navbtn span{font-size:8px}
 .navbtn.active{color:#78efff;text-shadow:0 0 12px #32dfff}
-/* Joystick & buttons */
-.joystick{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom,0px)+68px);width:108px;height:108px;
-  border-radius:50%;border:1px solid #ffffff66;background:#071a35b0;box-shadow:inset 0 0 16px #ffffff12;touch-action:none;z-index:11}
+
+/* Joystick with explicit fallbacks */
+.joystick{position:fixed;left:12px;bottom:68px;bottom:calc(env(safe-area-inset-bottom,0px)+68px);
+  width:108px;height:108px;border-radius:50%;border:1px solid #ffffff66;background:#071a35b0;
+  box-shadow:inset 0 0 16px #ffffff12;touch-action:none;z-index:11}
 .stick{position:absolute;width:42px;height:42px;left:33px;top:33px;border-radius:50%;
   background:radial-gradient(circle at 35% 25%,#ffffffdd,#6cc9eab8);border:2px solid #fff9;
   box-shadow:0 3px 10px #00182d80;pointer-events:none;transition:transform .05s}
-.jump{position:fixed;right:78px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);width:66px;height:66px;
-  border-radius:50%;font-size:28px;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
-.emote{position:fixed;right:88px;bottom:calc(env(safe-area-inset-bottom,0px)+148px);width:42px;height:42px;
-  border-radius:50%;font-size:18px;pointer-events:auto;cursor:pointer;border:none;z-index:11}
-.runbtn{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);width:50px;height:50px;
-  border-radius:50%;font-size:14px;font-weight:800;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
-/* Hotbar */
-.hotbar{position:fixed;left:130px;right:78px;bottom:calc(env(safe-area-inset-bottom,0px)+10px);
+
+.jump{position:fixed;right:78px;bottom:76px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);
+  width:66px;height:66px;border-radius:50%;font-size:28px;color:white;pointer-events:auto;cursor:pointer;border:none;z-index:11}
+.emote{position:fixed;right:88px;bottom:148px;bottom:calc(env(safe-area-inset-bottom,0px)+148px);
+  width:42px;height:42px;border-radius:50%;font-size:18px;pointer-events:auto;cursor:pointer;border:none;z-index:11}
+.runbtn{position:fixed;right:16px;bottom:76px;bottom:calc(env(safe-area-inset-bottom,0px)+76px);
+  width:50px;height:50px;border-radius:50%;font-size:14px;font-weight:800;color:white;
+  pointer-events:auto;cursor:pointer;border:none;z-index:11}
+
+.hotbar{position:fixed;left:130px;right:78px;bottom:10px;bottom:calc(env(safe-area-inset-bottom,0px)+10px);
   display:flex;gap:3px;justify-content:center;z-index:11}
 .slot{flex:1;max-width:48px;min-width:30px;height:46px;border-radius:10px;background:#0b2038e0;
   border:1px solid #ffffff2e;display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-size:18px;position:relative;pointer-events:auto;cursor:pointer}
 .slot small{font-size:8px;color:#d4e2f1}.slot.active{border:2px solid var(--gold);box-shadow:0 0 10px #ffd16650}
 .slot em{position:absolute;top:1px;right:3px;font-size:8px;font-style:normal;color:#b9c9db}
-/* Chat */
-.chat{position:fixed;left:8px;bottom:calc(env(safe-area-inset-bottom,0px)+190px);width:min(240px,60vw);
-  padding:7px;font-size:9px;max-height:110px;overflow-y:auto;z-index:10}
+
+.chat{position:fixed;left:8px;bottom:190px;bottom:calc(env(safe-area-inset-bottom,0px)+190px);
+  width:min(240px,60vw);padding:7px;font-size:9px;max-height:110px;overflow-y:auto;z-index:10}
 .chatline{margin:2px 0;color:#e2efff}.chatline b{color:#6fefff}
 .chatinput{display:flex;gap:4px;margin-top:5px}
 .chatinput input{min-width:0;width:100%;border:1px solid #ffffff22;background:#07182bd8;color:white;
   border-radius:8px;padding:6px;font:inherit;outline:none}
 .chatinput button{border:0;background:#52d6f3;color:#062139;border-radius:8px;padding:0 8px;font-weight:900;cursor:pointer}
-/* Toast & modal */
+
 .toast{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);background:#06182df0;
   border:1px solid #65eaff;border-radius:14px;padding:10px 15px;font-size:12px;max-width:85vw;
   text-align:center;display:none;box-shadow:0 10px 32px #00182d80;z-index:40}
+
 .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;
   background:#03101cd0;z-index:30}.modal.open{display:flex}
 .modalcard{width:min(400px,100%);padding:16px;background:#0c2038;border:1px solid #ffffff28;
@@ -99,7 +111,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--
   font-weight:800;font-size:11px;cursor:pointer}.btn.primary{background:#66e6ef;color:#062039}
 .btn.gold{background:#ffd166;color:#332100}.btn:active{transform:scale(.97)}
 .smallnote{font-size:10px;color:#a9bfd6;line-height:1.65}
-/* Loading */
+
 #loading{position:fixed;inset:0;background:linear-gradient(155deg,#082543,#2785a7);display:flex;
   align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:12px;text-align:center;
   padding:24px;transition:opacity .45s}
@@ -107,23 +119,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--
 #loading p{max-width:290px;color:#d8f3ff;font-size:12px;line-height:1.75}
 .loaderbar{height:6px;width:200px;background:#ffffff30;border-radius:9px;overflow:hidden}
 .loaderbar span{display:block;height:100%;width:0;background:#6fffc7;transition:width .2s}
-/* Landscape orientation – keep controls above system bars */
+
 @media (orientation:landscape) and (max-height:520px){
   .top{top:4px}.profile{padding:4px 8px;min-width:110px}.avatar{width:30px;height:30px;font-size:16px}
   .pname{font-size:10px}.level{font-size:8px}.xp{margin-top:2px}
   .toptools{top:48px}.tool{width:32px;height:32px;font-size:14px}
   .quest{top:48px;width:min(140px,36vw);padding:5px 7px;font-size:9px}
   .map{width:64px;height:64px;top:118px}.coords{top:188px;font-size:8px;padding:3px 5px}
-  .rightactions{bottom:calc(env(safe-area-inset-bottom,0px)+58px)}.action{width:42px;min-height:38px;font-size:15px}
-  .joystick{width:84px;height:84px;bottom:calc(env(safe-area-inset-bottom,0px)+52px);left:8px}
+  .rightactions{bottom:58px;bottom:calc(env(safe-area-inset-bottom,0px)+58px)}
+  .action{width:42px;min-height:38px;font-size:15px}
+  .joystick{width:84px;height:84px;bottom:52px;bottom:calc(env(safe-area-inset-bottom,0px)+52px);left:8px}
   .stick{width:32px;height:32px;left:26px;top:26px}
-  .jump{width:50px;height:50px;bottom:calc(env(safe-area-inset-bottom,0px)+54px);right:64px;font-size:20px}
-  .emote{bottom:calc(env(safe-area-inset-bottom,0px)+110px);right:72px;width:34px;height:34px;font-size:15px}
-  .runbtn{width:40px;height:40px;bottom:calc(env(safe-area-inset-bottom,0px)+54px);right:10px;font-size:11px}
-  .hotbar{bottom:calc(env(safe-area-inset-bottom,0px)+6px);left:100px;right:64px}.slot{height:36px;font-size:14px;min-width:28px}
-  .chat{bottom:calc(env(safe-area-inset-bottom,0px)+130px);max-height:70px;width:min(180px,38vw);font-size:8px}
-  .bottomnav{padding:3px 2px calc(env(safe-area-inset-bottom,0px)+2px)}.navbtn{font-size:14px;min-width:40px}
-  .navbtn span{font-size:7px}
+  .jump{width:50px;height:50px;bottom:54px;bottom:calc(env(safe-area-inset-bottom,0px)+54px);right:64px;font-size:20px}
+  .emote{bottom:110px;bottom:calc(env(safe-area-inset-bottom,0px)+110px);right:72px;width:34px;height:34px;font-size:15px}
+  .runbtn{width:40px;height:40px;bottom:54px;bottom:calc(env(safe-area-inset-bottom,0px)+54px);right:10px;font-size:11px}
+  .hotbar{bottom:6px;bottom:calc(env(safe-area-inset-bottom,0px)+6px);left:100px;right:64px}
+  .slot{height:36px;font-size:14px;min-width:28px}
+  .chat{bottom:130px;bottom:calc(env(safe-area-inset-bottom,0px)+130px);max-height:70px;width:min(180px,38vw);font-size:8px}
+  .bottomnav{padding:3px 2px 2px;padding-bottom:calc(env(safe-area-inset-bottom,0px)+2px)}
+  .navbtn{font-size:14px;min-width:40px}.navbtn span{font-size:7px}
 }
 @media(min-width:800px){
   .quest{width:200px}.map{width:120px;height:120px}.coords{top:310px}
@@ -137,14 +151,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--
 <div id="loading">
   <div class="logo">🌍</div>
   <strong>دنیای همدلی 3D</strong>
-  <p>نسخه حرفه‌ای · گرافیک ارتقایافته · حرکت نرم · آنلاین شبیه‌سازی‌شده</p>
+  <p>نسخه حرفه‌ای ۲ · گرافیک ارتقایافته · حرکت نرم · کاراکترهای جدید</p>
   <div class="loaderbar"><span id="loadbar"></span></div>
   <small id="loadtext">آماده‌سازی موتور سه‌بعدی…</small>
 </div>
 
 <div class="top">
   <div class="profile glass">
-    <div class="avatar">🧑🏻‍🚀</div>
+    <div class="avatar">🧑‍🚀</div>
     <div style="flex:1;min-width:0">
       <div class="pname">ماجراجو <span style="color:#6cf4ff">✦</span></div>
       <div class="level">سطح <b id="level">3</b> · سازنده جزیره</div>
@@ -200,7 +214,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--
 
 <div class="hotbar" id="hotbar">
   <button class="slot active" data-block="wood"><em>1</em>🪵<small>48</small></button>
-  <button class="slot" data-block="stone"><em>2</em>🧱<small>32</small></button>
+  <button class="slot" data-block="stone"><em>2</em>🪨<small>32</small></button>
   <button class="slot" data-block="brick"><em>3</em>🧱<small>20</small></button>
   <button class="slot" data-block="grass"><em>4</em>🌿<small>18</small></button>
   <button class="slot" data-block="glass"><em>5</em>💠<small>15</small></button>
@@ -235,26 +249,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#82cafa;color:var(--
 'use strict';
 const $ = id => document.getElementById(id);
 
-/* ── State ─────────────────────────────────────────────── */
+/* ── State ── */
 const state = {
   coins:1250, gems:32, blocks:0, level:3, xp:2450,
   selected:'wood', buildMode:true,
   moveX:0, moveZ:0,
-  camYaw:0, charYaw:0, pitch:0.18,   // camYaw = camera orbit, charYaw = character facing
+  camYaw:0, charYaw:Math.PI, pitch:0.18,
   velX:0, velZ:0, jumpV:0, onGround:true,
   running:false, placed:[],
   inventory:{wood:48,stone:32,brick:20,grass:18,glass:15,neon:8,metal:10,sand:25},
-  quality:'high', questDone:false, lastSave:0,
+  quality:'high', questDone:false,
   onlinePlayers:[]
 };
 
 let scene, camera, renderer, clock, player, avatarRoot, cat;
-let water, sunLight, ambientLight, raycaster;
-let cameraDrag = null, keys = {}, worldObjects = [], animId = 0;
+let water, sunLight, ambientLight, keys = {}, worldObjects = [], animId = 0;
 let walkTime = 0, dayTime = 0, started = false;
-let bots = []; // simulated online players
+let bots = [];
 
-/* ── Helpers ────────────────────────────────────────────── */
+/* ── Helpers ── */
 function toast(s){
   const t = $('toast'); t.textContent = s; t.style.display = 'block';
   clearTimeout(toast._t); toast._t = setTimeout(()=> t.style.display='none', 2200);
@@ -270,9 +283,8 @@ function box(w,h,d,m,x,y,z, add=true){
 }
 function group(parent=scene){ const g = new THREE.Group(); parent.add(g); return g; }
 function rand(a,b){ return a + Math.random()*(b-a); }
-function noiseColor(){ return [0x58b878,0x69c987,0x4caf77,0x7bd38d,0x3da86a][Math.floor(Math.random()*5)]; }
 
-/* ── Block materials (Roblox-inspired) ──────────────────── */
+/* ── Block materials ── */
 function blockMaterial(type){
   switch(type){
     case 'wood':   return mat(0x9b7045, 0.85, 0.05);
@@ -283,33 +295,213 @@ function blockMaterial(type){
     case 'neon':   return new THREE.MeshStandardMaterial({color:0xff66cc, emissive:0xff3399, emissiveIntensity:1.8, roughness:0.3});
     case 'metal':  return mat(0xa8b4c0, 0.25, 0.85);
     case 'sand':   return mat(0xe6d3a0, 0.95, 0);
-    case 'plastic':return mat(0xf0f4f8, 0.4, 0.1);
-    case 'leaf':   return mat(0x3aa85a, 0.9, 0);
-    case 'lamp':   return new THREE.MeshStandardMaterial({color:0xffd66b, emissive:0xffa21a, emissiveIntensity:1.7});
     default: return mat(0x9b7045);
   }
 }
-const BLOCK_LABELS = {
-  wood:'چوب', stone:'سنگ', brick:'آجر', grass:'چمن', glass:'شیشه',
-  neon:'نئون', metal:'فلز', sand:'ماسه', plastic:'پلاستیک', leaf:'برگ', lamp:'چراغ'
-};
-const BLOCK_ICONS = {
-  wood:'🪵', stone:'🪨', brick:'🧱', grass:'🌿', glass:'💠',
-  neon:'💡', metal:'⚙️', sand:'🏖️', plastic:'⬜', leaf:'🍃', lamp:'🏮'
-};
+const BLOCK_LABELS = {wood:'چوب',stone:'سنگ',brick:'آجر',grass:'چمن',glass:'شیشه',neon:'نئون',metal:'فلز',sand:'ماسه'};
+const BLOCK_ICONS = {wood:'🪵',stone:'🪨',brick:'🧱',grass:'🌿',glass:'💠',neon:'💡',metal:'⚙️',sand:'🏖️'};
 
-/* ── World builders ─────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   CARACTER BUILDER — گرافیک ارتقایافته پسر و دختر
+   ═══════════════════════════════════════════════════════ */
+function makeHumanoid(opts = {}){
+  const {
+    skin=0xffd0b0, hairColor=0x2a1a0a, hairStyle='short',
+    shirtColor=0x287bd9, pantsColor=0x172c48, shoeColor=0x111b2a,
+    female=false, eyeColor=0x2a3a5a
+  } = opts;
+
+  const root = new THREE.Group();
+
+  const skinMat  = new THREE.MeshStandardMaterial({color:skin, roughness:0.72});
+  const shirtMat = new THREE.MeshStandardMaterial({color:shirtColor, roughness:0.78});
+  const pantsMat = new THREE.MeshStandardMaterial({color:pantsColor, roughness:0.82});
+  const shoeMat  = new THREE.MeshStandardMaterial({color:shoeColor, roughness:0.55, metalness:0.1});
+  const hairMat  = new THREE.MeshStandardMaterial({color:hairColor, roughness:0.88});
+  const whiteMat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.35});
+  const irisMat  = new THREE.MeshStandardMaterial({color:eyeColor, roughness:0.25, emissive:eyeColor, emissiveIntensity:0.15});
+  const mouthMat = new THREE.MeshStandardMaterial({color:0xb04a4a, roughness:0.6});
+  const blushMat = new THREE.MeshStandardMaterial({color:0xff8fa0, roughness:0.9, transparent:true, opacity:0.55});
+  const noseMat  = new THREE.MeshStandardMaterial({color:new THREE.Color(skin).multiplyScalar(0.92).getHex(), roughness:0.75});
+
+  // Dimensions (Roblox-inspired proportions)
+  const legH = 0.58, legW = female ? 0.21 : 0.23, legD = 0.24;
+  const torsoH = 0.82, torsoW = female ? 0.60 : 0.68, torsoD = female ? 0.34 : 0.36;
+  const headH = 0.48, headW = 0.46, headD = 0.46;
+  const hipY = legH;
+  const torsoY = hipY + torsoH/2;
+  const headY = hipY + torsoH + headH/2 + 0.02;
+
+  // Legs
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(legW, legH, legD), pantsMat);
+  legL.position.set(-0.15, hipY/2, 0); legL.castShadow = true;
+  root.add(legL);
+  const legR = legL.clone(); legR.position.x = 0.15;
+  root.add(legR);
+
+  // Shoes
+  const shoeGeo = new THREE.BoxGeometry(legW+0.04, 0.14, legD+0.1);
+  const shoeL = new THREE.Mesh(shoeGeo, shoeMat);
+  shoeL.position.set(-0.15, 0.07, 0.04); shoeL.castShadow = true;
+  root.add(shoeL);
+  const shoeR = shoeL.clone(); shoeR.position.x = 0.15;
+  root.add(shoeR);
+
+  // Torso
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(torsoW, torsoH, torsoD), shirtMat);
+  torso.position.set(0, torsoY, 0); torso.castShadow = true;
+  root.add(torso);
+
+  // Optional collar / detail
+  const collar = new THREE.Mesh(
+    new THREE.BoxGeometry(torsoW*0.55, 0.06, torsoD+0.02),
+    new THREE.MeshStandardMaterial({color:new THREE.Color(shirtColor).multiplyScalar(0.85).getHex(), roughness:0.7})
+  );
+  collar.position.set(0, torsoY + torsoH/2 - 0.04, 0);
+  root.add(collar);
+
+  // Arms
+  const armW = 0.17, armH = 0.62;
+  const armL = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, armW), skinMat);
+  armL.position.set(female ? -0.39 : -0.43, torsoY - 0.06, 0);
+  armL.castShadow = true;
+  root.add(armL);
+  const armR = armL.clone(); armR.position.x = -armL.position.x;
+  root.add(armR);
+
+  // Hands
+  const handGeo = new THREE.BoxGeometry(0.16, 0.12, 0.16);
+  const handL = new THREE.Mesh(handGeo, skinMat);
+  handL.position.set(armL.position.x, torsoY - 0.06 - armH/2 - 0.02, 0);
+  root.add(handL);
+  const handR = handL.clone(); handR.position.x = -handL.position.x;
+  root.add(handR);
+
+  // Head
+  const head = new THREE.Mesh(new THREE.BoxGeometry(headW, headH, headD), skinMat);
+  head.position.set(0, headY, 0); head.castShadow = true;
+  root.add(head);
+
+  // Face features — front side is +Z
+  const faceZ = headD/2 + 0.005;
+
+  // Eyes (white)
+  const eyeW = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.11, 0.015), whiteMat);
+  eyeW.position.set(-0.09, headY + 0.05, faceZ);
+  root.add(eyeW);
+  const eyeW2 = eyeW.clone(); eyeW2.position.x = 0.09;
+  root.add(eyeW2);
+
+  // Irises
+  const irisGeo = new THREE.BoxGeometry(0.055, 0.065, 0.015);
+  const irisL = new THREE.Mesh(irisGeo, irisMat);
+  irisL.position.set(-0.09, headY + 0.045, faceZ + 0.008);
+  root.add(irisL);
+  const irisR = irisL.clone(); irisR.position.x = 0.09;
+  root.add(irisR);
+
+  // Pupils
+  const pupilMat = new THREE.MeshStandardMaterial({color:0x0a0a1a, roughness:0.4});
+  const pupilGeo = new THREE.BoxGeometry(0.025, 0.035, 0.015);
+  const pupilL = new THREE.Mesh(pupilGeo, pupilMat);
+  pupilL.position.set(-0.09, headY + 0.045, faceZ + 0.012);
+  root.add(pupilL);
+  const pupilR = pupilL.clone(); pupilR.position.x = 0.09;
+  root.add(pupilR);
+
+  // Eyebrows
+  const browGeo = new THREE.BoxGeometry(0.10, 0.022, 0.02);
+  const browL = new THREE.Mesh(browGeo, hairMat);
+  browL.position.set(-0.09, headY + 0.135, faceZ);
+  browL.rotation.z = female ? 0.08 : 0;
+  root.add(browL);
+  const browR = browL.clone(); browR.position.x = 0.09; browR.rotation.z = female ? -0.08 : 0;
+  root.add(browR);
+
+  // Nose
+  const nose = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.05, 0.04), noseMat);
+  nose.position.set(0, headY - 0.02, faceZ + 0.01);
+  root.add(nose);
+
+  // Mouth
+  const mouth = new THREE.Mesh(
+    new THREE.BoxGeometry(female ? 0.085 : 0.10, 0.026, 0.015),
+    mouthMat
+  );
+  mouth.position.set(0, headY - 0.115, faceZ + 0.005);
+  root.add(mouth);
+
+  // Blush for female
+  if(female){
+    const blushL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.005), blushMat);
+    blushL.position.set(-0.15, headY - 0.03, faceZ);
+    root.add(blushL);
+    const blushR = blushL.clone(); blushR.position.x = 0.15;
+    root.add(blushR);
+  }
+
+  // Hair
+  const hairCap = new THREE.Mesh(new THREE.BoxGeometry(headW+0.04, 0.14, headD+0.04), hairMat);
+  hairCap.position.set(0, headY + 0.19, 0); hairCap.castShadow = true;
+  root.add(hairCap);
+
+  if(hairStyle === 'long'){
+    // Girl's long hair — bangs + side + back
+    const bangs = new THREE.Mesh(new THREE.BoxGeometry(headW+0.02, 0.10, 0.06), hairMat);
+    bangs.position.set(0, headY + 0.13, faceZ - 0.015);
+    root.add(bangs);
+    const sideGeo = new THREE.BoxGeometry(0.08, 0.55, headD+0.02);
+    const sideL = new THREE.Mesh(sideGeo, hairMat);
+    sideL.position.set(-(headW/2 + 0.03), headY - 0.10, 0);
+    sideL.castShadow = true;
+    root.add(sideL);
+    const sideR = sideL.clone(); sideR.position.x = headW/2 + 0.03;
+    root.add(sideR);
+    const backHair = new THREE.Mesh(new THREE.BoxGeometry(headW+0.06, 0.62, 0.08), hairMat);
+    backHair.position.set(0, headY - 0.16, -(headD/2 + 0.02));
+    backHair.castShadow = true;
+    root.add(backHair);
+  } else if(hairStyle === 'ponytail'){
+    const pony = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.60, 0.16), hairMat);
+    pony.position.set(0, headY + 0.02, -(headD/2 + 0.06));
+    pony.castShadow = true;
+    root.add(pony);
+    const band = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.18), mat(0xff6b9d, 0.5));
+    band.position.set(0, headY + 0.28, -(headD/2 + 0.06));
+    root.add(band);
+  } else if(hairStyle === 'short'){
+    // Boy's short hair — sideburns
+    const sideGeo = new THREE.BoxGeometry(0.04, 0.16, 0.2);
+    const sideL = new THREE.Mesh(sideGeo, hairMat);
+    sideL.position.set(-(headW/2 + 0.01), headY + 0.09, 0.05);
+    root.add(sideL);
+    const sideR = sideL.clone(); sideR.position.x = headW/2 + 0.01;
+    root.add(sideR);
+  }
+
+  root.userData = { legL, legR, armL, armR, handL, handR, head };
+  return root;
+}
+
+/* ── World builders ── */
 function makeTree(x,z,scale=1){
   const g = group();
-  const trunk = box(0.3*scale, 1.55*scale, 0.3*scale, mat(0x6b4423), x, 0.65*scale, z, false);
-  const leaves = box(1.5*scale, 1.6*scale, 1.5*scale, mat(noiseColor()), x, 1.95*scale, z, false);
-  leaves.rotation.y = rand(0,1);
-  g.add(trunk, leaves);
-  const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.6*scale, 10),
-    new THREE.MeshBasicMaterial({color:0x1a3a28, transparent:true, opacity:0.2})
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.11*scale, 0.18*scale, 1.55*scale, 8),
+    mat(0x6b4423, 0.9)
   );
-  shadow.rotation.x = -Math.PI/2; shadow.position.set(x, 0.02, z); scene.add(shadow);
+  trunk.position.set(x, 0.78*scale, z); trunk.castShadow = true;
+  g.add(trunk);
+  // Layered leaf clusters
+  for(let i=0;i<3;i++){
+    const leaf = new THREE.Mesh(
+      new THREE.IcosahedronGeometry((0.95 - i*0.16)*scale, 1),
+      mat([0x58b878,0x69c987,0x4caf77,0x7bd38d][Math.floor(Math.random()*4)], 0.88)
+    );
+    leaf.position.set(x + rand(-0.2,0.2)*scale, (1.65 + i*0.55)*scale, z + rand(-0.2,0.2)*scale);
+    leaf.castShadow = true;
+    g.add(leaf);
+  }
   worldObjects.push(g); return g;
 }
 function makeHouse(x,z,color=0xffc66b, scale=1){
@@ -362,59 +554,45 @@ function makeLamp(x,z){
   box(0.4, 0.36, 0.4, new THREE.MeshStandardMaterial({color:0xffdc87, emissive:0xffa52a, emissiveIntensity:1.6}), x, 1.55, z);
   const l = new THREE.PointLight(0xffbb55, 1.4, 6); l.position.set(x, 1.7, z); scene.add(l);
 }
-
-/* ── Player & companion ─────────────────────────────────── */
-function makePlayer(){
-  avatarRoot = group();
-  player = group(avatarRoot);
-  const skin=mat(0xffc69b), shirt=mat(0x287bd9), pants=mat(0x172c48), shoe=mat(0x111b2a), hair=mat(0x2a2018);
-  const torso = box(0.66, 0.82, 0.36, shirt, 0, 1.12, 0, false);
-  const head  = box(0.46, 0.48, 0.46, skin, 0, 1.85, 0, false);
-  const hairm = box(0.48, 0.16, 0.48, hair, 0, 2.14, -0.02, false);
-  const legL  = box(0.22, 0.55, 0.26, pants, -0.17, 0.42, 0, false);
-  const legR  = box(0.22, 0.55, 0.26, pants,  0.17, 0.42, 0, false);
-  const shoeL = box(0.26, 0.14, 0.36, shoe, -0.17, 0.11, 0.04, false);
-  const shoeR = box(0.26, 0.14, 0.36, shoe,  0.17, 0.11, 0.04, false);
-  const armL  = box(0.18, 0.64, 0.2, skin, -0.46, 1.15, 0, false);
-  const armR  = box(0.18, 0.64, 0.2, skin,  0.46, 1.15, 0, false);
-  [torso,head,hairm,legL,legR,shoeL,shoeR,armL,armR].forEach(o => player.add(o));
-  player.userData = {legL,legR,armL,armR};
-  avatarRoot.position.set(0,0,0); scene.add(avatarRoot);
-
-  // Friendly robot-cat companion
-  cat = group();
-  const body = box(0.55, 0.4, 0.4, mat(0xf6f8ff), 0, 0.28, 0, false);
-  const headc = box(0.4, 0.38, 0.38, mat(0xffffff), 0, 0.6, 0, false);
-  const ear1 = box(0.12, 0.2, 0.12, mat(0xffffff), -0.12, 0.88, 0, false);
-  const ear2 = box(0.12, 0.2, 0.12, mat(0xffffff),  0.12, 0.88, 0, false);
-  const eyeMat = new THREE.MeshStandardMaterial({color:0x3be9ff, emissive:0x21cfff, emissiveIntensity:1.5});
-  const e1 = box(0.06, 0.06, 0.04, eyeMat, -0.09, 0.64, 0.2, false);
-  const e2 = box(0.06, 0.06, 0.04, eyeMat,  0.09, 0.64, 0.2, false);
-  [body,headc,ear1,ear2,e1,e2].forEach(o => cat.add(o));
-  cat.position.set(-1.2, 0, 1.1); scene.add(cat);
+function makeFlower(x,z){
+  const stem = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.018, 0.022, 0.25, 4),
+    mat(0x3a8c3a)
+  );
+  stem.position.set(x, 0.125, z);
+  scene.add(stem);
+  const colors = [0xff6b9d, 0xffd166, 0xff9f43, 0x6cf4ff, 0xb088ff, 0xffffff];
+  const petal = new THREE.Mesh(
+    new THREE.SphereGeometry(0.07, 6, 6),
+    mat(colors[Math.floor(Math.random()*colors.length)], 0.6)
+  );
+  petal.position.set(x, 0.28, z);
+  petal.castShadow = true;
+  scene.add(petal);
 }
 
-/* ── Simulated online bots ──────────────────────────────── */
-function makeBot(name, color, x, z){
-  const root = group();
-  const body = box(0.55, 0.7, 0.3, mat(color), 0, 1.0, 0, false);
-  const head = box(0.4, 0.4, 0.4, mat(0xffc69b), 0, 1.65, 0, false);
-  const legL = box(0.18, 0.45, 0.22, mat(0x1a2a40), -0.14, 0.35, 0, false);
-  const legR = box(0.18, 0.45, 0.22, mat(0x1a2a40),  0.14, 0.35, 0, false);
-  [body,head,legL,legR].forEach(o => root.add(o));
-  root.position.set(x, 0, z);
-  root.userData = {name, targetX:x, targetZ:z, walkT:0, legL, legR, chatTimer:rand(8,20)};
-  scene.add(root); bots.push(root);
-  return root;
-}
-
-/* ── Build entire world ─────────────────────────────────── */
+/* ── World builder ── */
 function buildWorld(){
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x83c9f4);
   scene.fog = new THREE.Fog(0x9bd6f5, 48, 115);
 
-  camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 200);
+  // Gradient sky
+  const skyGeo = new THREE.SphereGeometry(120, 24, 16);
+  const skyMat = new THREE.ShaderMaterial({
+    uniforms:{
+      topColor:{value: new THREE.Color(0x4a9eff)},
+      bottomColor:{value: new THREE.Color(0xd4ecff)},
+      offset:{value: 20},
+      exponent:{value: 0.65}
+    },
+    vertexShader:`varying vec3 vPos; void main(){ vPos = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+    fragmentShader:`uniform vec3 topColor; uniform vec3 bottomColor; uniform float offset; uniform float exponent; varying vec3 vPos;
+      void main(){ float h = normalize(vPos + offset).y; gl_FragColor = vec4(mix(bottomColor, topColor, pow(max(h,0.0), exponent)), 1.0); }`,
+    side: THREE.BackSide, depthWrite:false
+  });
+  scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+  camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 250);
   camera.position.set(0, 6.5, 9);
 
   renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
@@ -422,7 +600,7 @@ function buildWorld(){
   renderer.setSize(innerWidth, innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   $('world').appendChild(renderer.domElement);
@@ -437,11 +615,14 @@ function buildWorld(){
   sunLight.shadow.camera.top = 28; sunLight.shadow.camera.bottom = -28;
   sunLight.shadow.bias = -0.001;
   scene.add(sunLight);
+  const fillLight = new THREE.DirectionalLight(0xa8d4ff, 0.4);
+  fillLight.position.set(10, 12, -10);
+  scene.add(fillLight);
 
   // Water
-  const waterGeo = new THREE.PlaneGeometry(200, 200, 1, 1);
+  const waterGeo = new THREE.PlaneGeometry(220, 220, 1, 1);
   const waterMat = new THREE.MeshStandardMaterial({
-    color:0x158dbb, roughness:0.15, metalness:0.35, transparent:true, opacity:0.9
+    color:0x158dbb, roughness:0.15, metalness:0.4, transparent:true, opacity:0.92
   });
   water = new THREE.Mesh(waterGeo, waterMat);
   water.rotation.x = -Math.PI/2; water.position.y = -1.85; scene.add(water);
@@ -459,6 +640,14 @@ function buildWorld(){
     const x=Math.cos(a)*r, z=Math.sin(a)*r;
     if(Math.abs(x)<4.5 && Math.abs(z)<5.5) continue;
     makeTree(x, z, rand(0.6, 1.25));
+  }
+
+  // Flowers
+  for(let i=0;i<40;i++){
+    const a=rand(0,Math.PI*2), r=rand(6,17);
+    const x=Math.cos(a)*r, z=Math.sin(a)*r;
+    if(Math.abs(x)<5 && Math.abs(z)<6) continue;
+    makeFlower(x, z);
   }
 
   // Houses
@@ -543,32 +732,66 @@ function buildWorld(){
   const basket = box(0.38, 0.28, 0.38, mat(0x8b5a38), 0, -1.95, 0, false); balloon.add(basket);
   balloon.position.set(-11, 10.5, -10); balloon.userData.float = true; scene.add(balloon); worldObjects.push(balloon);
 
-  // Player & bots
-  makePlayer();
-  makeBot('سارا', 0xff6b9d, 4, -3);
-  makeBot('رضا', 0x4ecdc4, -6, 3);
-  makeBot('آیدا', 0xffd166, 8, 6);
-  makeBot('امیر', 0xa78bfa, -3, -7);
+  // ── Player character (بازیکن اصلی) ──
+  avatarRoot = new THREE.Group();
+  player = makeHumanoid({
+    skin:0xffd0b0, hairColor:0x2a1a0a, hairStyle:'short',
+    shirtColor:0x287bd9, pantsColor:0x172c48, shoeColor:0x111b2a,
+    female:false, eyeColor:0x3a6a9a
+  });
+  avatarRoot.add(player);
+  avatarRoot.position.set(0,0,0);
+  scene.add(avatarRoot);
 
-  raycaster = new THREE.Raycaster();
+  // ── Companion robot-cat ──
+  cat = group();
+  const body = box(0.55, 0.4, 0.4, mat(0xf6f8ff), 0, 0.28, 0, false);
+  const headc = box(0.4, 0.38, 0.38, mat(0xffffff), 0, 0.6, 0, false);
+  const ear1 = box(0.12, 0.2, 0.12, mat(0xffffff), -0.12, 0.88, 0, false);
+  const ear2 = box(0.12, 0.2, 0.12, mat(0xffffff),  0.12, 0.88, 0, false);
+  const eyeMat = new THREE.MeshStandardMaterial({color:0x3be9ff, emissive:0x21cfff, emissiveIntensity:1.5});
+  const e1 = box(0.06, 0.06, 0.04, eyeMat, -0.09, 0.64, 0.2, false);
+  const e2 = box(0.06, 0.06, 0.04, eyeMat,  0.09, 0.64, 0.2, false);
+  [body,headc,ear1,ear2,e1,e2].forEach(o => cat.add(o));
+  cat.position.set(-1.2, 0, 1.1); scene.add(cat);
+
+  // ── Bots with varied characters ──
+  makeBot('سارا', {female:true, skin:0xffd0b0, hairColor:0x3a2010, hairStyle:'long', shirtColor:0xff6b9d, pantsColor:0x2a1a3a, eyeColor:0x8a4a6a}, 4, -3);
+  makeBot('رضا', {female:false, skin:0xe0a878, hairColor:0x1a1010, hairStyle:'short', shirtColor:0x4ecdc4, pantsColor:0x1a2a40, eyeColor:0x3a5a4a}, -6, 3);
+  makeBot('آیدا', {female:true, skin:0xf0c8a0, hairColor:0x6a3010, hairStyle:'ponytail', shirtColor:0xffd166, pantsColor:0x3a2a1a, eyeColor:0x5a3a2a}, 8, 6);
+  makeBot('امیر', {female:false, skin:0xd0a070, hairColor:0x0a0a0a, hairStyle:'short', shirtColor:0xa78bfa, pantsColor:0x1a1a2a, eyeColor:0x2a2a4a}, -3, -7);
+
   clock = new THREE.Clock();
 }
 
-/* ── Place / remove blocks ──────────────────────────────── */
+/* ── Simulated online bots ── */
+function makeBot(name, opts, x, z){
+  const root = makeHumanoid(opts);
+  root.position.set(x, 0, z);
+  root.userData.botName = name;
+  root.userData.targetX = x;
+  root.userData.targetZ = z;
+  root.userData.walkT = 0;
+  root.userData.chatTimer = rand(8,20);
+  scene.add(root); bots.push(root);
+  return root;
+}
+
+/* ── Place / remove blocks ── */
 function placeBlock(){
   const type = state.selected;
   if((state.inventory[type]||0) <= 0){ toast('از این بلوک نداری؛ از فروشگاه بخر.'); return; }
-  // Place in front of character facing direction
-  const fwd = new THREE.Vector3(Math.sin(state.charYaw), 0, -Math.cos(state.charYaw));
-  let x = Math.round(avatarRoot.position.x + fwd.x * 2.2);
-  let z = Math.round(avatarRoot.position.z + fwd.z * 2.2);
+  // Forward direction = character facing direction
+  const fwdX = Math.sin(state.charYaw);
+  const fwdZ = Math.cos(state.charYaw);
+  let x = Math.round(avatarRoot.position.x + fwdX * 2.2);
+  let z = Math.round(avatarRoot.position.z + fwdZ * 2.2);
   x = Math.max(-17, Math.min(17, x));
   z = Math.max(-17, Math.min(17, z));
   let y = 0.52;
   for(const b of state.placed){
     if(b.x === x && b.z === z) y = Math.max(y, b.y + 1);
   }
-  // Prevent stacking too high
   if(y > 8){ toast('بلندتر از این نمی‌شود.'); return; }
   const mesh = box(0.98, 0.98, 0.98, blockMaterial(type), x, y, z);
   mesh.userData.placed = true;
@@ -585,7 +808,6 @@ function placeBlock(){
     toast('🎉 مأموریت تکمیل شد! +۱۰۰ سکه');
     updateHUD();
   }
-  // Level up check
   if(state.xp >= state.level * 5000){
     state.level++;
     state.gems += 5;
@@ -596,18 +818,16 @@ function placeBlock(){
 }
 function removeBlock(){
   if(!state.placed.length){ toast('هنوز سازه‌ای نساخته‌ای.'); return; }
-  // Remove nearest block in front of character
-  const fwd = new THREE.Vector3(Math.sin(state.charYaw), 0, -Math.cos(state.charYaw));
-  const px = avatarRoot.position.x + fwd.x * 2;
-  const pz = avatarRoot.position.z + fwd.z * 2;
+  const fwdX = Math.sin(state.charYaw);
+  const fwdZ = Math.cos(state.charYaw);
+  const px = avatarRoot.position.x + fwdX * 2;
+  const pz = avatarRoot.position.z + fwdZ * 2;
   let best = -1, bestD = 99;
   state.placed.forEach((b,i)=>{
     const d = Math.hypot(b.x - px, b.z - pz);
     if(d < bestD && d < 2.5){ bestD = d; best = i; }
   });
-  if(best < 0){ // fallback to last
-    best = state.placed.length - 1;
-  }
+  if(best < 0) best = state.placed.length - 1;
   const b = state.placed.splice(best, 1)[0];
   scene.remove(b.mesh);
   if(b.mesh.geometry) b.mesh.geometry.dispose();
@@ -618,7 +838,7 @@ function removeBlock(){
   saveLocal();
 }
 
-/* ── HUD & persistence ──────────────────────────────────── */
+/* ── HUD & persistence ── */
 function updateHUD(){
   $('coins').textContent = state.coins;
   $('gems').textContent = state.gems;
@@ -636,7 +856,7 @@ function updateHUD(){
 }
 function saveLocal(){
   try{
-    localStorage.setItem('hamdeli3d-pro-v2', JSON.stringify({
+    localStorage.setItem('hamdeli3d-pro-v3', JSON.stringify({
       coins:state.coins, gems:state.gems, xp:state.xp, level:state.level,
       blocks:state.placed.map(b=>({x:b.x,y:b.y,z:b.z,type:b.type})),
       inventory:state.inventory,
@@ -647,7 +867,7 @@ function saveLocal(){
 }
 function loadLocal(){
   try{
-    const d = JSON.parse(localStorage.getItem('hamdeli3d-pro-v2') || 'null');
+    const d = JSON.parse(localStorage.getItem('hamdeli3d-pro-v3') || 'null');
     if(!d) return;
     state.coins = d.coins ?? state.coins;
     state.gems = d.gems ?? state.gems;
@@ -657,8 +877,8 @@ function loadLocal(){
     state.questDone = !!d.questDone;
     if(d.player){
       avatarRoot.position.set(d.player.x||0, 0, d.player.z||0);
-      state.camYaw = d.player.camYaw ?? d.player.yaw ?? 0;
-      state.charYaw = d.player.charYaw ?? d.player.yaw ?? 0;
+      state.camYaw = d.player.camYaw ?? 0;
+      state.charYaw = d.player.charYaw ?? Math.PI;
     }
     for(const b of (d.blocks||[])){
       const mesh = box(0.98, 0.98, 0.98, blockMaterial(b.type), b.x, b.y, b.z);
@@ -670,32 +890,30 @@ function loadLocal(){
   }catch(e){}
 }
 
-/* ── Smooth movement & camera (fixed: no spinning) ──────── */
+/* ═══════════════════════════════════════════════════════
+   MOVEMENT — اصلاح‌شده (بدون برعکس شدن)
+   ═══════════════════════════════════════════════════════ */
 function updateMovement(dt){
-  // Input: joystick or keyboard
-  let inputFwd = state.moveZ;   // +1 = back, -1 = forward (joystick Y)
+  let inputFwd = state.moveZ;   // +1 = back (push down), -1 = forward (push up)
   let inputSide = state.moveX;  // +1 = right, -1 = left
   if(keys.ArrowUp || keys.KeyW) inputFwd = -1;
   if(keys.ArrowDown || keys.KeyS) inputFwd = 1;
   if(keys.ArrowLeft || keys.KeyA) inputSide = -1;
   if(keys.ArrowRight || keys.KeyD) inputSide = 1;
 
-  // Direction relative to CAMERA yaw (not character)
-  // Camera looks toward -Z when camYaw=0, so forward in camera space is -camYaw direction
+  // Camera sits at (sin(camYaw)*d, h, cos(camYaw)*d) looking at player (origin).
+  // So camera FORWARD (looking dir) on XZ = (-sin, -cos).
+  // Camera RIGHT = forward × worldUp = (-fwdZ, 0, fwdX) = (cos, 0, -sin).
   const sin = Math.sin(state.camYaw);
   const cos = Math.cos(state.camYaw);
-  // World forward (camera look direction on XZ) and right
-  const fwdX = sin,  fwdZ = -cos;   // direction camera is looking
-  const rightX = cos, rightZ = sin;
+  const fwdX = -sin, fwdZ = -cos;
+  const rightX = cos, rightZ = -sin;
 
-  // Desired move vector in world space
-  // inputFwd negative = move in look direction
   let dx = fwdX * (-inputFwd) + rightX * inputSide;
   let dz = fwdZ * (-inputFwd) + rightZ * inputSide;
   const inputLen = Math.hypot(dx, dz);
   if(inputLen > 0.01){ dx /= inputLen; dz /= inputLen; }
 
-  // Acceleration / friction
   const maxSpeed = state.running ? 7.5 : 4.6;
   const accel = state.running ? 26 : 16;
   const friction = 12;
@@ -713,16 +931,14 @@ function updateMovement(dt){
     if(spd > 0.05){
       const f = Math.max(0, 1 - friction * dt);
       state.velX *= f; state.velZ *= f;
-    } else {
-      state.velX = 0; state.velZ = 0;
-    }
+    } else { state.velX = 0; state.velZ = 0; }
   }
 
   const moving = Math.hypot(state.velX, state.velZ) > 0.12;
   avatarRoot.position.x += state.velX * dt;
   avatarRoot.position.z += state.velZ * dt;
 
-  // Soft collision with placed blocks
+  // Block collision
   for(const b of state.placed){
     const dxb = avatarRoot.position.x - b.x;
     const dzb = avatarRoot.position.z - b.z;
@@ -741,17 +957,16 @@ function updateMovement(dt){
   avatarRoot.position.x = Math.max(-17.5, Math.min(17.5, avatarRoot.position.x));
   avatarRoot.position.z = Math.max(-17.5, Math.min(17.5, avatarRoot.position.z));
 
-  // Character faces the direction it is actually moving (smooth, no feedback to camera)
+  // Character faces movement direction
+  // Default model faces +Z, so rotation.y = atan2(velX, velZ)
   if(moving){
-    const targetCharYaw = Math.atan2(state.velX, -state.velZ);
+    const targetCharYaw = Math.atan2(state.velX, state.velZ);
     let dy = targetCharYaw - state.charYaw;
     while(dy > Math.PI) dy -= Math.PI * 2;
     while(dy < -Math.PI) dy += Math.PI * 2;
     state.charYaw += dy * Math.min(1, 12 * dt);
   }
-  // Apply rotation to the player model only
-  // +Math.PI because default Three.js models face +Z, but our forward is -Z
-  if(player) player.rotation.y = state.charYaw + Math.PI;
+  if(player) player.rotation.y = state.charYaw;
 
   // Jump
   if(!state.onGround){
@@ -765,19 +980,20 @@ function updateMovement(dt){
   }
 
   // Walk animation
-  if(player && player.userData.legL){
+  const ud = player && player.userData;
+  if(ud && ud.legL){
     if(moving){
       walkTime += dt * (state.running ? 13 : 8.5);
       const swing = Math.sin(walkTime) * (state.running ? 0.65 : 0.48);
-      player.userData.legL.rotation.x = swing;
-      player.userData.legR.rotation.x = -swing;
-      player.userData.armL.rotation.x = -swing * 0.65;
-      player.userData.armR.rotation.x = swing * 0.65;
+      ud.legL.rotation.x = swing;
+      ud.legR.rotation.x = -swing;
+      ud.armL.rotation.x = -swing * 0.65;
+      ud.armR.rotation.x = swing * 0.65;
     } else {
-      player.userData.legL.rotation.x *= 0.82;
-      player.userData.legR.rotation.x *= 0.82;
-      player.userData.armL.rotation.x *= 0.82;
-      player.userData.armR.rotation.x *= 0.82;
+      ud.legL.rotation.x *= 0.82;
+      ud.legR.rotation.x *= 0.82;
+      ud.armL.rotation.x *= 0.82;
+      ud.armR.rotation.x *= 0.82;
     }
   }
 }
@@ -785,7 +1001,6 @@ function updateMovement(dt){
 function moveCamera(dt){
   const p = avatarRoot.position;
   const dist = 7.8, height = 4.0;
-  // Camera orbits around player using camYaw (independent of character facing)
   const offset = new THREE.Vector3(
     Math.sin(state.camYaw) * dist,
     height + state.pitch * 3.2,
@@ -797,11 +1012,10 @@ function moveCamera(dt){
   camera.lookAt(p.x, p.y + 1.2, p.z);
 }
 
-/* ── Bots AI (online simulation) ────────────────────────── */
+/* ── Bots AI ── */
 function updateBots(dt){
   for(const bot of bots){
     const ud = bot.userData;
-    // Random wander
     if(Math.hypot(bot.position.x - ud.targetX, bot.position.z - ud.targetZ) < 0.8){
       ud.targetX = rand(-14, 14);
       ud.targetZ = rand(-14, 14);
@@ -809,26 +1023,21 @@ function updateBots(dt){
     const dx = ud.targetX - bot.position.x;
     const dz = ud.targetZ - bot.position.z;
     const len = Math.hypot(dx, dz) || 1;
-    const spd = 2.2;
-    bot.position.x += (dx/len) * spd * dt;
-    bot.position.z += (dz/len) * spd * dt;
+    bot.position.x += (dx/len) * 2.2 * dt;
+    bot.position.z += (dz/len) * 2.2 * dt;
     bot.rotation.y = Math.atan2(dx, dz);
-    // Simple leg swing
     ud.walkT += dt * 8;
     if(ud.legL){
       ud.legL.rotation.x = Math.sin(ud.walkT) * 0.4;
       ud.legR.rotation.x = -Math.sin(ud.walkT) * 0.4;
+      ud.armL.rotation.x = -Math.sin(ud.walkT) * 0.25;
+      ud.armR.rotation.x = Math.sin(ud.walkT) * 0.25;
     }
-    // Occasional chat
     ud.chatTimer -= dt;
     if(ud.chatTimer <= 0){
       ud.chatTimer = rand(12, 28);
-      const msgs = [
-        'چه جزیره زیبایی! 🌸', 'بیایید با هم بسازیم 🏗️', 'سلام دوست عزیز 👋',
-        'اینجا خیلی آرامش‌بخشه 💙', 'پل جدید عالی شد!', 'همدلی یعنی کمک به هم ❤️',
-        'دارم خانه می‌سازم 🏠', 'کی می‌خواد شنا کنه؟ 🌊'
-      ];
-      addChatLine(ud.name, msgs[Math.floor(Math.random()*msgs.length)]);
+      const msgs = ['چه جزیره زیبایی! 🌸','بیایید با هم بسازیم 🏗️','سلام دوست عزیز 👋','اینجا خیلی آرامش‌بخشه 💙','پل جدید عالی شد!','همدلی یعنی کمک به هم ❤️','دارم خانه می‌سازم 🏠','کی می‌خواد شنا کنه؟ 🌊'];
+      addChatLine(ud.botName, msgs[Math.floor(Math.random()*msgs.length)]);
     }
   }
 }
@@ -846,7 +1055,7 @@ function addChatLine(name, text){
   log.scrollTop = log.scrollHeight;
 }
 
-/* ── Map & coords ───────────────────────────────────────── */
+/* ── Map ── */
 function drawMap(){
   const c = $('mapcanvas'), ctx = c.getContext('2d');
   ctx.clearRect(0,0,180,180);
@@ -854,19 +1063,16 @@ function drawMap(){
   ctx.fillStyle = '#55a96e'; ctx.beginPath(); ctx.arc(90,90,72,0,Math.PI*2); ctx.fill();
   ctx.fillStyle = '#d2c49a'; ctx.beginPath(); ctx.ellipse(90,93,34,22,-0.15,0,Math.PI*2); ctx.fill();
   ctx.fillStyle = '#9fe4f4'; ctx.beginPath(); ctx.arc(90,93,7,0,Math.PI*2); ctx.fill();
-  // Player dot
   if(avatarRoot){
     const mx = 90 + avatarRoot.position.x * 3.5;
     const mz = 90 + avatarRoot.position.z * 3.5;
     ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.arc(mx, mz, 4, 0, Math.PI*2); ctx.fill();
-    // Direction
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(mx, mz);
-    ctx.lineTo(mx + Math.sin(state.charYaw)*10, mz - Math.cos(state.charYaw)*10);
+    ctx.lineTo(mx + Math.sin(state.charYaw)*10, mz + Math.cos(state.charYaw)*10);
     ctx.stroke();
   }
-  // Bots
   ctx.fillStyle = '#6cf4ff';
   for(const bot of bots){
     const mx = 90 + bot.position.x * 3.5;
@@ -876,7 +1082,7 @@ function drawMap(){
   ctx.fillStyle = '#fff'; ctx.font = '11px sans-serif'; ctx.fillText('N', 84, 16);
 }
 
-/* ── Animate loop ───────────────────────────────────────── */
+/* ── Animate ── */
 function animate(){
   animId = requestAnimationFrame(animate);
   if(!renderer || !scene) return;
@@ -886,7 +1092,6 @@ function animate(){
   updateMovement(dt);
   updateBots(dt);
 
-  // Companion follows
   if(cat){
     cat.position.x += (avatarRoot.position.x - 1.3 - cat.position.x) * Math.min(1, dt * 2.2);
     cat.position.z += (avatarRoot.position.z + 1.0 - cat.position.z) * Math.min(1, dt * 2.2);
@@ -894,16 +1099,13 @@ function animate(){
     cat.rotation.y = Math.sin(dayTime * 0.7) * 0.25;
   }
 
-  // Floating objects
   for(const o of worldObjects){
     if(o.userData && o.userData.float) o.position.y = 10.5 + Math.sin(dayTime * 0.7) * 0.55;
   }
 
-  // Water gentle motion
   water.material.color.setHSL(0.53, 0.72, 0.36 + Math.sin(dayTime * 0.35) * 0.02);
   water.position.y = -1.85 + Math.sin(dayTime * 0.55) * 0.035;
 
-  // Soft day cycle (light intensity)
   const dayFactor = 0.85 + Math.sin(dayTime * 0.08) * 0.15;
   sunLight.intensity = 2.5 * dayFactor;
   ambientLight.intensity = 1.7 * dayFactor;
@@ -914,7 +1116,7 @@ function animate(){
   $('coords').textContent = 'X: ' + Math.round(avatarRoot.position.x) + ' · Z: ' + Math.round(avatarRoot.position.z);
 }
 
-/* ── UI modals ──────────────────────────────────────────── */
+/* ── UI modals ── */
 function openModal(title, body){
   $('modtitle').textContent = title;
   $('modbody').innerHTML = body;
@@ -941,8 +1143,7 @@ function settingsModal(){
        <option value="medium">متوسط — مناسب بیشتر گوشی‌ها</option>
        <option value="low">اقتصادی — مصرف کمتر باتری</option>
      </select>
-     <p class="smallnote">در صورت افت فریم، کیفیت اقتصادی را انتخاب کن. ذخیره فقط روی همین مرورگر است.</p>
-     <p>حالت افقی و عمودی هر دو پشتیبانی می‌شوند.</p>`);
+     <p class="smallnote">در صورت افت فریم، کیفیت اقتصادی را انتخاب کن. ذخیره فقط روی همین مرورگر است.</p>`);
   $('quality').value = state.quality;
   $('quality').onchange = e => {
     state.quality = e.target.value;
@@ -978,13 +1179,13 @@ function shopModal(){
 }
 function friendsModal(){
   openModal('👥 بازیکنان آنلاین (شبیه‌سازی)',
-    `<p>در این نسخه بازیکنان نمونه با هوش مصنوعی حرکت و چت می‌کنند تا حس آنلاین بودن بدهد.</p>
+    `<p>در این نسخه بازیکنان نمونه با هوش مصنوعی حرکت و چت می‌کنند.</p>
      <p>👤 تو — سازنده جزیره (سطح ${state.level})</p>
-     <p>🧑🏻 سارا — بازدیدکننده</p>
-     <p>🧑🏽 رضا — سازنده</p>
-     <p>👩 آیدا — گردشگر</p>
+     <p>👩 سارا — بازدیدکننده</p>
+     <p>🧑 رضا — سازنده</p>
+     <p>👧 آیدا — گردشگر</p>
      <p>🧑 امیر — کاوشگر</p>
-     <p class="smallnote">برای چندنفره واقعی به سرور (مثل Supabase Realtime یا Photon) نیاز است. این نسخه کاملاً محلی و بدون نیاز به حساب کاربری کار می‌کند.</p>`);
+     <p class="smallnote">برای چندنفره واقعی به سرور نیاز است. این نسخه کاملاً محلی کار می‌کند.</p>`);
 }
 function showTab(t){
   document.querySelectorAll('.navbtn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
@@ -993,12 +1194,11 @@ function showTab(t){
     openModal('🌐 دنیاها',
       `<p>🌴 جزیره همدلی — دنیای فعلی</p>
        <p>🏔️ جزیره کوهستان — به‌زودی</p>
-       <p>🌌 جزیره آسمانی — به‌زودی</p>
-       <p class="smallnote">در این نسخه فقط دنیای محلی فعلی قابل‌بازی است.</p>`);
+       <p>🌌 جزیره آسمانی — به‌زودی</p>`);
   } else if(t === 'home') toast('به خانه‌ات خوش آمدی!');
 }
 
-/* ── Input setup ────────────────────────────────────────── */
+/* ── Input setup ── */
 function setupUI(){
   document.querySelectorAll('[data-open]').forEach(b => {
     b.addEventListener('click', () => {
@@ -1052,7 +1252,6 @@ function setupUI(){
     if(e.code === 'KeyE') placeBlock();
     if(e.code === 'KeyQ') removeBlock();
     if(e.code === 'ShiftLeft' || e.code === 'ShiftRight'){ state.running = true; $('runbtn').style.background = '#ff6b6b55'; }
-    // Number keys for hotbar
     const num = parseInt(e.key);
     if(num >= 1 && num <= 8){
       const slots = document.querySelectorAll('.slot');
@@ -1064,7 +1263,7 @@ function setupUI(){
     if(e.code === 'ShiftLeft' || e.code === 'ShiftRight'){ state.running = false; $('runbtn').style.background = ''; }
   });
 
-  // Joystick (touch + mouse)
+  // Joystick
   const joy = $('joystick'), stick = $('stick');
   let joyId = null;
   function joyMove(e){
@@ -1087,6 +1286,7 @@ function setupUI(){
   joy.addEventListener('pointercancel', endJoy);
 
   // Camera drag + tap to place
+  let cameraDrag = null;
   const worldEl = $('world');
   worldEl.addEventListener('pointerdown', e => {
     if(e.target !== renderer.domElement) return;
@@ -1118,12 +1318,10 @@ function setupUI(){
   });
   document.addEventListener('visibilitychange', () => { if(document.hidden) saveLocal(); });
   window.addEventListener('pagehide', saveLocal);
-
-  // Auto-save every 30s
   setInterval(saveLocal, 30000);
 }
 
-/* ── Start ──────────────────────────────────────────────── */
+/* ── Start ── */
 function start(){
   try{
     if(!window.THREE) throw new Error('Three.js بارگذاری نشد');
@@ -1132,7 +1330,7 @@ function start(){
     setLoad(55, 'ساخت جزیره و شهر…');
     loadLocal();
     setupUI();
-    setLoad(85, 'آماده‌سازی کنترل‌ها و بازیکنان آنلاین…');
+    setLoad(85, 'آماده‌سازی کنترل‌ها و بازیکنان…');
     updateHUD();
     animate();
     setLoad(100, 'آماده بازی!');
