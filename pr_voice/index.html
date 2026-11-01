@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>تماس زنده — منشی روابط عمومی</title>
+  <script src="https://tapi.bale.ai/miniapp.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg:#0b1220; --card:#151d2e; --text:#f2f5ff; --muted:#9aa6c2;
+      --accent:#3ee0a3; --danger:#ff4d6d; --line:rgba(255,255,255,.08); --blue:#3b8dff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:Tahoma,"Segoe UI",system-ui,sans-serif;color:var(--text);min-height:100vh;
+      background:radial-gradient(900px 500px at 80% -10%,rgba(62,224,163,.14),transparent 50%),
+                 radial-gradient(700px 400px at -10% 110%,rgba(80,120,255,.12),transparent 45%),var(--bg);
+      display:flex;flex-direction:column;
+    }
+    .top{padding:16px 14px 8px;text-align:center;position:relative}
+    .badge{display:inline-block;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.06);
+      border:1px solid var(--line);color:var(--muted);font-size:.75rem;margin-bottom:6px}
+    h1{font-size:1.2rem}
+    .status{color:var(--muted);font-size:.88rem;min-height:1.3em;margin-top:4px}
+    .status.live{color:var(--accent)}.status.err{color:var(--danger)}
+    .gear{position:absolute;left:12px;top:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+      color:var(--text);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:1rem}
+    .wave{height:52px;margin:10px auto 0;display:flex;align-items:center;justify-content:center;gap:4px;opacity:.3}
+    .wave.on{opacity:1}
+    .wave span{width:5px;height:12px;border-radius:4px;background:var(--accent)}
+    .wave.on span{animation:bounce 1s ease-in-out infinite}
+    .wave.on span:nth-child(2){animation-delay:.1s}
+    .wave.on span:nth-child(3){animation-delay:.2s}
+    .wave.on span:nth-child(4){animation-delay:.3s}
+    .wave.on span:nth-child(5){animation-delay:.4s}
+    @keyframes bounce{0%,100%{height:12px}50%{height:32px}}
+    .chat{flex:1;overflow-y:auto;padding:10px 12px 150px;display:flex;flex-direction:column;gap:8px}
+    .bubble{max-width:90%;padding:10px 12px;border-radius:16px;line-height:1.7;font-size:.93rem;white-space:pre-wrap}
+    .bubble.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-right-radius:6px}
+    .bubble.user{align-self:flex-end;background:linear-gradient(135deg,#2a6bff,#3b8dff);border-bottom-left-radius:6px}
+    .bubble .meta{font-size:.7rem;opacity:.7;margin-bottom:3px}
+    .controls{position:fixed;bottom:0;left:0;right:0;padding:12px 14px calc(14px + env(safe-area-inset-bottom));
+      background:linear-gradient(to top,rgba(11,18,32,.98),rgba(11,18,32,.9));border-top:1px solid var(--line);
+      display:flex;flex-direction:column;gap:8px;align-items:center}
+    .fields{width:100%;max-width:440px;background:rgba(255,255,255,.04);border:1px solid var(--line);
+      border-radius:12px;padding:7px 10px;font-size:.72rem;color:var(--muted)}
+    .row{display:flex;gap:12px;align-items:center;justify-content:center}
+    .btn{width:54px;height:54px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.08);
+      color:var(--text);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .btn.mic.on{background:rgba(62,224,163,.25);border-color:var(--accent);box-shadow:0 0 0 5px rgba(62,224,163,.12)}
+    .btn.hang{width:64px;height:64px;background:var(--danger);border:none;font-size:1.4rem}
+    .btn.excel{width:auto;padding:0 14px;border-radius:14px;font-size:.82rem;font-weight:700}
+    .text-fallback{width:100%;max-width:440px;display:flex;gap:8px}
+    .text-fallback input{flex:1;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+      color:var(--text);padding:11px 12px;font-size:.92rem;outline:none}
+    .text-fallback button{border:none;border-radius:14px;background:var(--accent);color:#042214;font-weight:700;padding:0 14px;cursor:pointer}
+    .hint{font-size:.74rem;color:var(--muted);text-align:center}
+    /* settings panel */
+    .panel{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);padding:16px;overflow:auto}
+    .panel.on{display:block}
+    .panel .box{max-width:480px;margin:20px auto;background:#121a2b;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .panel h2{font-size:1.05rem;margin-bottom:10px}
+    .panel label{display:block;font-size:.8rem;color:var(--muted);margin:10px 0 4px}
+    .panel input,.panel textarea,.panel select{
+      width:100%;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+      color:var(--text);padding:10px;font-size:.9rem;font-family:inherit}
+    .panel textarea{min-height:70px;resize:vertical}
+    .panel .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .panel .actions button{flex:1;min-width:120px;border:none;border-radius:12px;padding:11px;font-weight:700;cursor:pointer}
+    .panel .save{background:var(--accent);color:#042214}
+    .panel .cancel{background:rgba(255,255,255,.08);color:var(--text)}
+    .panel .danger{background:rgba(255,77,109,.2);color:#ffb3c1}
+    .stat{font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <button class="gear" id="btnSettings" title="تنظیمات">⚙️</button>
+    <div class="badge">● تماس زنده منشی</div>
+    <h1 id="title">منشی روابط عمومی</h1>
+    <div class="status" id="status">در حال آماده‌سازی…</div>
+    <div class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+  <div class="chat" id="chat"></div>
+  <div class="controls">
+    <div class="fields" id="fields">نام: — | فامیل: — | تلفن: — | مشکل: —</div>
+    <div class="row">
+      <button class="btn" id="btnSpeaker" title="بلندگو">🔊</button>
+      <button class="btn hang" id="btnHang" title="قطع">📞</button>
+      <button class="btn mic" id="btnMic" title="میکروفون">🎤</button>
+      <button class="btn excel" id="btnExcel" title="اکسل">📥 اکسل</button>
+    </div>
+    <div class="text-fallback">
+      <input id="txt" placeholder="اگر میکروفون کار نکرد، اینجا بنویسید…" />
+      <button id="btnSend">ارسال</button>
+    </div>
+    <div class="hint" id="hint">میکروفون را بزنید و صحبت کنید — یا تایپ کنید</div>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="box">
+      <h2>⚙️ تنظیمات منشی</h2>
+      <label>نام سازمان / عنوان</label>
+      <input id="s_org" placeholder="مثلاً روابط عمومی شرکت برق" />
+      <label>پیام خوش‌آمد (شروع تماس)</label>
+      <textarea id="s_hello"></textarea>
+      <label>مهلت عدم پاسخ (ثانیه)</label>
+      <input id="s_idle" type="number" min="5" max="300" />
+      <label>پخش صوت پاسخ منشی</label>
+      <select id="s_tts"><option value="1">روشن</option><option value="0">خاموش</option></select>
+      <label>تشخیص گفتار (میکروفون)</label>
+      <select id="s_stt"><option value="1">روشن</option><option value="0">فقط متن</option></select>
+      <label>سؤال‌های اجباری</label>
+      <select id="s_fields">
+        <option value="all">نام + فامیل + موبایل + مشکل</option>
+        <option value="name_phone_problem">نام + موبایل + مشکل</option>
+        <option value="phone_problem">فقط موبایل + مشکل</option>
+      </select>
+      <label>پین مدیر برای تنظیمات/اکسل (اختیاری)</label>
+      <input id="s_pin" type="password" placeholder="خالی = بدون قفل" />
+      <div class="stat" id="s_stat">—</div>
+      <div class="actions">
+        <button class="save" id="s_save">💾 ذخیره</button>
+        <button class="cancel" id="s_close">بستن</button>
+        <button class="danger" id="s_clear">🧹 پاک‌سازی تیکت‌های محلی</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const DEFAULTS = {
+    org: "روابط عمومی",
+    hello: "سلام، من منشی روابط عمومی هستم. لطفاً نام خودتان را بفرمایید.",
+    idle: 60,
+    tts: "1",
+    stt: "1",
+    fields: "all",
+    pin: ""
+  };
+  const LS_CFG = "pr_voice_cfg_v1";
+  const LS_TICKETS = "pr_voice_tickets_v1";
+  const LS_AUTH = "pr_voice_auth_ok";
+
+  function loadCfg(){
+    try{ return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS_CFG)||"{}")); }
+    catch(e){ return Object.assign({}, DEFAULTS); }
+  }
+  function saveCfg(c){ localStorage.setItem(LS_CFG, JSON.stringify(c)); }
+  function loadTickets(){
+    try{ return JSON.parse(localStorage.getItem(LS_TICKETS)||"[]"); }catch(e){ return []; }
+  }
+  function saveTickets(arr){ localStorage.setItem(LS_TICKETS, JSON.stringify(arr.slice(-500))); }
+
+  let cfg = loadCfg();
+  let session = {
+    step:"first_name", first_name:"", last_name:"", phone:"", problem:"",
+    done:false, started:Date.now()
+  };
+  let listening=false, speaking=false, mutedSpeaker=false, ended=false;
+  let recognition=null, idleTimer=null;
+
+  const $ = id => document.getElementById(id);
+  const statusEl=$("status"), chatEl=$("chat"), waveEl=$("wave"), fieldsEl=$("fields");
+  const titleEl=$("title"), hint=$("hint");
+
+  function setStatus(t,cls){ statusEl.textContent=t; statusEl.className="status"+(cls?" "+cls:""); }
+  function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function addBubble(role,text){
+    const d=document.createElement("div");
+    d.className="bubble "+role;
+    d.innerHTML='<div class="meta">'+(role==="bot"?"منشی":"شما")+"</div>"+escapeHtml(text);
+    chatEl.appendChild(d); chatEl.scrollTop=chatEl.scrollHeight;
+  }
+  function updateFields(){
+    fieldsEl.textContent =
+      "نام: "+(session.first_name||"—")+
+      " | فامیل: "+(session.last_name||"—")+
+      " | تلفن: "+(session.phone||"—")+
+      " | مشکل: "+(session.problem?(session.problem.slice(0,28)+(session.problem.length>28?"…":"")):"—");
+  }
+  function faDigits(s){ return String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]); }
+  function normalizePhone(raw){
+    raw=String(raw||"").replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c));
+    let d=raw.replace(/[^\d+]/g,"");
+    if(d.startsWith("0098")) d="+98"+d.slice(4);
+    else if(d.startsWith("98")&&d.length>=12) d="+"+d;
+    else if(d.startsWith("09")&&d.length===11) d="+98"+d.slice(1);
+    else if(d.startsWith("9")&&d.length===10) d="+98"+d;
+    return d;
+  }
+  function validPhone(p){
+    p=normalizePhone(p);
+    return /^\+98\d{10}$/.test(p) || /^\+\d{8,15}$/.test(p);
+  }
+  function cleanName(n){ return String(n||"").trim().replace(/\s+/g," ").replace(/[<>\"'`]/g,"").slice(0,80); }
+
+  function speak(text){
+    return new Promise(resolve=>{
+      if(cfg.tts!=="1" || mutedSpeaker || !window.speechSynthesis){ resolve(); return; }
+      speaking=true; waveEl.classList.add("on"); setStatus("منشی در حال صحبت…","live");
+      try{ speechSynthesis.cancel(); }catch(e){}
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang="fa-IR"; u.rate=1;
+      try{
+        const vs=speechSynthesis.getVoices()||[];
+        const fa=vs.find(v=>/fa|persian|iran/i.test(v.lang+v.name));
+        if(fa) u.voice=fa;
+      }catch(e){}
+      u.onend=()=>{ speaking=false; waveEl.classList.remove("on"); if(!ended) setStatus(listening?"در حال گوش دادن…":"آماده", listening?"live":""); resolve(); };
+      u.onerror=()=>{ speaking=false; waveEl.classList.remove("on"); resolve(); };
+      speechSynthesis.speak(u);
+    });
+  }
+
+  function armIdle(){
+    clearTimeout(idleTimer);
+    if(ended) return;
+    const sec=Math.max(5, parseInt(cfg.idle,10)||60);
+    idleTimer=setTimeout(()=>{
+      if(ended||speaking) return;
+      ended=true; stopListening();
+      setStatus("تماس به‌خاطر عدم پاسخ بسته شد","err");
+      addBubble("bot","چون پاسخی دریافت نشد، تماس بسته شد. برای شروع دوباره صفحه را تازه کنید.");
+    }, sec*1000);
+  }
+
+  function nextStepAfterName(){
+    if(cfg.fields==="phone_problem") return "phone";
+    if(cfg.fields==="name_phone_problem") return "phone";
+    return "last_name";
+  }
+
+  function brain(userText){
+    const t=(userText||"").trim();
+    if(!t) return {reply:"متوجه نشدم. دوباره بفرمایید.", done:false};
+    if(session.done) return {reply:"درخواست قبلاً ثبت شده. می‌توانید قطع کنید.", done:true};
+
+    if(session.step==="first_name"){
+      if(cfg.fields==="phone_problem"){
+        session.step="phone";
+        // fallthrough treat as phone if looks like number
+      } else {
+        const n=cleanName(t.split(/\s+/)[0]||t);
+        if(n.length<2) return {reply:"نام را واضح‌تر بفرمایید.", done:false};
+        session.first_name=n;
+        session.step=nextStepAfterName();
+        if(session.step==="last_name") return {reply:n+" عزیز، نام خانوادگی‌تان چیست؟", done:false};
+        return {reply:n+" عزیز، شماره موبایل‌تان را بفرمایید.", done:false};
+      }
+    }
+    if(session.step==="last_name"){
+      const n=cleanName(t.split(/\s+/)[0]||t);
+      if(n.length<2) return {reply:"نام خانوادگی را واضح‌تر بفرمایید.", done:false};
+      session.last_name=n;
+      session.step="phone";
+      return {reply:"شماره موبایل‌تان را بفرمایید.", done:false};
+    }
+    if(session.step==="phone"){
+      let p=normalizePhone(t);
+      if(!validPhone(p)){
+        const digits=t.replace(/[^\d۰-۹]/g,"").replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c));
+        if(/^09\d{9}$/.test(digits)) p=normalizePhone(digits);
+        else if(/^9\d{9}$/.test(digits)) p=normalizePhone(digits);
+      }
+      if(!validPhone(p)) return {reply:"شماره معتبر نبود. مثل ۰۹۱۲۱۲۳۴۵۶۷ بفرمایید.", done:false};
+      session.phone=p;
+      session.step="problem";
+      return {reply:"چه مشکل یا درخواستی دارید؟", done:false};
+    }
+    if(session.step==="problem"){
+      if(t.length<5) return {reply:"کمی بیشتر توضیح دهید.", done:false};
+      session.problem=t.slice(0,2000);
+      session.done=true;
+      persistTicket();
+      const name=session.first_name||"";
+      return {
+        reply:"متشکرم"+(name?" "+name:"")+" عزیز. درخواست شما ثبت شد. کارشناسان "+(cfg.org||"روابط عمومی")+" پیگیری می‌کنند. می‌توانید تماس را قطع کنید.",
+        done:true
+      };
+    }
+    return {reply:"بفرمایید.", done:false};
+  }
+
+  function persistTicket(){
+    const user=getBaleUser();
+    const ticket={
+      id: Math.random().toString(36).slice(2)+Date.now().toString(36),
+      user_id:String(user.id||""),
+      username:user.username||"",
+      first_name:session.first_name||"",
+      last_name:session.last_name||"",
+      phone:session.phone||"",
+      problem:session.problem||"",
+      created_at:new Date().toISOString(),
+      day_key:new Date().toISOString().slice(0,10),
+      channel:"voice_miniapp",
+      status:"open",
+      org:cfg.org||""
+    };
+    const arr=loadTickets();
+    arr.push(ticket);
+    saveTickets(arr);
+    updateStat();
+    return ticket;
+  }
+
+  function getBaleUser(){
+    try{
+      if(window.Bale&&Bale.WebApp&&Bale.WebApp.initDataUnsafe&&Bale.WebApp.initDataUnsafe.user){
+        const u=Bale.WebApp.initDataUnsafe.user;
+        return {id:u.id, username:u.username||"", first_name:u.first_name||""};
+      }
+    }catch(e){}
+    return {id:"web", username:"", first_name:""};
+  }
+
+  async function handleUserText(userText){
+    userText=(userText||"").trim();
+    if(!userText||ended) return;
+    clearTimeout(idleTimer);
+    addBubble("user", userText);
+    stopListening();
+    const r=brain(userText);
+    updateFields();
+    addBubble("bot", r.reply);
+    await speak(r.reply);
+    if(r.done){
+      ended=true;
+      setStatus("ثبت شد — می‌توانید قطع کنید","live");
+      hint.textContent="مکالمه کامل شد. برای اکسل دکمه 📥 را بزنید.";
+    } else {
+      armIdle();
+      if(cfg.stt==="1") startListening();
+    }
+  }
+
+  function initRecognition(){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR) return null;
+    const r=new SR();
+    r.lang="fa-IR"; r.continuous=true; r.interimResults=false;
+    r.onresult=(ev)=>{
+      let text="";
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        if(ev.results[i].isFinal) text+=ev.results[i][0].transcript;
+      }
+      text=(text||"").trim();
+      if(text && !speaking) handleUserText(text);
+    };
+    r.onerror=(ev)=>{
+      if(ev.error==="not-allowed"){
+        setStatus("دسترسی میکروفون نیست — از کادر متن استفاده کنید","err");
+        stopListening();
+      }
+    };
+    r.onend=()=>{ if(listening&&!ended&&!speaking){ try{r.start();}catch(e){} } };
+    return r;
+  }
+  function startListening(){
+    if(ended||cfg.stt!=="1") return;
+    if(!recognition) recognition=initRecognition();
+    if(!recognition){ setStatus("این مرورگر تشخیص گفتار ندارد — تایپ کنید","err"); return; }
+    listening=true; $("btnMic").classList.add("on");
+    setStatus("در حال گوش دادن…","live");
+    try{ recognition.start(); }catch(e){}
+  }
+  function stopListening(){
+    listening=false; $("btnMic").classList.remove("on");
+    try{ if(recognition) recognition.stop(); }catch(e){}
+  }
+
+  function exportExcel(){
+    if(!ensureAdmin()) return;
+    const rows=loadTickets();
+    if(!rows.length){ alert("هنوز تیکتی ثبت نشده است."); return; }
+    const data=[["ردیف","نام","نام خانوادگی","تلفن","مشکل","تاریخ","شناسه کاربر","نام کاربری","سازمان","وضعیت"]];
+    rows.forEach((t,i)=>{
+      data.push([i+1,t.first_name,t.last_name,t.phone,t.problem,t.created_at,t.user_id,t.username,t.org||"",t.status||""]);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "تیکت‌ها");
+    XLSX.writeFile(wb, "pr_voice_tickets.xlsx");
+  }
+
+  function ensureAdmin(){
+    if(!cfg.pin) return true;
+    if(sessionStorage.getItem(LS_AUTH)==="1") return true;
+    const p=prompt("پین مدیر را وارد کنید:");
+    if(p===cfg.pin){ sessionStorage.setItem(LS_AUTH,"1"); return true; }
+    alert("پین نادرست است.");
+    return false;
+  }
+
+  function updateStat(){
+    const n=loadTickets().length;
+    $("s_stat").textContent="تیکت‌های ذخیره‌شده روی این دستگاه: "+faDigits(n)+
+      "\nآدرس پیشنهادی مینی‌اپ:\nhttps://mamaliclimax.github.io/ba-ra/pr_voice/";
+  }
+
+  function openSettings(){
+    if(cfg.pin && sessionStorage.getItem(LS_AUTH)!=="1"){
+      const p=prompt("برای تنظیمات، پین مدیر:");
+      if(p!==cfg.pin){ alert("پین نادرست"); return; }
+      sessionStorage.setItem(LS_AUTH,"1");
+    }
+    $("s_org").value=cfg.org||"";
+    $("s_hello").value=cfg.hello||DEFAULTS.hello;
+    $("s_idle").value=cfg.idle||60;
+    $("s_tts").value=cfg.tts||"1";
+    $("s_stt").value=cfg.stt||"1";
+    $("s_fields").value=cfg.fields||"all";
+    $("s_pin").value=cfg.pin||"";
+    updateStat();
+    $("panel").classList.add("on");
+  }
+
+  $("btnSettings").onclick=openSettings;
+  $("s_close").onclick=()=>$("panel").classList.remove("on");
+  $("s_save").onclick=()=>{
+    cfg={
+      org:$("s_org").value.trim()||DEFAULTS.org,
+      hello:$("s_hello").value.trim()||DEFAULTS.hello,
+      idle:parseInt($("s_idle").value,10)||60,
+      tts:$("s_tts").value,
+      stt:$("s_stt").value,
+      fields:$("s_fields").value,
+      pin:$("s_pin").value
+    };
+    saveCfg(cfg);
+    titleEl.textContent=cfg.org||"منشی روابط عمومی";
+    $("panel").classList.remove("on");
+    alert("ذخیره شد");
+  };
+  $("s_clear").onclick=()=>{
+    if(!ensureAdmin()) return;
+    if(confirm("همه تیکت‌های محلی پاک شود؟")){ saveTickets([]); updateStat(); alert("پاک شد"); }
+  };
+
+  $("btnMic").onclick=()=>{ if(ended) return; if(listening) stopListening(); else startListening(); };
+  $("btnHang").onclick=()=>{
+    ended=true; stopListening(); clearTimeout(idleTimer);
+    try{ speechSynthesis&&speechSynthesis.cancel(); }catch(e){}
+    setStatus("تماس قطع شد");
+    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
+  };
+  $("btnSpeaker").onclick=()=>{
+    mutedSpeaker=!mutedSpeaker;
+    $("btnSpeaker").textContent=mutedSpeaker?"🔇":"🔊";
+    if(mutedSpeaker) try{ speechSynthesis.cancel(); }catch(e){}
+  };
+  $("btnExcel").onclick=exportExcel;
+  $("btnSend").onclick=()=>{ const v=$("txt").value; $("txt").value=""; handleUserText(v); };
+  $("txt").addEventListener("keydown",e=>{ if(e.key==="Enter"){ const v=$("txt").value; $("txt").value=""; handleUserText(v);} });
+
+  async function boot(){
+    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.ready) Bale.WebApp.ready(); }catch(e){}
+    titleEl.textContent=cfg.org||"منشی روابط عمومی";
+    updateFields();
+    setStatus("برقراری تماس…");
+    const hello=cfg.hello||DEFAULTS.hello;
+    addBubble("bot", hello);
+    await speak(hello);
+    armIdle();
+    if(cfg.stt==="1") startListening();
+    else setStatus("آماده — متن بنویسید");
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
