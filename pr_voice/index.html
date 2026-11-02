@@ -63,11 +63,6 @@ h1{font-size:1.05rem}
 </div>
 <script>
 (function(){
-  /**
-   * آدرس Edge Function را اینجا بگذارید:
-   * https://XXXX.supabase.co/functions/v1/pr-live
-   * یا با ?api=... در URL مینی‌اپ
-   */
   const DEFAULT_API = "https://bfzreeyyhmygpnfzczwn.supabase.co/functions/v1/pr-live";
   function getApiUrl(){
     try{
@@ -76,7 +71,6 @@ h1{font-size:1.05rem}
       if(q) return q.replace(/\/$/,"");
     }catch(e){}
     if(DEFAULT_API) return DEFAULT_API.replace(/\/$/,"");
-    // از localStorage (برای تست)
     try{ return (localStorage.getItem("pr_live_api")||"").replace(/\/$/,""); }catch(e){}
     return "";
   }
@@ -134,15 +128,29 @@ h1{font-size:1.05rem}
 
   async function callApi(payload){
     const api = getApiUrl();
-    if(!api) throw new Error("آدرس API تنظیم نشده. در index.html یا ?api=...");
-    const res = await fetch(api, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(data.error || ("HTTP "+res.status));
-    return data;
+    if(!api) throw new Error("API تنظیم نشده.");
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // ۲۵ ثانیه فرصت
+
+    try {
+      const res = await fetch(api, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      const data = await res.json().catch(()=>({}));
+      
+      // اگر سرور خطا داد، دقیقاً همان خطا را نشان بده
+      if(!res.ok) throw new Error(data.error || ("HTTP "+res.status));
+      return data;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') throw new Error("زمان پاسخ سرور تمام شد (Timeout)");
+      throw err;
+    }
   }
 
   async function botSpeak(reply, audio_base64, mime){
@@ -157,47 +165,6 @@ h1{font-size:1.05rem}
     else if(!ended) st("آماده — تایپ یا میکروفون","live");
   }
 
-  function extractMeta(text){
-    const lat = String(text).replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c));
-    const m = lat.match(/(?:\+98|0)?9\d{9}/);
-    if(m){
-      let d=m[0].replace(/\D/g,"");
-      if(d.startsWith("0")) d="+98"+d.slice(1);
-      else if(d.length===10) d="+98"+d;
-      else if(d.startsWith("98")) d="+"+d;
-      collected.phone = d;
-    }
-    if(text.length>15 && !m && !collected.problem) collected.problem = text;
-    if(/آدرس|خیابان|کوچه|پلاک|محله/.test(text) || (collected.phone && text.length>8 && !m))
-      collected.address = text;
-  }
-
-  function saveTicket(){
-    const payload = {
-      type: "pr_voice_ticket",
-      id: "prweb-"+Date.now(),
-      problem: collected.problem,
-      phone: collected.phone,
-      address: collected.address,
-      summary: [collected.problem, collected.phone, collected.address].filter(Boolean).join(" | "),
-      conversation_summary: history.map(h=>h.role+": "+h.text).join("\n").slice(0,4000),
-      history: history.slice(-40),
-    };
-    try{
-      const k="pr_voice_tickets_v2";
-      const a=JSON.parse(localStorage.getItem(k)||"[]");
-      a.push({...payload, at:new Date().toISOString()});
-      localStorage.setItem(k, JSON.stringify(a.slice(-200)));
-    }catch(e){}
-    try{
-      if(window.Bale && Bale.WebApp && Bale.WebApp.sendData){
-        Bale.WebApp.sendData(JSON.stringify(payload));
-        return true;
-      }
-    }catch(e){}
-    return false;
-  }
-
   async function onUser(text){
     text=(text||"").trim();
     if(!text || !on || ended || busy) return;
@@ -205,7 +172,6 @@ h1{font-size:1.05rem}
     busy = true;
     bubble("user", text);
     history.push({role:"user", text});
-    extractMeta(text);
     st("در حال فکر…","live");
     try{
       const data = await callApi({
@@ -215,16 +181,11 @@ h1{font-size:1.05rem}
         voice: "Kore",
       });
       await botSpeak(data.reply, data.audio_base64, data.mime);
-      if(/تمام|پایان|خداحافظ/.test(text) || /ثبت شد|پیگیری می‌کن|روز خوبی/.test(data.reply||"")){
-        if(collected.phone || collected.problem){
-          const sent = saveTicket();
-          if(sent) st("تیکت به ربات ارسال شد","live");
-        }
-      }
     }catch(e){
       console.error(e);
-      bubble("bot", "متأسفم، ارتباط با سرور برقرار نشد. دوباره تلاش کنید.");
-      st(String(e.message||e).slice(0,80),"err");
+      // نمایش خطای دقیق در چت
+      bubble("bot", "⚠️ خطا: " + e.message);
+      st("خطا در ارتباط","err");
     }
     busy = false;
   }
@@ -250,7 +211,7 @@ h1{font-size:1.05rem}
       if(!stream && navigator.mediaDevices) stream=await navigator.mediaDevices.getUserMedia({audio:true});
     }catch(e){ st("میکروفون مجاز نیست — تایپ کنید","err"); return; }
     if(!rec) rec=initRec();
-    if(!rec){ st("تشخیص گفتار نیست — تایپ کنید","err"); return; }
+    if(!rec){ st("مرورگر شما از میکروفون پشتیبانی نمی‌کند — تایپ کنید","err"); return; }
     try{ rec.start(); }catch(e){ st("میکروفون شروع نشد","err"); }
   }
 
@@ -258,7 +219,7 @@ h1{font-size:1.05rem}
     await unlockAudio();
     if(!getApiUrl()){
       st("API تنظیم نشده","err");
-      alert("آدرس Edge Function را در index.html (DEFAULT_API) یا با ?api=https://xxx.supabase.co/functions/v1/pr-live تنظیم کنید");
+      alert("آدرس Edge Function تنظیم نشده است.");
       return;
     }
     $("gate").classList.add("hid");
@@ -282,7 +243,6 @@ h1{font-size:1.05rem}
   };
   $("spk").onclick=()=>{ mute=!mute; $("spk").textContent=mute?"🔇":"🔊"; if(mute) try{ audioEl.pause(); }catch(e){} };
   $("hang").onclick=()=>{
-    if(history.length>1) saveTicket();
     ended=true; stopMic(); try{ audioEl.pause(); }catch(e){}
     st("قطع شد");
     try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
