@@ -1,1644 +1,298 @@
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0b1220">
-<title>منشی زنده روابط عمومی</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>تماس زنده با منشی</title>
 <script src="https://tapi.bale.ai/miniapp.js"></script>
-
 <style>
-:root{
- --bg:#0b1220;
- --card:#151d2e;
- --text:#f2f5ff;
- --muted:#9aa6c2;
- --accent:#3ee0a3;
- --danger:#ff4d6d;
- --line:rgba(255,255,255,.1);
- --ctrl-h:140px;
-}
+:root{--bg:#0b1220;--card:#151d2e;--text:#f2f5ff;--muted:#9aa6c2;--accent:#3ee0a3;--danger:#ff4d6d;--line:rgba(255,255,255,.1);--ctrl-h:140px}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{
- font-family:Tahoma,sans-serif;
- background:var(--bg);
- color:var(--text);
- display:flex;
- flex-direction:column;
- height:100dvh;
-}
-button,input,textarea{font-family:inherit}
-.top{
- padding:10px 12px 5px;
- text-align:center;
- flex-shrink:0;
-}
-.badge{
- display:inline-block;
- padding:3px 10px;
- border-radius:999px;
- border:1px solid var(--line);
- color:var(--muted);
- font-size:11px;
- margin-bottom:4px;
-}
+body{font-family:Tahoma,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100%}
+.top{padding:10px 12px 4px;text-align:center;flex-shrink:0}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:11px;margin-bottom:4px}
 h1{font-size:1.05rem}
-#status{
- color:var(--muted);
- font-size:.8rem;
- min-height:1.4em;
- margin-top:4px;
-}
-#status.live{color:var(--accent)}
-#status.err{color:var(--danger)}
-
-#chat{
- flex:1;
- overflow-y:auto;
- -webkit-overflow-scrolling:touch;
- padding:8px 12px;
- padding-bottom:calc(var(--ctrl-h) + 15px);
- display:flex;
- flex-direction:column;
- gap:9px;
- min-height:0;
-}
-.b{
- max-width:90%;
- padding:9px 12px;
- border-radius:14px;
- line-height:1.8;
- font-size:.9rem;
- white-space:pre-wrap;
- overflow-wrap:anywhere;
-}
-.bot{
- align-self:flex-start;
- background:var(--card);
- border:1px solid var(--line);
-}
-.user{
- align-self:flex-end;
- background:#2a6bff;
-}
-.meta{
- font-size:.65rem;
- opacity:.65;
- margin-bottom:3px;
-}
-
-.ctrl{
- position:fixed;
- bottom:0;
- left:0;
- right:0;
- z-index:30;
- padding:9px 10px calc(10px + env(safe-area-inset-bottom,0px));
- background:rgba(11,18,32,.98);
- border-top:1px solid var(--line);
- display:flex;
- flex-direction:column;
- gap:8px;
- align-items:center;
- max-height:72dvh;
- overflow-y:auto;
-}
-.row{
- display:flex;
- gap:10px;
- align-items:center;
- justify-content:center;
-}
-.btn{
- border:1px solid var(--line);
- background:rgba(255,255,255,.07);
- color:var(--text);
- border-radius:999px;
- height:38px;
- min-width:38px;
- padding:0 12px;
- font-size:14px;
- cursor:pointer;
-}
-.btn.main{
- background:var(--accent);
- color:#042214;
- font-weight:800;
- border:none;
- height:46px;
- padding:0 22px;
- font-size:15px;
-}
-.btn.hang{
- background:var(--danger);
- border:none;
- color:white;
- width:43px;
- height:43px;
-}
-.btn.mic.on{
- background:var(--accent);
- color:#042214;
- outline:3px solid rgba(62,224,163,.2);
-}
-.btn:disabled{opacity:.4}
-
-.row2{
- display:flex;
- width:100%;
- max-width:440px;
- gap:7px;
-}
-.row2 input{
- flex:1;
- min-width:0;
- border-radius:12px;
- border:1px solid var(--line);
- background:rgba(255,255,255,.06);
- color:var(--text);
- padding:10px;
- font-size:16px;
- outline:none;
-}
-.row2 button{
- border:none;
- border-radius:12px;
- background:var(--accent);
- color:#042214;
- font-weight:700;
- padding:0 15px;
- font-size:13px;
-}
-.hint{
- font-size:11px;
- color:var(--muted);
- text-align:center;
-}
-
-/* اطلاعات پرونده */
-.ticket-panel{
- width:100%;
- max-width:440px;
- border:1px solid var(--line);
- border-radius:12px;
- background:rgba(255,255,255,.035);
-}
-.ticket-panel summary{
- cursor:pointer;
- padding:10px 12px;
- font-size:13px;
- color:var(--accent);
- font-weight:bold;
-}
-.ticket-fields{
- padding:4px 10px 12px;
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:8px;
-}
-.ticket-fields input,
-.ticket-fields textarea{
- width:100%;
- min-width:0;
- border-radius:9px;
- border:1px solid var(--line);
- background:rgba(255,255,255,.06);
- color:var(--text);
- padding:10px;
- font-size:14px;
- outline:none;
-}
-.ticket-fields input::placeholder,
-.ticket-fields textarea::placeholder{
- color:var(--muted);
-}
-.ticket-fields .full{
- grid-column:1/-1;
-}
-.ticket-fields textarea{
- resize:vertical;
- min-height:65px;
- line-height:1.7;
-}
-.ticket-actions{
- grid-column:1/-1;
- display:flex;
- gap:8px;
-}
-.ticket-actions button{
- flex:1;
- border:0;
- border-radius:9px;
- padding:11px 5px;
- background:var(--accent);
- color:#042214;
- font-weight:bold;
- font-size:12px;
-}
-.ticket-actions button.secondary{
- background:rgba(255,255,255,.1);
- color:var(--text);
-}
-#saveState{
- grid-column:1/-1;
- text-align:center;
- color:var(--muted);
- font-size:11px;
- min-height:17px;
-}
-#saveState.ok{color:var(--accent)}
-#saveState.err{color:var(--danger)}
-
-#gate{
- position:fixed;
- inset:0;
- background:rgba(5,10,20,.97);
- z-index:50;
- display:flex;
- flex-direction:column;
- align-items:center;
- justify-content:center;
- gap:14px;
- padding:24px;
- text-align:center;
-}
+#status{color:var(--muted);font-size:.8rem;min-height:1.1em;margin-top:2px}
+#status.live{color:var(--accent)}#status.err{color:var(--danger)}
+#chat{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px;padding-bottom:calc(var(--ctrl-h) + 24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;min-height:0}
+.b{max-width:90%;padding:8px 11px;border-radius:14px;line-height:1.7;font-size:.9rem;white-space:pre-wrap;word-break:break-word}
+.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
+.user{align-self:flex-end;background:#2a6bff}
+.meta{font-size:.65rem;opacity:.65;margin-bottom:2px}
+.ctrl{position:fixed;bottom:0;left:0;right:0;z-index:30;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(11,18,32,.97);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px;align-items:center}
+.row{display:flex;gap:8px;align-items:center;justify-content:center}
+.btn{border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--text);border-radius:999px;height:34px;min-width:34px;padding:0 10px;font-size:13px;cursor:pointer}
+.btn.main{background:var(--accent);color:#042214;font-weight:800;border:none;height:44px;padding:0 20px;font-size:15px}
+.btn.hang{background:var(--danger);border:none;color:#fff;width:40px;height:40px}
+.btn.mic.on{outline:2px solid rgba(62,224,163,.45)}
+.row2{display:flex;width:100%;max-width:420px;gap:6px}
+.row2 input{flex:1;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);padding:9px 10px;font-size:.88rem;outline:none}
+.row2 button{border:none;border-radius:12px;background:var(--accent);color:#042214;font-weight:700;padding:0 12px;font-size:13px;cursor:pointer}
+.hint{font-size:11px;color:var(--muted);text-align:center;max-width:420px}
+#gate{position:fixed;inset:0;background:rgba(5,10,20,.96);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center}
 #gate.hid{display:none}
-#gate p{
- color:var(--muted);
- max-width:320px;
- line-height:1.9;
- font-size:.88rem;
-}
-#micInfo{
- font-size:11px;
- color:var(--muted);
-}
+#gate p{color:var(--muted);max-width:320px;line-height:1.7;font-size:.88rem}
 </style>
 </head>
-
 <body>
-
 <div id="gate">
- <div class="badge">تماس هوشمند · Gemini</div>
- <h2>منشی روابط عمومی</h2>
- <p>
- برای شروع تماس، اجازه استفاده از میکروفن را بدهید.
- منشی پس از پاسخ‌گویی به‌صورت خودکار دوباره گوش می‌دهد.
- </p>
- <button class="btn main" id="go">📞 شروع تماس</button>
- <div id="micInfo">آماده برقراری ارتباط</div>
+  <div class="badge">تماس زنده · Gemini</div>
+  <h2>منشی روابط عمومی</h2>
+  <p>صدا از سرور (جیمینی) ساخته و پخش می‌شود. برای شروع دکمه را بزنید.</p>
+  <button class="btn main" id="go">📞 شروع تماس</button>
 </div>
-
 <div class="top">
- <div class="badge">● منشی هوشمند روابط عمومی</div>
- <h1>تماس زنده با منشی</h1>
- <div id="status">منتظر شروع تماس…</div>
+  <div class="badge">● تماس زنده</div>
+  <h1>منشی روابط عمومی</h1>
+  <div id="status">منتظر شروع…</div>
 </div>
-
 <div id="chat"></div>
-
 <div class="ctrl" id="ctrl">
-
- <details class="ticket-panel" id="ticketPanel">
-  <summary>📋 اطلاعات مراجعه‌کننده و پرونده درخواست</summary>
-
-  <div class="ticket-fields">
-
-   <input id="first_name" placeholder="نام">
-
-   <input id="last_name" placeholder="نام خانوادگی">
-
-   <input id="phone" placeholder="شماره تماس" inputmode="tel">
-
-   <input id="city" placeholder="شهر">
-
-   <textarea class="full" id="address"
-    placeholder="آدرس دقیق محل وقوع مشکل"></textarea>
-
-   <textarea class="full" id="problem"
-    placeholder="شرح مشکل یا درخواست"></textarea>
-
-   <div class="ticket-actions">
-    <button id="saveTicket">ثبت / به‌روزرسانی پرونده</button>
-    <button class="secondary" id="newTicket" type="button">
-     تماس جدید
-    </button>
-   </div>
-
-   <div id="saveState">اطلاعات پس از دریافت پاسخ منشی ذخیره می‌شوند.</div>
-
+  <div class="row">
+    <button class="btn" id="spk">🔊</button>
+    <button class="btn hang" id="hang">☎</button>
+    <button class="btn mic" id="mic">🎤</button>
+    <button class="btn" id="rep">▶️</button>
   </div>
- </details>
-
- <div class="row">
-  <button class="btn" id="spk" title="قطع صدا">🔊</button>
-  <button class="btn hang" id="hang" title="پایان تماس">☎</button>
-  <button class="btn mic" id="mic" title="میکروفن">🎤</button>
-  <button class="btn" id="rep" title="تکرار پاسخ">▶️</button>
- </div>
-
- <div class="row2">
-  <input id="txt"
-   placeholder="پیام خود را بنویسید…"
-   autocomplete="off">
-  <button id="send">ارسال</button>
- </div>
-
- <div class="hint" id="hint">
-  میکروفن هوشمند · پاسخ سریع Gemini · ذخیره درخواست
- </div>
+  <div class="row2">
+    <input id="txt" placeholder="پیام خود را بنویسید…" autocomplete="off" />
+    <button id="send">ارسال</button>
+  </div>
+  <div class="hint" id="hint">پاسخ با هوش مصنوعی + صوت سرور</div>
 </div>
-
 <script>
 (function(){
-
-"use strict";
-
-// ======================================
-// CONFIG
-// ======================================
-
-const SUPABASE_FUNCTION_URL =
-"https://bfzreeyyhmygpnfzczwn.supabase.co/functions/v1/pr-live";
-
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-
-const VOICE = "Kore";
-
-const MAX_HISTORY = 8;
-const MAX_TRANSCRIPT = 100;
-
-const CHAT_TIMEOUT = 18000;
-const TTS_TIMEOUT = 25000;
-const SAVE_TIMEOUT = 18000;
-
-// ======================================
-// STATE
-// ======================================
-
-let on = false;
-let ended = false;
-let listening = false;
-let speaking = false;
-let busy = false;
-let saving = false;
-let mute = false;
-let autoListen = false;
-let micGranted = false;
-let intentionalStop = false;
-
-let recognition = null;
-let lastBot = "";
-let lastAudioUrl = null;
-let listenTimer = null;
-
-let chatController = null;
-let ttsController = null;
-let saveController = null;
-
-let lastSavedSnapshot = "";
-
-const history = [];
-const transcript = [];
-
-const audioEl = new Audio();
-audioEl.preload = "auto";
-
-const $ = id => document.getElementById(id);
-
-// شناسه یکتای تماس
-function createId(){
-
- if(window.crypto && crypto.randomUUID){
-  return crypto.randomUUID();
- }
-
- return "pr_" + Date.now() + "_" +
-  Math.random().toString(36).slice(2,12);
-
-}
-
-function getTicketId(){
-
- try{
-
-  let id = sessionStorage.getItem("pr_ticket_id");
-
-  if(!id){
-   id = createId();
-   sessionStorage.setItem("pr_ticket_id",id);
+  /**
+   * آدرس Edge Function را اینجا بگذارید:
+   * https://XXXX.supabase.co/functions/v1/pr-live
+   * یا با ?api=... در URL مینی‌اپ
+   */
+  const DEFAULT_API = "https://bfzreeyyhmygpnfzczwn.supabase.co/functions/v1/pr-live";
+  function getApiUrl(){
+    try{
+      const u = new URL(location.href);
+      const q = u.searchParams.get("api");
+      if(q) return q.replace(/\/$/,"");
+    }catch(e){}
+    if(DEFAULT_API) return DEFAULT_API.replace(/\/$/,"");
+    // از localStorage (برای تست)
+    try{ return (localStorage.getItem("pr_live_api")||"").replace(/\/$/,""); }catch(e){}
+    return "";
   }
 
-  return id;
+  let on=false, ended=false, listening=false, speaking=false, mute=false, busy=false;
+  let lastBot="", lastAudioUrl=null, rec=null, stream=null;
+  const history = [];
+  const collected = { problem:"", phone:"", address:"" };
+  const audioEl = new Audio();
+  const $ = id => document.getElementById(id);
 
- }catch(e){
-
-  return createId();
-
- }
-
-}
-
-let ticketId = getTicketId();
-
-// ======================================
-// UI
-// ======================================
-
-function status(text,cls=""){
- $("status").textContent = text;
- $("status").className = cls;
-}
-
-function saveState(text,cls=""){
- $("saveState").textContent = text;
- $("saveState").className = cls;
-}
-
-function measure(){
-
- const h = $("ctrl").offsetHeight || 140;
-
- document.documentElement.style
-  .setProperty("--ctrl-h",h+"px");
-
- requestAnimationFrame(()=>{
-  $("chat").scrollTop = $("chat").scrollHeight;
- });
-
-}
-
-function bubble(role,text){
-
- const d = document.createElement("div");
-
- d.className = "b " +
-  (role === "bot" ? "bot" : "user");
-
- const meta = document.createElement("div");
-
- meta.className = "meta";
-
- meta.textContent =
-  role === "bot" ? "منشی روابط عمومی" : "شما";
-
- const content = document.createElement("div");
-
- content.textContent = String(text || "");
-
- d.appendChild(meta);
- d.appendChild(content);
-
- $("chat").appendChild(d);
-
- measure();
-
-}
-
-function addHistory(role,text){
-
- history.push({role,text});
-
- while(history.length > MAX_HISTORY){
-  history.shift();
- }
-
-}
-
-function addTranscript(role,text){
-
- transcript.push({
-  role,
-  text:String(text || ""),
-  time:new Date().toISOString()
- });
-
- while(transcript.length > MAX_TRANSCRIPT){
-  transcript.shift();
- }
-
-}
-
-// ======================================
-// FORM DATA
-// ======================================
-
-function getTicketData(){
-
- const users = transcript
-  .filter(x=>x.role === "user")
-  .map(x=>x.text);
-
- const assistants = transcript
-  .filter(x=>x.role === "bot")
-  .map(x=>x.text);
-
- const manualProblem = $("problem").value.trim();
-
- const problem = manualProblem || users.join("\n");
-
- const conversationSummary = transcript
-  .map(x=>{
-   return (x.role === "user" ? "مراجعه‌کننده: " : "منشی: ") +
-    x.text;
-  })
-  .join("\n");
-
- return {
-  id:ticketId,
-  chat_id:ticketId,
-
-  first_name:$("first_name").value.trim(),
-  last_name:$("last_name").value.trim(),
-  phone:$("phone").value.trim(),
-
-  city:$("city").value.trim(),
-  address:$("address").value.trim(),
-
-  problem,
-  conversation_summary:conversationSummary,
-
-  ai_reply:assistants.length
-   ? assistants[assistants.length-1]
-   : "",
-
-  status:"open",
-  channel:"live_assistant"
- };
-
-}
-
-function makeSnapshot(ticket){
-
- return JSON.stringify(ticket);
-
-}
-
-// ======================================
-// AUDIO UNLOCK
-// ======================================
-
-async function unlockAudio(){
-
- try{
-
-  const AC =
-   window.AudioContext ||
-   window.webkitAudioContext;
-
-  if(AC){
-
-   const ctx = new AC();
-
-   if(ctx.state === "suspended"){
-    await ctx.resume();
-   }
-
-   const buffer = ctx.createBuffer(1,1,24000);
-
-   const source = ctx.createBufferSource();
-
-   source.buffer = buffer;
-   source.connect(ctx.destination);
-   source.start(0);
-
-   setTimeout(()=>ctx.close().catch(()=>{}),1000);
+  function measure(){
+    const h=($("ctrl")&&$("ctrl").offsetHeight)||140;
+    document.documentElement.style.setProperty("--ctrl-h", h+"px");
+    const c=$("chat"); if(c) c.scrollTop=c.scrollHeight;
+  }
+  function st(t,c){ const e=$("status"); e.textContent=t; e.className=c||""; }
+  function bubble(role,text){
+    const d=document.createElement("div");
+    d.className="b "+(role==="bot"?"bot":"user");
+    d.innerHTML='<div class="meta">'+(role==="bot"?"منشی":"شما")+"</div>"+String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    $("chat").appendChild(d); measure();
   }
 
- }catch(e){
-  console.warn("Audio unlock:",e);
- }
+  async function unlockAudio(){
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(AC){ const ctx=new AC(); if(ctx.state==="suspended") await ctx.resume(); }
+    }catch(e){}
+    try{
+      audioEl.src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+      await audioEl.play();
+    }catch(e){}
+  }
 
-}
+  function playBase64(b64, mime){
+    return new Promise((resolve)=>{
+      if(!b64 || mute){ resolve(false); return; }
+      try{
+        if(lastAudioUrl) URL.revokeObjectURL(lastAudioUrl);
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+        const type = mime && mime.includes("mpeg") ? "audio/mpeg" : (mime || "audio/wav");
+        const blob = new Blob([bytes], { type });
+        lastAudioUrl = URL.createObjectURL(blob);
+        audioEl.onended = ()=>resolve(true);
+        audioEl.onerror = ()=>resolve(false);
+        audioEl.src = lastAudioUrl;
+        const p = audioEl.play();
+        if(p && p.catch) p.catch(()=>resolve(false));
+      }catch(e){ resolve(false); }
+    });
+  }
 
-// ======================================
-// SUPABASE REQUEST
-// ======================================
+  async function callApi(payload){
+    const api = getApiUrl();
+    if(!api) throw new Error("آدرس API تنظیم نشده. در index.html یا ?api=...");
+    const res = await fetch(api, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ("HTTP "+res.status));
+    return data;
+  }
 
-async function callApi(payload,timeout=CHAT_TIMEOUT){
+  async function botSpeak(reply, audio_base64, mime){
+    lastBot = reply || "";
+    if(reply){ bubble("bot", reply); history.push({role:"bot", text:reply}); }
+    speaking = true;
+    st("منشی صحبت می‌کند…","live");
+    let ok = false;
+    if(audio_base64) ok = await playBase64(audio_base64, mime);
+    speaking = false;
+    if(!ok && reply) st("پاسخ متنی آمد — صوت در دسترس نبود","err");
+    else if(!ended) st("آماده — تایپ یا میکروفون","live");
+  }
 
- const controller = new AbortController();
+  function extractMeta(text){
+    const lat = String(text).replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c));
+    const m = lat.match(/(?:\+98|0)?9\d{9}/);
+    if(m){
+      let d=m[0].replace(/\D/g,"");
+      if(d.startsWith("0")) d="+98"+d.slice(1);
+      else if(d.length===10) d="+98"+d;
+      else if(d.startsWith("98")) d="+"+d;
+      collected.phone = d;
+    }
+    if(text.length>15 && !m && !collected.problem) collected.problem = text;
+    if(/آدرس|خیابان|کوچه|پلاک|محله/.test(text) || (collected.phone && text.length>8 && !m))
+      collected.address = text;
+  }
 
- if(payload.action === "chat"){
-  chatController = controller;
- }else if(payload.action === "speak"){
-  ttsController = controller;
- }else if(payload.action === "save_ticket"){
-  saveController = controller;
- }
+  function saveTicket(){
+    const payload = {
+      type: "pr_voice_ticket",
+      id: "prweb-"+Date.now(),
+      problem: collected.problem,
+      phone: collected.phone,
+      address: collected.address,
+      summary: [collected.problem, collected.phone, collected.address].filter(Boolean).join(" | "),
+      conversation_summary: history.map(h=>h.role+": "+h.text).join("\n").slice(0,4000),
+      history: history.slice(-40),
+    };
+    try{
+      const k="pr_voice_tickets_v2";
+      const a=JSON.parse(localStorage.getItem(k)||"[]");
+      a.push({...payload, at:new Date().toISOString()});
+      localStorage.setItem(k, JSON.stringify(a.slice(-200)));
+    }catch(e){}
+    try{
+      if(window.Bale && Bale.WebApp && Bale.WebApp.sendData){
+        Bale.WebApp.sendData(JSON.stringify(payload));
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
 
- const timer = setTimeout(()=>{
-  controller.abort();
- },timeout);
+  async function onUser(text){
+    text=(text||"").trim();
+    if(!text || !on || ended || busy) return;
+    stopMic();
+    busy = true;
+    bubble("user", text);
+    history.push({role:"user", text});
+    extractMeta(text);
+    st("در حال فکر…","live");
+    try{
+      const data = await callApi({
+        action: "chat",
+        message: text,
+        history: history.slice(0, -1),
+        voice: "Kore",
+      });
+      await botSpeak(data.reply, data.audio_base64, data.mime);
+      if(/تمام|پایان|خداحافظ/.test(text) || /ثبت شد|پیگیری می‌کن|روز خوبی/.test(data.reply||"")){
+        if(collected.phone || collected.problem){
+          const sent = saveTicket();
+          if(sent) st("تیکت به ربات ارسال شد","live");
+        }
+      }
+    }catch(e){
+      console.error(e);
+      bubble("bot", "متأسفم، ارتباط با سرور برقرار نشد. دوباره تلاش کنید.");
+      st(String(e.message||e).slice(0,80),"err");
+    }
+    busy = false;
+  }
 
- try{
+  function initRec(){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR) return null;
+    const r=new SR(); r.lang="fa-IR"; r.continuous=false; r.interimResults=false;
+    r.onstart=()=>{ listening=true; $("mic").classList.add("on"); st("گوش می‌دهم…","live"); };
+    r.onresult=ev=>{
+      let t=""; for(let i=ev.resultIndex;i<ev.results.length;i++) if(ev.results[i].isFinal) t+=ev.results[i][0].transcript;
+      listening=false; $("mic").classList.remove("on"); t=(t||"").trim();
+      if(t) onUser(t); else st("چیزی نشنیدم — تایپ کنید","err");
+    };
+    r.onerror=()=>{ listening=false; $("mic").classList.remove("on"); st("میکروفون خطا — تایپ کنید","err"); };
+    r.onend=()=>{ listening=false; $("mic").classList.remove("on"); };
+    return r;
+  }
+  function stopMic(){ listening=false; $("mic").classList.remove("on"); try{ if(rec) rec.abort(); }catch(e){} }
+  async function startMic(){
+    if(!on||ended||speaking||listening||busy) return;
+    try{
+      if(!stream && navigator.mediaDevices) stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    }catch(e){ st("میکروفون مجاز نیست — تایپ کنید","err"); return; }
+    if(!rec) rec=initRec();
+    if(!rec){ st("تشخیص گفتار نیست — تایپ کنید","err"); return; }
+    try{ rec.start(); }catch(e){ st("میکروفون شروع نشد","err"); }
+  }
 
-  const headers = {
-   "Content-Type":"application/json",
-   "apikey":SUPABASE_ANON_KEY
+  $("go").onclick=async ()=>{
+    await unlockAudio();
+    if(!getApiUrl()){
+      st("API تنظیم نشده","err");
+      alert("آدرس Edge Function را در index.html (DEFAULT_API) یا با ?api=https://xxx.supabase.co/functions/v1/pr-live تنظیم کنید");
+      return;
+    }
+    $("gate").classList.add("hid");
+    on=true; measure(); busy=true;
+    st("در حال برقراری تماس…","live");
+    try{
+      const data = await callApi({ action:"greet", voice:"Kore" });
+      await botSpeak(data.reply, data.audio_base64, data.mime);
+    }catch(e){
+      const fallback="سلام، وقت بخیر. من منشی روابط عمومی هستم. بفرمایید چه مشکلی دارید؟";
+      bubble("bot", fallback);
+      history.push({role:"bot", text:fallback});
+      st("خوش‌آمد متنی — صوت سرور در دسترس نبود","err");
+    }
+    busy=false;
   };
 
-  if(SUPABASE_ANON_KEY &&
-     SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY"){
+  $("mic").onclick=()=>{ if(listening) stopMic(); else startMic(); };
+  $("rep").onclick=async ()=>{
+    if(lastAudioUrl && !mute){ try{ audioEl.src=lastAudioUrl; await audioEl.play(); }catch(e){} }
+  };
+  $("spk").onclick=()=>{ mute=!mute; $("spk").textContent=mute?"🔇":"🔊"; if(mute) try{ audioEl.pause(); }catch(e){} };
+  $("hang").onclick=()=>{
+    if(history.length>1) saveTicket();
+    ended=true; stopMic(); try{ audioEl.pause(); }catch(e){}
+    st("قطع شد");
+    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
+  };
+  $("send").onclick=()=>{ const v=$("txt").value; $("txt").value=""; onUser(v); };
+  $("txt").addEventListener("keydown", e=>{ if(e.key==="Enter"){ const v=$("txt").value; $("txt").value=""; onUser(v); }});
 
-   headers.Authorization =
-    "Bearer " + SUPABASE_ANON_KEY;
-  }
-
-  const response = await fetch(
-   SUPABASE_FUNCTION_URL,
-   {
-    method:"POST",
-    headers,
-    body:JSON.stringify(payload),
-    signal:controller.signal
-   }
-  );
-
-  const data = await response.json().catch(()=>({}));
-
-  if(!response.ok){
-
-   throw new Error(
-    data.error ||
-    data.message ||
-    "HTTP " + response.status
-   );
-
-  }
-
-  if(data.success === false){
-   throw new Error(data.error || "عملیات ناموفق بود");
-  }
-
-  return data;
-
- }catch(e){
-
-  if(e.name === "AbortError"){
-   throw new Error("زمان پاسخ سرور تمام شد.");
-  }
-
-  throw e;
-
- }finally{
-
-  clearTimeout(timer);
-
-  if(chatController === controller){
-   chatController = null;
-  }
-
-  if(ttsController === controller){
-   ttsController = null;
-  }
-
-  if(saveController === controller){
-   saveController = null;
-  }
-
- }
-
-}
-
-// ======================================
-// SAVE TICKET
-// ======================================
-
-async function saveTicket(force=false){
-
- if(saving) return false;
-
- if(!transcript.length &&
-    !$("phone").value.trim() &&
-    !$("problem").value.trim()){
-
-  saveState("هنوز اطلاعاتی برای ثبت وجود ندارد.");
-  return false;
-
- }
-
- const ticket = getTicketData();
-
- const snapshot = makeSnapshot(ticket);
-
- if(!force && snapshot === lastSavedSnapshot){
-  return true;
- }
-
- saving = true;
-
- $("saveTicket").disabled = true;
-
- saveState("در حال ذخیره اطلاعات در سامانه...");
-
- try{
-
-  const result = await callApi({
-   action:"save_ticket",
-   ticket
-  },SAVE_TIMEOUT);
-
-  if(result.saved !== true){
-   throw new Error("تأیید ذخیره‌سازی از سرور دریافت نشد.");
-  }
-
-  lastSavedSnapshot = snapshot;
-
-  saveState(
-   "✓ اطلاعات با موفقیت در سامانه ثبت شد.",
-   "ok"
-  );
-
-  return true;
-
- }catch(e){
-
-  console.error("Ticket save error:",e);
-
-  saveState(
-   "خطا در ذخیره‌سازی: " + e.message,
-   "err"
-  );
-
-  return false;
-
- }finally{
-
-  saving = false;
-
-  $("saveTicket").disabled = false;
-
+  window.addEventListener("resize", measure);
+  try{ if(window.Bale&&Bale.WebApp){ Bale.WebApp.ready(); try{ Bale.WebApp.expand(); }catch(e){} } }catch(e){}
   measure();
-
- }
-
-}
-
-// ذخیره پس از تکمیل هر نوبت مکالمه
-async function autoSaveTicket(){
-
- if(ended) return;
-
- const result = await saveTicket(false);
-
- if(!result){
-  console.warn("Automatic ticket save failed");
- }
-
-}
-
-// ======================================
-// AUDIO PLAYBACK
-// ======================================
-
-function stopAudio(){
-
- try{
-  audioEl.pause();
-  audioEl.currentTime = 0;
- }catch(e){}
-
-}
-
-function playBase64(base64,mime){
-
- return new Promise(resolve=>{
-
-  if(!base64 || mute){
-   resolve(false);
-   return;
-  }
-
-  let settled = false;
-
-  function finish(ok){
-
-   if(settled) return;
-
-   settled = true;
-
-   audioEl.onended = null;
-   audioEl.onerror = null;
-
-   resolve(ok);
-
-  }
-
-  try{
-
-   const binary = atob(base64);
-
-   const bytes = new Uint8Array(binary.length);
-
-   for(let i=0;i<binary.length;i++){
-    bytes[i] = binary.charCodeAt(i);
-   }
-
-   const type =
-    mime && mime.startsWith("audio/")
-     ? mime
-     : "audio/wav";
-
-   const blob = new Blob([bytes],{type});
-
-   const newUrl = URL.createObjectURL(blob);
-
-   if(lastAudioUrl){
-    URL.revokeObjectURL(lastAudioUrl);
-   }
-
-   lastAudioUrl = newUrl;
-
-   audioEl.onended = ()=>finish(true);
-
-   audioEl.onerror = ()=>finish(false);
-
-   audioEl.src = newUrl;
-
-   audioEl.play().then(()=>{
-    status("منشی صحبت می‌کند…","live");
-   }).catch(e=>{
-    console.error("Audio play:",e);
-    finish(false);
-   });
-
-  }catch(e){
-
-   console.error("Audio decode:",e);
-   finish(false);
-
-  }
-
- });
-
-}
-
-// ======================================
-// TEXT FIRST, AUDIO SECOND
-// ======================================
-
-async function speakReply(text){
-
- if(!text || ended) return false;
-
- lastBot = text;
-
- if(mute){
-  return false;
- }
-
- speaking = true;
-
- status("در حال آماده‌سازی صدای منشی…","live");
-
- try{
-
-  const data = await callApi({
-   action:"speak",
-   text,
-   voice:VOICE
-  },TTS_TIMEOUT);
-
-  if(ended) return false;
-
-  if(!data.audio_base64){
-   throw new Error("صدای پاسخ دریافت نشد");
-  }
-
-  return await playBase64(
-   data.audio_base64,
-   data.mime || data.mime_type || "audio/wav"
-  );
-
- }catch(e){
-
-  console.error("TTS error:",e);
-
-  status("پاسخ متنی آماده است؛ صوت در دسترس نیست","err");
-
-  return false;
-
- }finally{
-
-  speaking = false;
-
- }
-
-}
-
-// ======================================
-// MICROPHONE PERMISSION
-// ======================================
-
-async function requestMicPermission(){
-
- if(micGranted) return true;
-
- if(!navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia){
-
-  throw new Error("مرورگر اجازه دسترسی به میکروفن ندارد");
-
- }
-
- const stream = await navigator.mediaDevices.getUserMedia({
-  audio:{
-   echoCancellation:true,
-   noiseSuppression:true,
-   autoGainControl:true
-  }
- });
-
- stream.getTracks().forEach(track=>track.stop());
-
- micGranted = true;
-
- return true;
-
-}
-
-// ======================================
-// SPEECH RECOGNITION
-// ======================================
-
-function initRecognition(){
-
- const SR =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
-
- if(!SR) return null;
-
- const r = new SR();
-
- r.lang = "fa-IR";
- r.continuous = false;
- r.interimResults = true;
- r.maxAlternatives = 1;
-
- r.onstart = ()=>{
-
-  listening = true;
-
-  intentionalStop = false;
-
-  $("mic").classList.add("on");
-
-  status("🎤 گوش می‌دهم؛ صحبت کنید…","live");
-
- };
-
- r.onresult = event=>{
-
-  let finalText = "";
-  let interimText = "";
-
-  for(let i=event.resultIndex;i<event.results.length;i++){
-
-   const result = event.results[i];
-
-   if(result.isFinal){
-    finalText += result[0].transcript;
-   }else{
-    interimText += result[0].transcript;
-   }
-
-  }
-
-  if(interimText && !finalText){
-   status("شنیدن: " + interimText,"live");
-  }
-
-  if(finalText.trim()){
-
-   intentionalStop = true;
-
-   try{
-    r.stop();
-   }catch(e){}
-
-   handleUser(finalText.trim());
-
-  }
-
- };
-
- r.onerror = event=>{
-
-  listening = false;
-
-  $("mic").classList.remove("on");
-
-  const error = event.error;
-
-  console.warn("Speech recognition:",error);
-
-  if(error === "aborted" && intentionalStop){
-   return;
-  }
-
-  if(error === "no-speech"){
-
-   status("صدایی دریافت نشد؛ دوباره گوش می‌دهم","live");
-
-   return;
-  }
-
-  if(error === "not-allowed" ||
-     error === "service-not-allowed"){
-
-   autoListen = false;
-
-   status("مجوز میکروفن یا سرویس تشخیص گفتار مسدود است","err");
-
-   return;
-  }
-
-  if(error === "network"){
-
-   status("ارتباط سرویس تشخیص گفتار قطع شد؛ تایپ کنید","err");
-
-   return;
-  }
-
-  if(error === "aborted"){
-   return;
-  }
-
-  status("خطای میکروفن: " + error,"err");
-
- };
-
- r.onend = ()=>{
-
-  listening = false;
-
-  $("mic").classList.remove("on");
-
- };
-
- return r;
-
-}
-
-// ======================================
-// START / STOP MICROPHONE
-// ======================================
-
-async function startMic(){
-
- if(!on || ended || busy || speaking || listening){
-  return;
- }
-
- if(!recognition){
-  recognition = initRecognition();
- }
-
- if(!recognition){
-
-  autoListen = false;
-
-  status("این مرورگر از تشخیص گفتار فارسی پشتیبانی نمی‌کند","err");
-
-  return;
- }
-
- try{
-
-  await requestMicPermission();
-
-  if(!on || ended || busy) return;
-
-  intentionalStop = false;
-
-  recognition.start();
-
- }catch(e){
-
-  console.error("Mic start:",e);
-
-  autoListen = false;
-
-  status("میکروفن شروع نشد: " + e.message,"err");
-
- }
-
-}
-
-function stopMic(){
-
- intentionalStop = true;
-
- listening = false;
-
- $("mic").classList.remove("on");
-
- try{
-
-  if(recognition){
-   recognition.abort();
-  }
-
- }catch(e){}
-
-}
-
-function scheduleListen(){
-
- clearTimeout(listenTimer);
-
- if(!on || ended || !autoListen || busy || speaking){
-  return;
- }
-
- listenTimer = setTimeout(()=>{
-
-  if(on && !ended && autoListen && !busy && !speaking){
-   startMic();
-  }
-
- },700);
-
-}
-
-// ======================================
-// HANDLE USER MESSAGE
-// ======================================
-
-async function handleUser(text){
-
- text = (text || "").trim();
-
- if(!text || !on || ended || busy){
-  return;
- }
-
- stopMic();
-
- busy = true;
-
- bubble("user",text);
-
- addTranscript("user",text);
-
- const previousHistory = history.slice();
-
- addHistory("user",text);
-
- // اگر شرح مشکل هنوز خالی است،
- // پیام مراجعه‌کننده در پرونده لحاظ می‌شود.
- if(!$("problem").value.trim()){
-  $("problem").value = transcript
-   .filter(x=>x.role === "user")
-   .map(x=>x.text)
-   .join("\n");
- }
-
- status("در حال دریافت پاسخ از Gemini…","live");
-
- try{
-
-  const data = await callApi({
-   action:"chat",
-   message:text,
-   history:previousHistory,
-   voice:VOICE,
-   include_audio:false
-  },CHAT_TIMEOUT);
-
-  if(ended) return;
-
-  const reply = data.reply || data.text;
-
-  if(!reply){
-   throw new Error("پاسخ متنی از Gemini دریافت نشد");
-  }
-
-  bubble("bot",reply);
-
-  addHistory("bot",reply);
-
-  addTranscript("bot",reply);
-
-  // ذخیره خودکار اطلاعات پس از پاسخ Gemini
-  // خطای ذخیره باعث قطع صدای منشی نمی‌شود.
-  autoSaveTicket();
-
-  // تولید جداگانه صدای پاسخ
-  await speakReply(reply);
-
- }catch(e){
-
-  console.error("Chat error:",e);
-
-  if(!ended){
-
-   bubble("bot","متأسفم، در ارتباط با سامانه مشکلی پیش آمد. لطفاً دوباره تلاش کنید.");
-
-   status("خطا: " + e.message,"err");
-
-  }
-
- }finally{
-
-  busy = false;
-
-  if(!ended){
-
-   if(autoListen){
-    scheduleListen();
-   }else if(!speaking){
-    status("آماده دریافت پیام بعدی","live");
-   }
-
-  }
-
- }
-
-}
-
-// ======================================
-// START CALL
-// ======================================
-
-$("go").onclick = async ()=>{
-
- if(on || busy) return;
-
- $("go").disabled = true;
-
- try{
-
-  await unlockAudio();
-
-  if(!SUPABASE_FUNCTION_URL){
-   throw new Error("آدرس Supabase تنظیم نشده است");
-  }
-
-  on = true;
-  ended = false;
-  autoListen = true;
-
-  $("gate").classList.add("hid");
-
-  measure();
-
-  try{
-
-   await requestMicPermission();
-
-   $("micInfo").textContent = "میکروفن آماده است";
-
-  }catch(e){
-
-   console.warn(e);
-
-   autoListen = false;
-
-   $("micInfo").textContent =
-    "میکروفن فعال نشد؛ می‌توانید تایپ کنید";
-
-  }
-
-  busy = true;
-
-  status("در حال برقراری تماس…","live");
-
-  const data = await callApi({
-   action:"greet",
-   voice:VOICE,
-   include_audio:false
-  });
-
-  if(ended) return;
-
-  const reply = data.reply || data.text ||
-   "سلام، وقت بخیر. منشی روابط عمومی هستم. بفرمایید چه مشکلی دارید؟";
-
-  bubble("bot",reply);
-
-  addHistory("bot",reply);
-
-  addTranscript("bot",reply);
-
-  await speakReply(reply);
-
- }catch(e){
-
-  console.error("Start call:",e);
-
-  status("خطا در برقراری تماس: " + e.message,"err");
-
-  autoListen = false;
-
- }finally{
-
-  busy = false;
-
-  $("go").disabled = false;
-
-  if(on && !ended){
-
-   if(autoListen){
-    scheduleListen();
-   }else{
-    status("برای صحبت، دکمه میکروفن را بزنید","live");
-   }
-
-  }
-
- }
-
-};
-
-// ======================================
-// MICROPHONE BUTTON
-// ======================================
-
-$("mic").onclick = async ()=>{
-
- if(!on || ended) return;
-
- if(autoListen || listening){
-
-  autoListen = false;
-
-  clearTimeout(listenTimer);
-
-  stopMic();
-
-  status("میکروفن متوقف شد","live");
-
- }else{
-
-  autoListen = true;
-
-  await startMic();
-
- }
-
-};
-
-// ======================================
-// REPEAT LAST AUDIO
-// ======================================
-
-$("rep").onclick = async ()=>{
-
- if(!lastAudioUrl || mute || ended || busy || speaking){
-  return;
- }
-
- try{
-
-  stopMic();
-
-  speaking = true;
-
-  audioEl.src = lastAudioUrl;
-
-  status("در حال تکرار پاسخ…","live");
-
-  const endedPromise = new Promise(resolve=>{
-   audioEl.onended = resolve;
-   audioEl.onerror = resolve;
-  });
-
-  await audioEl.play();
-
-  await endedPromise;
-
- }catch(e){
-
-  console.warn(e);
-
- }finally{
-
-  speaking = false;
-
-  if(autoListen) scheduleListen();
-
- }
-
-};
-
-// ======================================
-// MUTE
-// ======================================
-
-$("spk").onclick = ()=>{
-
- mute = !mute;
-
- $("spk").textContent = mute ? "🔇" : "🔊";
-
- if(mute){
-  stopAudio();
- }
-
- if(!mute && on && !ended){
-  status("صدای منشی فعال شد","live");
- }
-
-};
-
-// ======================================
-// TEXT MESSAGE
-// ======================================
-
-function sendText(){
-
- const input = $("txt");
-
- const value = input.value.trim();
-
- if(!value || busy || !on || ended) return;
-
- input.value = "";
-
- handleUser(value);
-
-}
-
-$("send").onclick = sendText;
-
-$("txt").addEventListener("keydown",event=>{
-
- if(event.key === "Enter"){
-
-  event.preventDefault();
-
-  sendText();
-
- }
-
-});
-
-// ======================================
-// MANUAL SAVE
-// ======================================
-
-$("saveTicket").onclick = async ()=>{
-
- await saveTicket(true);
-
-};
-
-// ======================================
-// NEW TICKET
-// ======================================
-
-$("newTicket").onclick = ()=>{
-
- if(busy || saving || listening || speaking){
-  alert("ابتدا تماس فعلی را متوقف کنید.");
-  return;
- }
-
- const confirmed = confirm(
-  "پرونده جدید ایجاد شود؟ اطلاعات تماس قبلی در این صفحه پاک می‌شود."
- );
-
- if(!confirmed) return;
-
- ticketId = createId();
-
- try{
-  sessionStorage.setItem("pr_ticket_id",ticketId);
- }catch(e){}
-
- history.length = 0;
- transcript.length = 0;
-
- $("first_name").value = "";
- $("last_name").value = "";
- $("phone").value = "";
- $("city").value = "";
- $("address").value = "";
- $("problem").value = "";
-
- lastBot = "";
- lastSavedSnapshot = "";
-
- $("chat").replaceChildren();
-
- saveState("پرونده جدید آماده است.");
-
- status("پرونده جدید ایجاد شد","live");
-
- measure();
-
-};
-
-// ======================================
-// HANG UP
-// ======================================
-
-$("hang").onclick = async ()=>{
-
- if(ended) return;
-
- autoListen = false;
-
- clearTimeout(listenTimer);
-
- stopMic();
-
- stopAudio();
-
- // پیش از پایان تماس، تلاش برای ذخیره نهایی
- if(transcript.length ||
-    $("phone").value.trim() ||
-    $("problem").value.trim()){
-
-  await saveTicket(false);
-
- }
-
- ended = true;
-
- on = false;
-
- busy = false;
-
- try{
-
-  if(chatController) chatController.abort();
-
-  if(ttsController) ttsController.abort();
-
-  if(saveController) saveController.abort();
-
- }catch(e){}
-
- if(lastAudioUrl){
-
-  URL.revokeObjectURL(lastAudioUrl);
-
-  lastAudioUrl = null;
-
- }
-
- status("تماس پایان یافت");
-
- try{
-
-  if(window.Bale &&
-     window.Bale.WebApp &&
-     window.Bale.WebApp.close){
-
-   window.Bale.WebApp.close();
-
-  }
-
- }catch(e){}
-
-};
-
-// ======================================
-// CLEANUP
-// ======================================
-
-window.addEventListener("resize",measure);
-
-window.addEventListener("pagehide",()=>{
-
- ended = true;
-
- autoListen = false;
-
- clearTimeout(listenTimer);
-
- stopMic();
-
- stopAudio();
-
- if(lastAudioUrl){
-  URL.revokeObjectURL(lastAudioUrl);
- }
-
-});
-
-try{
-
- if(window.Bale && window.Bale.WebApp){
-
-  window.Bale.WebApp.ready();
-
-  if(window.Bale.WebApp.expand){
-   window.Bale.WebApp.expand();
-  }
-
- }
-
-}catch(e){}
-
-measure();
-
 })();
 </script>
 </body>
