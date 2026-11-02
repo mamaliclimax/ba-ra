@@ -112,21 +112,90 @@ h1{font-size:1.05rem}
     }catch(e){ st("میکروفون مجاز نیست — تایپ کنید","err"); return false; }
   }
 
-  function speak(text){
-    return new Promise(resolve=>{
-      lastBot=String(text||"");
-      if(mute||!lastBot||!window.speechSynthesis){ resolve(); return; }
-      speaking=true; st("منشی صحبت می‌کند…","live");
+  // پخش واقعی صدا در WebView بله: <audio> + Google TTS (فارسی)
+  // speechSynthesis در Android WebView معمولاً کار نمی‌کند
+  const audioEl = new Audio();
+  audioEl.preload = "auto";
+  let audioUnlocked = false;
+
+  function chunkText(text, maxLen){
+    const words = String(text||"").trim().split(/\s+/);
+    const parts = [];
+    let buf = "";
+    for(const w of words){
+      if((buf + " " + w).trim().length > maxLen){
+        if(buf) parts.push(buf);
+        buf = w;
+      } else {
+        buf = (buf + " " + w).trim();
+      }
+    }
+    if(buf) parts.push(buf);
+    return parts.length ? parts : [String(text||"").slice(0, maxLen)];
+  }
+
+  function gttsUrl(part){
+    return "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=fa&q="
+      + encodeURIComponent(part);
+  }
+
+  function playViaAudio(text){
+    return new Promise(async (resolve) => {
+      const parts = chunkText(text, 140);
+      let i = 0;
+      const playNext = () => {
+        if(i >= parts.length){ resolve(true); return; }
+        const url = gttsUrl(parts[i++]);
+        try{ audioEl.pause(); }catch(e){}
+        audioEl.onended = playNext;
+        audioEl.onerror = () => { resolve(false); }; // fail → fallback
+        try{
+          audioEl.src = url;
+          const p = audioEl.play();
+          if(p && p.catch) p.catch(() => resolve(false));
+        }catch(e){ resolve(false); }
+      };
+      playNext();
+    });
+  }
+
+  function playViaSpeechSynth(text){
+    return new Promise((resolve) => {
+      if(!window.speechSynthesis){ resolve(false); return; }
       try{ speechSynthesis.cancel(); }catch(e){}
       pickVoice();
-      const u=new SpeechSynthesisUtterance(lastBot);
-      u.lang="fa-IR"; u.rate=0.95; u.pitch=1.25; u.volume=1;
-      if(voice) u.voice=voice;
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "fa-IR";
+      u.rate = 0.95;
+      u.pitch = 1.3; // زنانه‌تر
+      u.volume = 1;
+      if(voice) u.voice = voice;
       let done=false;
-      const end=()=>{ if(done)return; done=true; speaking=false; if(!ended) st("آماده","live"); resolve(); };
-      u.onend=end; u.onerror=end;
-      try{ speechSynthesis.speak(u); }catch(e){ end(); }
-      setTimeout(end, Math.min(22000, 1600+lastBot.length*85));
+      const end=()=>{ if(done)return; done=true; resolve(true); };
+      u.onend=end; u.onerror=()=>{ if(done)return; done=true; resolve(false); };
+      try{ speechSynthesis.speak(u); }catch(e){ resolve(false); return; }
+      setTimeout(end, Math.min(20000, 1500+text.length*80));
+    });
+  }
+
+  function speak(text){
+    return new Promise(async (resolve) => {
+      lastBot = String(text||"");
+      if(mute || !lastBot){ resolve(); return; }
+      speaking = true;
+      st("منشی صحبت می‌کند…","live");
+      try{ audioEl.pause(); }catch(e){}
+      try{ speechSynthesis && speechSynthesis.cancel(); }catch(e){}
+
+      // ۱) اول <audio> + Google TTS فارسی (کار در WebView)
+      let ok = await playViaAudio(lastBot);
+      // ۲) اگر نشد، speechSynthesis با pitch زنانه
+      if(!ok) ok = await playViaSpeechSynth(lastBot);
+
+      speaking = false;
+      if(!ok) st("صدا پخش نشد — متن را بخوانید یا ▶️ را دوباره بزنید","err");
+      else if(!ended) st("آماده — تایپ یا میکروفون","live");
+      resolve();
     });
   }
 
@@ -275,7 +344,14 @@ h1{font-size:1.05rem}
   }
 
   $("go").onclick=async ()=>{
-    await unlock(); await micPerm(); pickVoice();
+    await unlock();
+    // آنلاک audio برای WebView (باید داخل gesture کاربر باشد)
+    try{
+      audioEl.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+      await audioEl.play();
+      audioUnlocked = true;
+    }catch(e){}
+    await micPerm(); pickVoice();
     $("gate").classList.add("hid"); on=true; measure();
     step="problem";
     await say("سلام، وقت بخیر. من منشی روابط عمومی هستم. بفرمایید مشکل یا درخواست‌تان چیست؟");
