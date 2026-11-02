@@ -6,160 +6,297 @@
 <title>تماس زنده با منشی</title>
 <script src="https://tapi.bale.ai/miniapp.js"></script>
 <style>
-:root{--bg:#0b1220;--card:#151d2e;--text:#f2f5ff;--muted:#9aa6c2;--accent:#3ee0a3;--danger:#ff4d6d;--line:rgba(255,255,255,.1)}
+:root{
+  --bg:#0b1220;--card:#151d2e;--text:#f2f5ff;--muted:#9aa6c2;
+  --accent:#3ee0a3;--danger:#ff4d6d;--line:rgba(255,255,255,.1);
+  --ctrl-h:150px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:Tahoma,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100%}
-.top{padding:14px;text-align:center}
-.badge{display:inline-block;padding:4px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px;margin-bottom:6px}
-h1{font-size:1.15rem}
-#status{color:var(--muted);font-size:.85rem;min-height:1.2em;margin-top:4px}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:Tahoma,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;height:100%;
+}
+.top{padding:10px 12px 4px;text-align:center;flex-shrink:0}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:11px;margin-bottom:4px}
+h1{font-size:1.05rem;font-weight:700}
+#status{color:var(--muted);font-size:.8rem;min-height:1.15em;margin-top:2px}
 #status.live{color:var(--accent)}#status.err{color:var(--danger)}
-#chat{flex:1;overflow-y:auto;padding:10px 12px 200px;display:flex;flex-direction:column;gap:8px}
-.b{max-width:92%;padding:10px 12px;border-radius:14px;line-height:1.7;font-size:.92rem;white-space:pre-wrap}
+
+#chat{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:8px 12px;
+  padding-bottom:calc(var(--ctrl-h) + 20px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;gap:8px;min-height:0;
+}
+.b{max-width:90%;padding:8px 11px;border-radius:14px;line-height:1.7;font-size:.9rem;white-space:pre-wrap;word-break:break-word}
 .bot{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
 .user{align-self:flex-end;background:#2a6bff}
-.meta{font-size:.7rem;opacity:.65;margin-bottom:3px}
-.ctrl{position:fixed;bottom:0;left:0;right:0;padding:10px 12px 16px;background:#0b1220;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;align-items:center}
-.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--text);border-radius:999px;padding:10px 14px;font-size:14px;cursor:pointer}
-.btn.main{background:var(--accent);color:#042214;font-weight:800;border:none;padding:12px 22px}
-.btn.hang{background:var(--danger);border:none}
-.btn.mic.on{outline:3px solid rgba(62,224,163,.35)}
-.row2{display:flex;width:100%;max-width:440px;gap:8px}
-.row2 input{flex:1;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);padding:10px}
-.row2 button{border:none;border-radius:12px;background:var(--accent);color:#042214;font-weight:700;padding:0 14px}
-.hint{font-size:12px;color:var(--muted);text-align:center}
-#gate{position:fixed;inset:0;background:rgba(5,10,20,.94);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.meta{font-size:.65rem;opacity:.65;margin-bottom:2px}
+
+.ctrl{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;
+  padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));
+  background:rgba(11,18,32,.97);
+  border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:6px;align-items:center;
+}
+.row{display:flex;gap:8px;align-items:center;justify-content:center}
+.btn{
+  border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--text);
+  border-radius:999px;height:36px;min-width:36px;padding:0 10px;font-size:13px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+}
+.btn.main{background:var(--accent);color:#042214;font-weight:800;border:none;height:44px;padding:0 20px;font-size:15px}
+.btn.hang{background:var(--danger);border:none;color:#fff;width:42px;height:42px;font-size:15px}
+.btn.mic.on{outline:2px solid rgba(62,224,163,.45);background:rgba(62,224,163,.15)}
+.row2{display:flex;width:100%;max-width:420px;gap:6px}
+.row2 input{
+  flex:1;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+  color:var(--text);padding:9px 10px;font-size:.88rem;outline:none;
+}
+.row2 button{border:none;border-radius:12px;background:var(--accent);color:#042214;font-weight:700;padding:0 12px;font-size:13px}
+.hint{font-size:11px;color:var(--muted);text-align:center;line-height:1.4;max-width:420px}
+
+#gate{
+  position:fixed;inset:0;background:rgba(5,10,20,.96);z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;
+}
 #gate.hid{display:none}
-#gate p{color:var(--muted);max-width:300px;line-height:1.7;font-size:.9rem}
+#gate p{color:var(--muted);max-width:300px;line-height:1.7;font-size:.88rem}
 </style>
 </head>
 <body>
 <div id="gate">
   <div class="badge">تماس زنده</div>
   <h2>منشی روابط عمومی</h2>
-  <p>برای شروع تماس این دکمه را بزنید تا صدا و میکروفون فعال شود.</p>
-  <button class="btn main" id="go">📞 شروع تماس زنده</button>
+  <p>برای شنیدن صدا و فعال‌شدن میکروفون، دکمه زیر را بزنید.</p>
+  <button class="btn main" id="go">📞 شروع تماس</button>
 </div>
+
 <div class="top">
   <div class="badge">● تماس زنده</div>
   <h1>منشی روابط عمومی</h1>
   <div id="status">منتظر شروع…</div>
 </div>
 <div id="chat"></div>
-<div class="ctrl">
+<div class="ctrl" id="ctrl">
   <div class="row">
-    <button class="btn" id="spk">🔊</button>
-    <button class="btn hang" id="hang">قطع</button>
-    <button class="btn mic" id="mic">🎤 میکروفون</button>
-    <button class="btn" id="rep">▶️ پخش دوباره</button>
+    <button class="btn" id="spk" title="بلندگو">🔊</button>
+    <button class="btn hang" id="hang" title="قطع">☎</button>
+    <button class="btn mic" id="mic" title="میکروفون">🎤</button>
+    <button class="btn" id="rep" title="پخش دوباره">▶️</button>
   </div>
   <div class="row2">
-    <input id="txt" placeholder="اینجا بنویسید…" />
+    <input id="txt" placeholder="اینجا بنویسید…" autocomplete="off" />
     <button id="send">ارسال</button>
   </div>
-  <div class="hint" id="hint">بعد از شروع، میکروفون یا تایپ</div>
+  <div class="hint" id="hint">تایپ همیشه کار می‌کند. برای صدا بعد از شروع، ▶️ را بزنید.</div>
 </div>
+
 <script>
 (function(){
   let on=false, ended=false, listening=false, speaking=false, mute=false;
   let lastBot="", turns=0, rec=null, stream=null, voice=null;
-  const data={first_name:"",last_name:"",phone:"",problem:""};
+  const data={first_name:"", last_name:"", phone:"", problem:""};
   const $ = id => document.getElementById(id);
+
+  function measure(){
+    const h = ($("ctrl") && $("ctrl").offsetHeight) || 150;
+    document.documentElement.style.setProperty("--ctrl-h", h+"px");
+    const c=$("chat"); if(c) c.scrollTop = c.scrollHeight;
+  }
   function st(t,c){ const e=$("status"); e.textContent=t; e.className=c||""; }
   function bubble(role,text){
     const d=document.createElement("div");
     d.className="b "+(role==="bot"?"bot":"user");
-    d.innerHTML='<div class="meta">'+(role==="bot"?"منشی":"شما")+"</div>"+String(text||"").replace(/</g,"&lt;");
-    $("chat").appendChild(d); $("chat").scrollTop=1e9;
+    d.innerHTML='<div class="meta">'+(role==="bot"?"منشی":"شما")+"</div>"+String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    $("chat").appendChild(d);
+    measure();
   }
+
   function pickVoice(){
     try{
-      const vs=speechSynthesis.getVoices()||[];
-      const score=v=>{
-        let s=0; const n=(v.name||"")+" "+(v.lang||"");
-        if(/fa/i.test(v.lang)) s+=40;
-        if(/female|woman|girl|dilara|sara|zira|susan|samantha|helena|moira|veena|karen/i.test(n)) s+=35;
-        if(/male|man|david|mark|farid|ravi|daniel/i.test(n)) s-=30;
+      const vs = speechSynthesis.getVoices() || [];
+      if(!vs.length){ voice=null; return; }
+      const score = v => {
+        let s = 0;
+        const n = ((v.name||"") + " " + (v.lang||"")).toLowerCase();
+        if(/fa-ir/.test(v.lang||"")) s += 60;
+        else if(/fa/.test(v.lang||"")) s += 45;
+        else if(/persian|farsi|iran/.test(n)) s += 40;
+        // زنانه
+        if(/female|woman|girl|zira|susan|samantha|karen|moira|tessa|fiona|veena|helena|dilara|sara|farah|nicky|hazel|catherine/.test(n)) s += 50;
+        // مردانه جریمه
+        if(/male|man|david|mark|george|thomas|daniel|ravi|farid|alex|james|john/.test(n)) s -= 40;
         return s;
       };
-      voice=vs.slice().sort((a,b)=>score(b)-score(a))[0]||null;
+      voice = vs.slice().sort((a,b)=>score(b)-score(a))[0] || null;
     }catch(e){ voice=null; }
   }
+
   async function unlock(){
     try{
-      const AC=window.AudioContext||window.webkitAudioContext;
-      if(AC){ const c=new AC(); if(c.state==="suspended") await c.resume(); }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(AC){ const ctx=new AC(); if(ctx.state==="suspended") await ctx.resume(); }
     }catch(e){}
-    try{ await new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=").play(); }catch(e){}
+    try{
+      await new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=").play();
+    }catch(e){}
   }
-  async function micOn(){
+
+  async function micPerm(){
     try{
       if(stream) return true;
-      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) return true;
-      stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       return true;
-    }catch(e){ st("مجوز میکروفون نیست — تایپ کنید","err"); return false; }
+    }catch(e){
+      st("میکروفون مجاز نیست — تایپ کنید","err");
+      return false;
+    }
   }
+
   function speak(text){
-    return new Promise(res=>{
-      lastBot=String(text||"");
-      if(mute||!lastBot||!window.speechSynthesis){ res(); return; }
-      speaking=true; st("منشی صحبت می‌کند…","live");
+    return new Promise(resolve=>{
+      lastBot = String(text||"");
+      if(mute || !lastBot){ resolve(); return; }
+      if(!window.speechSynthesis){
+        st("صدا در این محیط پشتیبانی نمی‌شود — متن را بخوانید","err");
+        resolve(); return;
+      }
+      speaking = true;
+      st("منشی صحبت می‌کند…","live");
       try{ speechSynthesis.cancel(); }catch(e){}
       pickVoice();
-      const u=new SpeechSynthesisUtterance(lastBot);
-      u.lang="fa-IR"; u.rate=0.95; u.pitch=1.2; u.volume=1;
-      if(voice) u.voice=voice;
-      const done=()=>{ speaking=false; if(!ended) st("آماده","live"); res(); };
-      u.onend=done; u.onerror=done;
-      try{ speechSynthesis.speak(u); }catch(e){ done(); }
-      setTimeout(done, Math.min(20000, 1500+lastBot.length*80));
+
+      const u = new SpeechSynthesisUtterance(lastBot);
+      u.lang = "fa-IR";
+      u.rate = 0.95;
+      u.pitch = 1.25; // کمی زیر‌تر → حس زنانه حتی با صدای خنثی
+      u.volume = 1;
+      if(voice) u.voice = voice;
+
+      let done=false;
+      const end=()=>{ if(done) return; done=true; speaking=false; if(!ended) st("آماده — میکروفون یا تایپ","live"); resolve(); };
+      u.onend = end;
+      u.onerror = end;
+      try{ speechSynthesis.speak(u); }catch(e){ end(); }
+      setTimeout(end, Math.min(22000, 1600 + lastBot.length * 85));
     });
   }
-  function extract(t){
-    const lat=t.replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c));
-    const m=lat.match(/(?:\+98|0)?9\d{9}/);
-    if(m){ let d=m[0].replace(/\D/g,""); if(d.startsWith("0")) d="+98"+d.slice(1); else if(d.length===10) d="+98"+d; else if(d.startsWith("98")) d="+"+d; data.phone=d; }
-    let mm=t.match(/من\s+([آ-یء‌]{2,15})\s+هستم/)||t.match(/(?:اسمم|نامم)\s+([آ-یء‌]{2,15})/);
-    if(mm) data.first_name=mm[1];
-    if(!data.first_name&&/^[آ-یء‌]{2,15}$/.test(t)) data.first_name=t;
-    mm=t.match(/(?:فامیلم|نام خانوادگیم)\s+([آ-یء‌]{2,20})/);
-    if(mm) data.last_name=mm[1];
-    if(t.length>=12&&!/^(سلام|درود)/.test(t)) data.problem=t.slice(0,2000);
+
+  function toEnDigits(s){
+    return String(s||"").replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c))
+      .replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c));
   }
-  function reply(t){
-    turns++; extract(t);
-    const miss=[];
-    if(!data.first_name) miss.push("نام");
-    if(!data.phone) miss.push("شماره");
-    if(!data.problem||data.problem.length<8) miss.push("موضوع");
-    if(/^(تمام|پایان|مرسی|ممنون)/.test(t.trim())){
-      if(!miss.length){ try{ const k="pr_voice_tickets_v2"; const a=JSON.parse(localStorage.getItem(k)||"[]"); a.push({...data,at:new Date().toISOString()}); localStorage.setItem(k,JSON.stringify(a.slice(-200))); }catch(e){} return {r:"درخواست ثبت شد. روز خوبی داشته باشید.",d:1}; }
-      return {r:"لطفاً "+miss.join(" و ")+" را هم بفرمایید.",d:0};
+
+  function extract(raw){
+    const t = String(raw||"").trim();
+    const lat = toEnDigits(t);
+
+    // تلفن
+    const pm = lat.match(/(?:\+98|0098|98|0)?9\d{9}/);
+    if(pm){
+      let d = pm[0].replace(/\D/g,"");
+      if(d.startsWith("98") && d.length>=12) d = "+" + d.slice(0,12);
+      else if(d.startsWith("0") && d.length>=11) d = "+98" + d.slice(1,11);
+      else if(d.length===10 && d.startsWith("9")) d = "+98" + d;
+      data.phone = d;
     }
-    if(turns===1) return {r: data.first_name?(data.first_name+" عزیز، بفرمایید چه کمکی می‌توانم بکنم؟"):"خوشحالم از تماس. نام‌تان را بگویید و موضوع را راحت بفرمایید.",d:0};
-    if(!miss.length) return {r:"خلاصه ثبت شد. اگر تمام است بگویید تمام.",d:0};
-    if(miss.indexOf("شماره")>=0&&!data.phone) return {r:"یک شماره تماس هم بفرمایید لطفاً.",d:0};
-    if(miss.indexOf("نام")>=0&&!data.first_name) return {r:"نام‌تان را هم بفرمایید.",d:0};
-    return {r:"متوجه شدم. ادامه بدهید یا جزئیات بیشتری بگویید.",d:0};
+
+    // نام کامل چندکلمه‌ای (مثل محمدعلی حسین زاده)
+    if(!data.first_name){
+      let m = t.match(/(?:اسمم|اسم من|نامم|نام من)\s+(.+)/);
+      if(m) data.first_name = m[1].trim().slice(0,40);
+      else {
+        m = t.match(/من\s+([آ-یء‌\s]{2,40})\s+هستم/);
+        if(m) data.first_name = m[1].trim();
+        else if(/^[آ-یء‌\s]{2,40}$/.test(t) && !/\d/.test(lat) && t.split(/\s+/).length <= 5){
+          data.first_name = t.trim();
+        }
+      }
+    }
+
+    // فامیل جدا
+    if(!data.last_name){
+      const m = t.match(/(?:فامیلم|نام خانوادگیم|نام‌خانوادگیم)\s+([آ-یء‌\s]{2,30})/);
+      if(m) data.last_name = m[1].trim();
+    }
+
+    // موضوع / مشکل — نه اگر فقط نام یا فقط شماره بود
+    const onlyPhone = /^(?:\+98|0)?9\d{9}$/.test(lat.replace(/\s/g,""));
+    const onlyName = /^[آ-یء‌\s]{2,40}$/.test(t) && !/\d/.test(lat);
+    if(t.length >= 10 && !onlyPhone && !onlyName && !/^(سلام|درود|خوبی|صبح|عصر)/.test(t)){
+      if(!data.problem || t.length >= (data.problem||"").length) data.problem = t.slice(0,2000);
+    }
   }
+
+  function missing(){
+    const m=[];
+    if(!data.first_name) m.push("نام");
+    if(!data.phone) m.push("شماره تماس");
+    if(!data.problem || data.problem.length < 8) m.push("موضوع");
+    return m;
+  }
+
+  function reply(t){
+    turns++;
+    extract(t);
+    const miss = missing();
+
+    if(/^(تمام|پایان|خداحافظ|بسه|مرسی|ممنون)/.test(t.trim())){
+      if(!miss.length){
+        try{
+          const k="pr_voice_tickets_v2";
+          const a=JSON.parse(localStorage.getItem(k)||"[]");
+          a.push({...data, at:new Date().toISOString()});
+          localStorage.setItem(k, JSON.stringify(a.slice(-200)));
+        }catch(e){}
+        return {r:"خیلی ممنون. درخواست‌تان ثبت شد. روز خوبی داشته باشید.", d:1};
+      }
+      return {r:"قبل از بستن، لطفاً "+miss.join(" و ")+" را هم بفرمایید.", d:0};
+    }
+
+    if(turns===1){
+      if(data.first_name && data.phone)
+        return {r: data.first_name.split(/\s+/)[0]+" عزیز، موضوع‌تان را بفرمایید.", d:0};
+      if(data.first_name)
+        return {r: data.first_name.split(/\s+/)[0]+" عزیز، برای پیگیری یک شماره تماس هم بفرمایید.", d:0};
+      return {r:"خوشحالم از تماس. لطفاً نام‌تان را بفرمایید.", d:0};
+    }
+
+    // فقط همان فیلد ناقص را بپرس — نه همه را از اول
+    if(miss.indexOf("نام")>=0) return {r:"نام‌تان را هم بفرمایید.", d:0};
+    if(miss.indexOf("شماره تماس")>=0) return {r:"یک شماره تماس هم بفرمایید لطفاً.", d:0};
+    if(miss.indexOf("موضوع")>=0) return {r:"موضوع یا درخواست‌تان را کمی توضیح دهید.", d:0};
+
+    return {r:"متوجه شدم. اگر مورد دیگری نیست بگویید تمام.", d:0};
+  }
+
   async function onUser(t){
-    t=(t||"").trim(); if(!t||!on||ended||speaking) return;
-    stopMic(); bubble("user",t);
-    const x=reply(t); bubble("bot",x.r); await speak(x.r);
+    t = (t||"").trim();
+    if(!t || !on || ended) return;
+    stopMic();
+    bubble("user", t);
+    const x = reply(t);
+    bubble("bot", x.r);
+    await speak(x.r);
     if(x.d){ ended=true; st("پایان تماس","live"); }
   }
+
   function initRec(){
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR) return null;
-    const r=new SR(); r.lang="fa-IR"; r.continuous=false; r.interimResults=false;
+    const r = new SR();
+    r.lang="fa-IR"; r.continuous=false; r.interimResults=false;
     r.onstart=()=>{ listening=true; $("mic").classList.add("on"); st("گوش می‌دهم…","live"); };
     r.onresult=ev=>{
-      let t=""; for(let i=ev.resultIndex;i<ev.results.length;i++) if(ev.results[i].isFinal) t+=ev.results[i][0].transcript;
-      listening=false; $("mic").classList.remove("on"); t=(t||"").trim();
-      if(t) onUser(t); else st("چیزی نشنیدم","err");
+      let t="";
+      for(let i=ev.resultIndex;i<ev.results.length;i++) if(ev.results[i].isFinal) t+=ev.results[i][0].transcript;
+      listening=false; $("mic").classList.remove("on");
+      t=(t||"").trim();
+      if(t) onUser(t); else st("چیزی نشنیدم — تایپ کنید","err");
     };
     r.onerror=()=>{ listening=false; $("mic").classList.remove("on"); st("میکروفون خطا — تایپ کنید","err"); };
     r.onend=()=>{ listening=false; $("mic").classList.remove("on"); };
@@ -168,27 +305,46 @@ h1{font-size:1.15rem}
   function stopMic(){ listening=false; $("mic").classList.remove("on"); try{ if(rec) rec.abort(); }catch(e){} }
   async function startMic(){
     if(!on||ended||speaking||listening) return;
-    if(!(await micOn())) return;
+    if(!(await micPerm())) return;
     if(!rec) rec=initRec();
     if(!rec){ st("تشخیص گفتار نیست — تایپ کنید","err"); return; }
     try{ rec.start(); }catch(e){ st("میکروفون شروع نشد — تایپ کنید","err"); }
   }
-  $("go").onclick=async ()=>{
-    await unlock(); await micOn(); pickVoice();
-    $("gate").classList.add("hid"); on=true;
-    const hello="سلام، وقت بخیر. من منشی روابط عمومی هستم. راحت بفرمایید چه کمکی از دستم برمی‌آید.";
-    bubble("bot", hello); await speak(hello);
+
+  $("go").onclick = async ()=>{
+    await unlock();
+    await micPerm();
+    pickVoice();
+    $("gate").classList.add("hid");
+    on = true;
+    measure();
+    const hello = "سلام، وقت بخیر. من منشی روابط عمومی هستم. لطفاً نام خود را بفرمایید.";
+    bubble("bot", hello);
+    await speak(hello);
     st("آماده — میکروفون یا تایپ","live");
-    $("hint").textContent="اگر صدا نیامد «پخش دوباره» را بزنید. تایپ همیشه کار می‌کند.";
   };
-  $("mic").onclick=()=>{ if(listening) stopMic(); else startMic(); };
-  $("rep").onclick=()=>{ if(lastBot) speak(lastBot); };
-  $("spk").onclick=()=>{ mute=!mute; $("spk").textContent=mute?"🔇":"🔊"; if(mute) try{ speechSynthesis.cancel(); }catch(e){} };
-  $("hang").onclick=()=>{ ended=true; stopMic(); try{ speechSynthesis.cancel(); }catch(e){} st("قطع شد"); try{ Bale.WebApp.close(); }catch(e){} };
-  $("send").onclick=()=>{ const v=$("txt").value; $("txt").value=""; onUser(v); };
-  $("txt").onkeydown=e=>{ if(e.key==="Enter"){ const v=$("txt").value; $("txt").value=""; onUser(v); } };
-  try{ if(window.Bale&&Bale.WebApp){ Bale.WebApp.ready(); try{ Bale.WebApp.expand(); }catch(e){} } }catch(e){}
-  try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+
+  $("mic").onclick = ()=>{ if(listening) stopMic(); else startMic(); };
+  $("rep").onclick = ()=>{ if(lastBot){ unlock(); speak(lastBot); } };
+  $("spk").onclick = ()=>{ mute=!mute; $("spk").textContent = mute ? "🔇" : "🔊"; if(mute) try{ speechSynthesis.cancel(); }catch(e){} };
+  $("hang").onclick = ()=>{
+    ended=true; stopMic();
+    try{ speechSynthesis.cancel(); }catch(e){}
+    st("قطع شد");
+    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
+  };
+  $("send").onclick = ()=>{ const v=$("txt").value; $("txt").value=""; onUser(v); };
+  $("txt").addEventListener("keydown", e=>{ if(e.key==="Enter"){ const v=$("txt").value; $("txt").value=""; onUser(v); }});
+
+  window.addEventListener("resize", measure);
+  try{
+    if(window.Bale && Bale.WebApp){
+      Bale.WebApp.ready();
+      try{ Bale.WebApp.expand(); }catch(e){}
+    }
+  }catch(e){}
+  try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+  measure();
 })();
 </script>
 </body>
