@@ -29,7 +29,7 @@ body{
  flex-direction:column;
  height:100dvh;
 }
-button,input{font-family:inherit}
+button,input,textarea{font-family:inherit}
 .top{
  padding:10px 12px 5px;
  text-align:center;
@@ -53,6 +53,7 @@ h1{font-size:1.05rem}
 }
 #status.live{color:var(--accent)}
 #status.err{color:var(--danger)}
+
 #chat{
  flex:1;
  overflow-y:auto;
@@ -87,6 +88,7 @@ h1{font-size:1.05rem}
  opacity:.65;
  margin-bottom:3px;
 }
+
 .ctrl{
  position:fixed;
  bottom:0;
@@ -100,6 +102,8 @@ h1{font-size:1.05rem}
  flex-direction:column;
  gap:8px;
  align-items:center;
+ max-height:72dvh;
+ overflow-y:auto;
 }
 .row{
  display:flex;
@@ -140,6 +144,7 @@ h1{font-size:1.05rem}
  outline:3px solid rgba(62,224,163,.2);
 }
 .btn:disabled{opacity:.4}
+
 .row2{
  display:flex;
  width:100%;
@@ -171,6 +176,81 @@ h1{font-size:1.05rem}
  color:var(--muted);
  text-align:center;
 }
+
+/* اطلاعات پرونده */
+.ticket-panel{
+ width:100%;
+ max-width:440px;
+ border:1px solid var(--line);
+ border-radius:12px;
+ background:rgba(255,255,255,.035);
+}
+.ticket-panel summary{
+ cursor:pointer;
+ padding:10px 12px;
+ font-size:13px;
+ color:var(--accent);
+ font-weight:bold;
+}
+.ticket-fields{
+ padding:4px 10px 12px;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:8px;
+}
+.ticket-fields input,
+.ticket-fields textarea{
+ width:100%;
+ min-width:0;
+ border-radius:9px;
+ border:1px solid var(--line);
+ background:rgba(255,255,255,.06);
+ color:var(--text);
+ padding:10px;
+ font-size:14px;
+ outline:none;
+}
+.ticket-fields input::placeholder,
+.ticket-fields textarea::placeholder{
+ color:var(--muted);
+}
+.ticket-fields .full{
+ grid-column:1/-1;
+}
+.ticket-fields textarea{
+ resize:vertical;
+ min-height:65px;
+ line-height:1.7;
+}
+.ticket-actions{
+ grid-column:1/-1;
+ display:flex;
+ gap:8px;
+}
+.ticket-actions button{
+ flex:1;
+ border:0;
+ border-radius:9px;
+ padding:11px 5px;
+ background:var(--accent);
+ color:#042214;
+ font-weight:bold;
+ font-size:12px;
+}
+.ticket-actions button.secondary{
+ background:rgba(255,255,255,.1);
+ color:var(--text);
+}
+#saveState{
+ grid-column:1/-1;
+ text-align:center;
+ color:var(--muted);
+ font-size:11px;
+ min-height:17px;
+}
+#saveState.ok{color:var(--accent)}
+#saveState.err{color:var(--danger)}
+
 #gate{
  position:fixed;
  inset:0;
@@ -221,6 +301,37 @@ h1{font-size:1.05rem}
 
 <div class="ctrl" id="ctrl">
 
+ <details class="ticket-panel" id="ticketPanel">
+  <summary>📋 اطلاعات مراجعه‌کننده و پرونده درخواست</summary>
+
+  <div class="ticket-fields">
+
+   <input id="first_name" placeholder="نام">
+
+   <input id="last_name" placeholder="نام خانوادگی">
+
+   <input id="phone" placeholder="شماره تماس" inputmode="tel">
+
+   <input id="city" placeholder="شهر">
+
+   <textarea class="full" id="address"
+    placeholder="آدرس دقیق محل وقوع مشکل"></textarea>
+
+   <textarea class="full" id="problem"
+    placeholder="شرح مشکل یا درخواست"></textarea>
+
+   <div class="ticket-actions">
+    <button id="saveTicket">ثبت / به‌روزرسانی پرونده</button>
+    <button class="secondary" id="newTicket" type="button">
+     تماس جدید
+    </button>
+   </div>
+
+   <div id="saveState">اطلاعات پس از دریافت پاسخ منشی ذخیره می‌شوند.</div>
+
+  </div>
+ </details>
+
  <div class="row">
   <button class="btn" id="spk" title="قطع صدا">🔊</button>
   <button class="btn hang" id="hang" title="پایان تماس">☎</button>
@@ -236,7 +347,7 @@ h1{font-size:1.05rem}
  </div>
 
  <div class="hint" id="hint">
-  میکروفن هوشمند · پاسخ سریع Gemini
+  میکروفن هوشمند · پاسخ سریع Gemini · ذخیره درخواست
  </div>
 </div>
 
@@ -252,14 +363,16 @@ h1{font-size:1.05rem}
 const SUPABASE_FUNCTION_URL =
 "https://bfzreeyyhmygpnfzczwn.supabase.co/functions/v1/pr-live";
 
-// کلید عمومی anon پروژه Supabase را اینجا قرار بده.
-// هرگز service_role key را در HTML قرار نده.
 const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
 const VOICE = "Kore";
+
 const MAX_HISTORY = 8;
+const MAX_TRANSCRIPT = 100;
+
 const CHAT_TIMEOUT = 18000;
 const TTS_TIMEOUT = 25000;
+const SAVE_TIMEOUT = 18000;
 
 // ======================================
 // STATE
@@ -270,6 +383,7 @@ let ended = false;
 let listening = false;
 let speaking = false;
 let busy = false;
+let saving = false;
 let mute = false;
 let autoListen = false;
 let micGranted = false;
@@ -282,34 +396,78 @@ let listenTimer = null;
 
 let chatController = null;
 let ttsController = null;
+let saveController = null;
+
+let lastSavedSnapshot = "";
 
 const history = [];
+const transcript = [];
 
 const audioEl = new Audio();
 audioEl.preload = "auto";
 
 const $ = id => document.getElementById(id);
 
+// شناسه یکتای تماس
+function createId(){
+
+ if(window.crypto && crypto.randomUUID){
+  return crypto.randomUUID();
+ }
+
+ return "pr_" + Date.now() + "_" +
+  Math.random().toString(36).slice(2,12);
+
+}
+
+function getTicketId(){
+
+ try{
+
+  let id = sessionStorage.getItem("pr_ticket_id");
+
+  if(!id){
+   id = createId();
+   sessionStorage.setItem("pr_ticket_id",id);
+  }
+
+  return id;
+
+ }catch(e){
+
+  return createId();
+
+ }
+
+}
+
+let ticketId = getTicketId();
+
 // ======================================
 // UI
 // ======================================
 
-function status(text, cls=""){
+function status(text,cls=""){
  $("status").textContent = text;
  $("status").className = cls;
 }
 
+function saveState(text,cls=""){
+ $("saveState").textContent = text;
+ $("saveState").className = cls;
+}
+
 function measure(){
+
  const h = $("ctrl").offsetHeight || 140;
 
  document.documentElement.style
-  .setProperty("--ctrl-h", h+"px");
-
- const chat = $("chat");
+  .setProperty("--ctrl-h",h+"px");
 
  requestAnimationFrame(()=>{
-  chat.scrollTop = chat.scrollHeight;
+  $("chat").scrollTop = $("chat").scrollHeight;
  });
+
 }
 
 function bubble(role,text){
@@ -328,7 +486,6 @@ function bubble(role,text){
 
  const content = document.createElement("div");
 
- // نمایش امن؛ بدون innerHTML
  content.textContent = String(text || "");
 
  d.appendChild(meta);
@@ -337,18 +494,86 @@ function bubble(role,text){
  $("chat").appendChild(d);
 
  measure();
+
 }
 
 function addHistory(role,text){
 
- history.push({
-  role,
-  text
- });
+ history.push({role,text});
 
  while(history.length > MAX_HISTORY){
   history.shift();
  }
+
+}
+
+function addTranscript(role,text){
+
+ transcript.push({
+  role,
+  text:String(text || ""),
+  time:new Date().toISOString()
+ });
+
+ while(transcript.length > MAX_TRANSCRIPT){
+  transcript.shift();
+ }
+
+}
+
+// ======================================
+// FORM DATA
+// ======================================
+
+function getTicketData(){
+
+ const users = transcript
+  .filter(x=>x.role === "user")
+  .map(x=>x.text);
+
+ const assistants = transcript
+  .filter(x=>x.role === "bot")
+  .map(x=>x.text);
+
+ const manualProblem = $("problem").value.trim();
+
+ const problem = manualProblem || users.join("\n");
+
+ const conversationSummary = transcript
+  .map(x=>{
+   return (x.role === "user" ? "مراجعه‌کننده: " : "منشی: ") +
+    x.text;
+  })
+  .join("\n");
+
+ return {
+  id:ticketId,
+  chat_id:ticketId,
+
+  first_name:$("first_name").value.trim(),
+  last_name:$("last_name").value.trim(),
+  phone:$("phone").value.trim(),
+
+  city:$("city").value.trim(),
+  address:$("address").value.trim(),
+
+  problem,
+  conversation_summary:conversationSummary,
+
+  ai_reply:assistants.length
+   ? assistants[assistants.length-1]
+   : "",
+
+  status:"open",
+  channel:"live_assistant"
+ };
+
+}
+
+function makeSnapshot(ticket){
+
+ return JSON.stringify(ticket);
+
 }
 
 // ======================================
@@ -400,6 +625,8 @@ async function callApi(payload,timeout=CHAT_TIMEOUT){
   chatController = controller;
  }else if(payload.action === "speak"){
   ttsController = controller;
+ }else if(payload.action === "save_ticket"){
+  saveController = controller;
  }
 
  const timer = setTimeout(()=>{
@@ -439,6 +666,11 @@ async function callApi(payload,timeout=CHAT_TIMEOUT){
     data.message ||
     "HTTP " + response.status
    );
+
+  }
+
+  if(data.success === false){
+   throw new Error(data.error || "عملیات ناموفق بود");
   }
 
   return data;
@@ -463,6 +695,97 @@ async function callApi(payload,timeout=CHAT_TIMEOUT){
    ttsController = null;
   }
 
+  if(saveController === controller){
+   saveController = null;
+  }
+
+ }
+
+}
+
+// ======================================
+// SAVE TICKET
+// ======================================
+
+async function saveTicket(force=false){
+
+ if(saving) return false;
+
+ if(!transcript.length &&
+    !$("phone").value.trim() &&
+    !$("problem").value.trim()){
+
+  saveState("هنوز اطلاعاتی برای ثبت وجود ندارد.");
+  return false;
+
+ }
+
+ const ticket = getTicketData();
+
+ const snapshot = makeSnapshot(ticket);
+
+ if(!force && snapshot === lastSavedSnapshot){
+  return true;
+ }
+
+ saving = true;
+
+ $("saveTicket").disabled = true;
+
+ saveState("در حال ذخیره اطلاعات در سامانه...");
+
+ try{
+
+  const result = await callApi({
+   action:"save_ticket",
+   ticket
+  },SAVE_TIMEOUT);
+
+  if(result.saved !== true){
+   throw new Error("تأیید ذخیره‌سازی از سرور دریافت نشد.");
+  }
+
+  lastSavedSnapshot = snapshot;
+
+  saveState(
+   "✓ اطلاعات با موفقیت در سامانه ثبت شد.",
+   "ok"
+  );
+
+  return true;
+
+ }catch(e){
+
+  console.error("Ticket save error:",e);
+
+  saveState(
+   "خطا در ذخیره‌سازی: " + e.message,
+   "err"
+  );
+
+  return false;
+
+ }finally{
+
+  saving = false;
+
+  $("saveTicket").disabled = false;
+
+  measure();
+
+ }
+
+}
+
+// ذخیره پس از تکمیل هر نوبت مکالمه
+async function autoSaveTicket(){
+
+ if(ended) return;
+
+ const result = await saveTicket(false);
+
+ if(!result){
+  console.warn("Automatic ticket save failed");
  }
 
 }
@@ -477,6 +800,7 @@ function stopAudio(){
   audioEl.pause();
   audioEl.currentTime = 0;
  }catch(e){}
+
 }
 
 function playBase64(base64,mime){
@@ -500,6 +824,7 @@ function playBase64(base64,mime){
    audioEl.onerror = null;
 
    resolve(ok);
+
   }
 
   try{
@@ -548,6 +873,7 @@ function playBase64(base64,mime){
   }
 
  });
+
 }
 
 // ======================================
@@ -584,7 +910,7 @@ async function speakReply(text){
 
   return await playBase64(
    data.audio_base64,
-   data.mime || "audio/wav"
+   data.mime || data.mime_type || "audio/wav"
   );
 
  }catch(e){
@@ -615,6 +941,7 @@ async function requestMicPermission(){
     !navigator.mediaDevices.getUserMedia){
 
   throw new Error("مرورگر اجازه دسترسی به میکروفن ندارد");
+
  }
 
  const stream = await navigator.mediaDevices.getUserMedia({
@@ -625,13 +952,12 @@ async function requestMicPermission(){
   }
  });
 
- // فقط برای دریافت مجوز؛ تشخیص گفتار را
- // خود SpeechRecognition انجام می‌دهد.
  stream.getTracks().forEach(track=>track.stop());
 
  micGranted = true;
 
  return true;
+
 }
 
 // ======================================
@@ -649,11 +975,8 @@ function initRecognition(){
  const r = new SR();
 
  r.lang = "fa-IR";
-
  r.continuous = false;
-
  r.interimResults = true;
-
  r.maxAlternatives = 1;
 
  r.onstart = ()=>{
@@ -671,7 +994,6 @@ function initRecognition(){
  r.onresult = event=>{
 
   let finalText = "";
-
   let interimText = "";
 
   for(let i=event.resultIndex;i<event.results.length;i++){
@@ -759,6 +1081,7 @@ function initRecognition(){
  };
 
  return r;
+
 }
 
 // ======================================
@@ -772,9 +1095,7 @@ async function startMic(){
  }
 
  if(!recognition){
-
   recognition = initRecognition();
-
  }
 
  if(!recognition){
@@ -862,15 +1183,25 @@ async function handleUser(text){
 
  bubble("user",text);
 
+ addTranscript("user",text);
+
  const previousHistory = history.slice();
 
  addHistory("user",text);
+
+ // اگر شرح مشکل هنوز خالی است،
+ // پیام مراجعه‌کننده در پرونده لحاظ می‌شود.
+ if(!$("problem").value.trim()){
+  $("problem").value = transcript
+   .filter(x=>x.role === "user")
+   .map(x=>x.text)
+   .join("\n");
+ }
 
  status("در حال دریافت پاسخ از Gemini…","live");
 
  try{
 
-  // مرحله اول: فقط متن
   const data = await callApi({
    action:"chat",
    message:text,
@@ -881,17 +1212,24 @@ async function handleUser(text){
 
   if(ended) return;
 
-  if(!data.reply){
+  const reply = data.reply || data.text;
+
+  if(!reply){
    throw new Error("پاسخ متنی از Gemini دریافت نشد");
   }
 
-  // نمایش فوری پاسخ
-  bubble("bot",data.reply);
+  bubble("bot",reply);
 
-  addHistory("bot",data.reply);
+  addHistory("bot",reply);
 
-  // مرحله دوم: تولید و پخش صدا
-  await speakReply(data.reply);
+  addTranscript("bot",reply);
+
+  // ذخیره خودکار اطلاعات پس از پاسخ Gemini
+  // خطای ذخیره باعث قطع صدای منشی نمی‌شود.
+  autoSaveTicket();
+
+  // تولید جداگانه صدای پاسخ
+  await speakReply(reply);
 
  }catch(e){
 
@@ -912,13 +1250,9 @@ async function handleUser(text){
   if(!ended){
 
    if(autoListen){
-
     scheduleListen();
-
    }else if(!speaking){
-
     status("آماده دریافت پیام بعدی","live");
-
    }
 
   }
@@ -939,7 +1273,6 @@ $("go").onclick = async ()=>{
 
  try{
 
-  // فعال‌سازی صدا در همان تعامل کاربر
   await unlockAudio();
 
   if(!SUPABASE_FUNCTION_URL){
@@ -954,7 +1287,6 @@ $("go").onclick = async ()=>{
 
   measure();
 
-  // دریافت مجوز میکروفن
   try{
 
    await requestMicPermission();
@@ -976,7 +1308,6 @@ $("go").onclick = async ()=>{
 
   status("در حال برقراری تماس…","live");
 
-  // خوشامدگویی متنی
   const data = await callApi({
    action:"greet",
    voice:VOICE,
@@ -985,14 +1316,15 @@ $("go").onclick = async ()=>{
 
   if(ended) return;
 
-  const reply = data.reply ||
+  const reply = data.reply || data.text ||
    "سلام، وقت بخیر. منشی روابط عمومی هستم. بفرمایید چه مشکلی دارید؟";
 
   bubble("bot",reply);
 
   addHistory("bot",reply);
 
-  // تولید جداگانه صدای خوشامدگویی
+  addTranscript("bot",reply);
+
   await speakReply(reply);
 
  }catch(e){
@@ -1071,12 +1403,14 @@ $("rep").onclick = async ()=>{
 
   status("در حال تکرار پاسخ…","live");
 
-  await audioEl.play();
-
-  await new Promise(resolve=>{
+  const endedPromise = new Promise(resolve=>{
    audioEl.onended = resolve;
    audioEl.onerror = resolve;
   });
+
+  await audioEl.play();
+
+  await endedPromise;
 
  }catch(e){
 
@@ -1145,18 +1479,70 @@ $("txt").addEventListener("keydown",event=>{
 });
 
 // ======================================
+// MANUAL SAVE
+// ======================================
+
+$("saveTicket").onclick = async ()=>{
+
+ await saveTicket(true);
+
+};
+
+// ======================================
+// NEW TICKET
+// ======================================
+
+$("newTicket").onclick = ()=>{
+
+ if(busy || saving || listening || speaking){
+  alert("ابتدا تماس فعلی را متوقف کنید.");
+  return;
+ }
+
+ const confirmed = confirm(
+  "پرونده جدید ایجاد شود؟ اطلاعات تماس قبلی در این صفحه پاک می‌شود."
+ );
+
+ if(!confirmed) return;
+
+ ticketId = createId();
+
+ try{
+  sessionStorage.setItem("pr_ticket_id",ticketId);
+ }catch(e){}
+
+ history.length = 0;
+ transcript.length = 0;
+
+ $("first_name").value = "";
+ $("last_name").value = "";
+ $("phone").value = "";
+ $("city").value = "";
+ $("address").value = "";
+ $("problem").value = "";
+
+ lastBot = "";
+ lastSavedSnapshot = "";
+
+ $("chat").replaceChildren();
+
+ saveState("پرونده جدید آماده است.");
+
+ status("پرونده جدید ایجاد شد","live");
+
+ measure();
+
+};
+
+// ======================================
 // HANG UP
 // ======================================
 
-$("hang").onclick = ()=>{
+$("hang").onclick = async ()=>{
 
- ended = true;
-
- on = false;
+ if(ended) return;
 
  autoListen = false;
-
- busy = false;
 
  clearTimeout(listenTimer);
 
@@ -1164,11 +1550,28 @@ $("hang").onclick = ()=>{
 
  stopAudio();
 
+ // پیش از پایان تماس، تلاش برای ذخیره نهایی
+ if(transcript.length ||
+    $("phone").value.trim() ||
+    $("problem").value.trim()){
+
+  await saveTicket(false);
+
+ }
+
+ ended = true;
+
+ on = false;
+
+ busy = false;
+
  try{
 
   if(chatController) chatController.abort();
 
   if(ttsController) ttsController.abort();
+
+  if(saveController) saveController.abort();
 
  }catch(e){}
 
