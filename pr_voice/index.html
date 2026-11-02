@@ -136,45 +136,84 @@
     speechSynthesis.onvoiceschanged = pickVoice;
   }
 
-  function speak(text){
+  function speakViaGoogle(text){
     return new Promise((resolve) => {
-      if (mutedSpeaker || !window.speechSynthesis){
-        resolve();
-        return;
-      }
-      // قبل از حرف زدن منشی، میکروفون را کامل قطع کن
+      // تقسیم متن برای محدودیت translate_tts
+      const words = String(text||"").trim().split(/\s+/);
+      const parts = [];
+      let buf = "";
+      words.forEach(w => {
+        if ((buf + " " + w).trim().length > 150){
+          if (buf) parts.push(buf);
+          buf = w;
+        } else buf = (buf + " " + w).trim();
+      });
+      if (buf) parts.push(buf);
+      if (!parts.length){ resolve(); return; }
+
+      let i = 0;
+      const playNext = () => {
+        if (i >= parts.length || mutedSpeaker){ resolve(); return; }
+        const q = encodeURIComponent(parts[i++]);
+        const url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=fa&q=" + q;
+        const audio = new Audio(url);
+        audio.onended = playNext;
+        audio.onerror = () => { resolve(); }; // اگر بلاک شد، بی‌صدا ادامه
+        try { audio.play().catch(() => resolve()); } catch(e){ resolve(); }
+      };
+      playNext();
+    });
+  }
+
+  function speak(text){
+    return new Promise(async (resolve) => {
+      if (mutedSpeaker){ resolve(); return; }
       stopListening(true);
       speaking = true;
       waveEl.classList.add("on");
       setStatus("منشی صحبت می‌کند…", "live");
-      try { speechSynthesis.cancel(); } catch(e){}
 
-      // بعضی مرورگرها نیاز به «unlock» بعد از gesture دارند
-      const u = new SpeechSynthesisUtterance(String(text || ""));
-      u.lang = "fa-IR";
-      u.rate = 0.92;
-      u.pitch = 1;
-      u.volume = 1;
-      pickVoice();
-      if (faVoice) u.voice = faVoice;
-
-      let done = false;
       const finish = () => {
-        if (done) return;
-        done = true;
         speaking = false;
         waveEl.classList.remove("on");
         if (!ended) setStatus("آماده — 🎤 را بزنید و صحبت کنید", "");
         resolve();
       };
-      u.onend = finish;
-      u.onerror = finish;
-      // Chrome bug: گاهی speak بلافاصله قطع می‌شود
-      setTimeout(() => {
-        try { speechSynthesis.speak(u); } catch(e){ finish(); }
-      }, 60);
-      // ایمنی: اگر onend نیامد
-      setTimeout(finish, Math.min(20000, 2000 + String(text).length * 80));
+
+      // 1) تلاش speechSynthesis
+      let usedWeb = false;
+      if (window.speechSynthesis){
+        try { speechSynthesis.cancel(); } catch(e){}
+        pickVoice();
+        await new Promise((res) => {
+          const u = new SpeechSynthesisUtterance(String(text || ""));
+          u.lang = "fa-IR";
+          u.rate = 0.92;
+          u.volume = 1;
+          if (faVoice) u.voice = faVoice;
+          let done = false;
+          const end = () => { if (!done){ done = true; res(); } };
+          u.onend = end;
+          u.onerror = end;
+          try {
+            speechSynthesis.speak(u);
+            usedWeb = true;
+            // اگر بعد از ۱ ثانیه هنوز حرف نمی‌زند → احتمالاً بلاک
+            setTimeout(() => {
+              if (!speechSynthesis.speaking && !speechSynthesis.pending) end();
+            }, 1200);
+            setTimeout(end, Math.min(18000, 1500 + String(text).length * 70));
+          } catch(e){ end(); }
+        });
+      }
+
+      // 2) همیشه Google TTS هم به‌عنوان پشتیبان قوی برای فارسی
+      // اگر web speech صدا نداد یا صدا فارسی نبود
+      try {
+        await speakViaGoogle(text);
+      } catch(e){}
+
+      finish();
     });
   }
 
@@ -396,6 +435,11 @@
 
   $("btnMic").onclick = function(){
     if (ended || speaking) return;
+    // آنلاک صدا با gesture کاربر (ضروری برای پخش در WebView بله)
+    try {
+      const a = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=");
+      a.play().catch(function(){});
+    } catch(e){}
     if (listening || recogStarting){
       stopListening();
       return;
