@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <title>تماس زنده با منشی</title>
 <script src="https://tapi.bale.ai/miniapp.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#0b1220;--card:#151d2e;--text:#f2f5ff;--muted:#9aa6c2;--accent:#3ee0a3;--danger:#ff4d6d;--line:rgba(255,255,255,.1);--ctrl-h:140px}
+:root{--bg:#0b1220;--card:#151d2e;--text:#f2f5ff;--muted:#9aa6c2;--accent:#3ee0a3;--danger:#ff4d6d;--line:rgba(255,255,255,.1);--ctrl-h:150px}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body{font-family:Tahoma,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100%}
@@ -25,7 +26,8 @@ h1{font-size:1.05rem}
 .btn{border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--text);border-radius:999px;height:34px;min-width:34px;padding:0 10px;font-size:13px;cursor:pointer}
 .btn.main{background:var(--accent);color:#042214;font-weight:800;border:none;height:44px;padding:0 20px;font-size:15px}
 .btn.hang{background:var(--danger);border:none;color:#fff;width:40px;height:40px}
-.btn.mic.on{outline:2px solid rgba(62,224,163,.45)}
+.btn.mic.on{outline:2px solid rgba(62,224,163,.45);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(62,224,163,.55)}50%{box-shadow:0 0 0 9px rgba(62,224,163,0)}}
 .row2{display:flex;width:100%;max-width:420px;gap:6px}
 .row2 input{flex:1;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);padding:9px 10px;font-size:.88rem;outline:none}
 .row2 button{border:none;border-radius:12px;background:var(--accent);color:#042214;font-weight:700;padding:0 12px;font-size:13px}
@@ -39,7 +41,7 @@ h1{font-size:1.05rem}
 <div id="gate">
   <div class="badge">تماس زنده</div>
   <h2>منشی روابط عمومی</h2>
-  <p>برای شروع گفتگو دکمه را بزنید. می‌توانید تایپ کنید یا از میکروفون استفاده کنید.</p>
+  <p>برای شروع گفتگو دکمه را بزنید. می‌توانید صحبت کنید یا تایپ کنید.</p>
   <button class="btn main" id="go">📞 شروع تماس</button>
 </div>
 <div class="top">
@@ -50,35 +52,53 @@ h1{font-size:1.05rem}
 <div id="chat"></div>
 <div class="ctrl" id="ctrl">
   <div class="row">
-    <button class="btn" id="spk">🔊</button>
-    <button class="btn hang" id="hang">☎</button>
-    <button class="btn mic" id="mic">🎤</button>
-    <button class="btn" id="rep">▶️</button>
+    <button class="btn" id="spk" title="قطع صدا">🔊</button>
+    <button class="btn hang" id="hang" title="پایان">☎</button>
+    <button class="btn mic" id="mic" title="میکروفون">🎤</button>
+    <button class="btn" id="rep" title="تکرار">▶️</button>
   </div>
   <div class="row2">
     <input id="txt" placeholder="پیام خود را بنویسید…" autocomplete="off" />
     <button id="send">ارسال</button>
   </div>
-  <div class="hint" id="hint">تایپ همیشه کار می‌کند</div>
+  <div class="hint" id="hint">صحبت کنید یا تایپ کنید — منشی خودکار گوش می‌دهد</div>
 </div>
+
 <script>
 (function(){
-  /**
-   * جریان گفتگو:
-   * welcome → problem → more_detail → ai_reply → phone → address → done
-   */
+  /* ============================================================
+     ⚙️  تنظیمات — اینجا را ویرایش کن
+     ============================================================ */
+  const CONFIG = {
+    // آدرس Edge Function یا سرور TTS خودت. اگر پیش‌فرض بماند، speechSynthesis استفاده می‌شود.
+    TTS_ENDPOINT: 'https://YOUR-PROJECT.supabase.co/functions/v1/tts',
+    TTS_VOICE: 'nova',        // nova | shimmer = زنانه، alloy | echo = خنثی
+    TTS_MODEL: 'tts-1',       // tts-1 سریع | tts-1-hd بهتر
+
+    SUPABASE_URL: 'https://YOUR-PROJECT.supabase.co',
+    SUPABASE_ANON_KEY: 'YOUR_ANON_KEY_HERE',
+    SUPABASE_TABLE: 'pr_voice_tickets',
+
+    AUTO_LISTEN: true,        // بعد از هر صحبت منشی، میکروفون خودکار روشن شود
+    TTS_CHUNK_MAX: 220,       // طول هر قطعه برای TTS
+  };
+  /* ============================================================ */
+
   let on=false, ended=false, listening=false, speaking=false, mute=false, saving=false;
-  let lastBot="", rec=null, stream=null, voice=null;
-  let step = "welcome"; // problem | more | phone | address | done
+  let lastBot="", rec=null, stream=null, voice=null, unlocked=false;
+  let step = "welcome";
   const data = { problem:"", more:"", phone:"", address:"", ai_reply:"", history:[] };
   const $ = id => document.getElementById(id);
+  const sb = (CONFIG.SUPABASE_URL && !CONFIG.SUPABASE_URL.includes('YOUR-PROJECT') && window.supabase)
+    ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)
+    : null;
 
   function measure(){
-    const h=($("ctrl")&&$("ctrl").offsetHeight)||140;
+    const h=($("ctrl")&&$("ctrl").offsetHeight)||150;
     document.documentElement.style.setProperty("--ctrl-h", h+"px");
     const c=$("chat"); if(c) c.scrollTop=c.scrollHeight;
   }
-  function st(t,c){ const e=$("status"); e.textContent=t; e.className=c||""; }
+  function st(t,c){ const e=$("status"); if(!e)return; e.textContent=t; e.className=c||""; }
   function bubble(role,text){
     const d=document.createElement("div");
     d.className="b "+(role==="bot"?"bot":"user");
@@ -86,76 +106,81 @@ h1{font-size:1.05rem}
     $("chat").appendChild(d); measure();
   }
 
+  /* ---------- Unlock audio (باید داخل gesture کاربر باشد) ---------- */
+  const audioEl = new Audio();
+  audioEl.preload = 'auto';
+
+  async function unlockAudio(){
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) { const ctx = new AC(); if (ctx.state === 'suspended') await ctx.resume(); }
+    }catch(e){}
+    try{
+      audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
+      await audioEl.play();
+      unlocked = true;
+    }catch(e){}
+  }
+
+  /* ---------- انتخاب صدای فارسی برای fallback ---------- */
   function pickVoice(){
     try{
-      const vs=speechSynthesis.getVoices()||[];
-      const score=v=>{
+      const vs = speechSynthesis.getVoices() || [];
+      const score = v => {
         let s=0; const n=((v.name||"")+" "+(v.lang||"")).toLowerCase();
         if(/fa/.test(v.lang||"")) s+=50;
-        if(/female|woman|girl|zira|susan|samantha|karen|moira|helena|dilara|sara/.test(n)) s+=45;
+        if(/female|woman|girl|zira|susan|samantha|karen|moira|helena|dilara|sara|nova/.test(n)) s+=45;
         if(/male|man|david|mark|farid|ravi|daniel/.test(n)) s-=40;
         return s;
       };
-      voice=vs.slice().sort((a,b)=>score(b)-score(a))[0]||null;
+      voice = vs.slice().sort((a,b)=>score(b)-score(a))[0] || null;
     }catch(e){ voice=null; }
   }
 
-  async function unlock(){
-    try{ const AC=window.AudioContext||window.webkitAudioContext; if(AC){ const c=new AC(); if(c.state==="suspended") await c.resume(); } }catch(e){}
-    try{ await new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=").play(); }catch(e){}
-  }
+  /* ---------- میکروفون ---------- */
   async function micPerm(){
     try{
       if(stream) return true;
-      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) return true;
-      stream=await navigator.mediaDevices.getUserMedia({audio:true}); return true;
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+      stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      return true;
     }catch(e){ st("میکروفون مجاز نیست — تایپ کنید","err"); return false; }
   }
 
-  // پخش واقعی صدا در WebView بله: <audio> + Google TTS (فارسی)
-  // speechSynthesis در Android WebView معمولاً کار نمی‌کند
-  const audioEl = new Audio();
-  audioEl.preload = "auto";
-  let audioUnlocked = false;
-
-  function chunkText(text, maxLen){
-    const words = String(text||"").trim().split(/\s+/);
-    const parts = [];
+  /* ---------- Chunking متن ---------- */
+  function splitText(text, max){
+    const parts = String(text||"").split(/(?<=[.!?؟\n])\s+/).filter(Boolean);
+    const out = [];
     let buf = "";
-    for(const w of words){
-      if((buf + " " + w).trim().length > maxLen){
-        if(buf) parts.push(buf);
-        buf = w;
-      } else {
-        buf = (buf + " " + w).trim();
-      }
+    for(const p of parts){
+      if((buf + " " + p).trim().length > max && buf){ out.push(buf.trim()); buf = p; }
+      else buf = (buf + " " + p).trim();
     }
-    if(buf) parts.push(buf);
-    return parts.length ? parts : [String(text||"").slice(0, maxLen)];
+    if(buf) out.push(buf.trim());
+    return out.length ? out : [String(text||"")];
   }
 
-  function gttsUrl(part){
-    return "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=fa&q="
-      + encodeURIComponent(part);
+  /* ---------- TTS از endpoint ---------- */
+  async function ttsFetch(text){
+    const res = await fetch(CONFIG.TTS_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ text, voice: CONFIG.TTS_VOICE, model: CONFIG.TTS_MODEL })
+    });
+    if(!res.ok){
+      const msg = await res.text().catch(()=>'');
+      throw new Error('TTS ' + res.status + ' ' + msg.slice(0,120));
+    }
+    return await res.blob();
   }
 
-  function playViaAudio(text){
-    return new Promise(async (resolve) => {
-      const parts = chunkText(text, 140);
-      let i = 0;
-      const playNext = () => {
-        if(i >= parts.length){ resolve(true); return; }
-        const url = gttsUrl(parts[i++]);
-        try{ audioEl.pause(); }catch(e){}
-        audioEl.onended = playNext;
-        audioEl.onerror = () => { resolve(false); }; // fail → fallback
-        try{
-          audioEl.src = url;
-          const p = audioEl.play();
-          if(p && p.catch) p.catch(() => resolve(false));
-        }catch(e){ resolve(false); }
-      };
-      playNext();
+  function playBlob(blob){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      audioEl.onended = () => { URL.revokeObjectURL(url); resolve(); };
+      audioEl.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+      audioEl.src = url;
+      audioEl.play().catch(reject);
     });
   }
 
@@ -165,38 +190,61 @@ h1{font-size:1.05rem}
       try{ speechSynthesis.cancel(); }catch(e){}
       pickVoice();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "fa-IR";
-      u.rate = 0.95;
-      u.pitch = 1.3; // زنانه‌تر
-      u.volume = 1;
+      u.lang = "fa-IR"; u.rate = 0.95; u.pitch = 1.25; u.volume = 1;
       if(voice) u.voice = voice;
       let done=false;
       const end=()=>{ if(done)return; done=true; resolve(true); };
       u.onend=end; u.onerror=()=>{ if(done)return; done=true; resolve(false); };
       try{ speechSynthesis.speak(u); }catch(e){ resolve(false); return; }
-      setTimeout(end, Math.min(20000, 1500+text.length*80));
+      setTimeout(end, Math.min(20000, 1500 + text.length*80));
     });
   }
 
-  function speak(text){
-    return new Promise(async (resolve) => {
-      lastBot = String(text||"");
-      if(mute || !lastBot){ resolve(); return; }
-      speaking = true;
-      st("منشی صحبت می‌کند…","live");
-      try{ audioEl.pause(); }catch(e){}
-      try{ speechSynthesis && speechSynthesis.cancel(); }catch(e){}
+  /* ---------- تابع اصلی صحبت ---------- */
+  async function speak(text){
+    lastBot = String(text||"");
+    if(mute || !lastBot) return;
+    stopMic();
+    speaking = true;
+    st("منشی صحبت می‌کند…","live");
 
-      // ۱) اول <audio> + Google TTS فارسی (کار در WebView)
-      let ok = await playViaAudio(lastBot);
-      // ۲) اگر نشد، speechSynthesis با pitch زنانه
-      if(!ok) ok = await playViaSpeechSynth(lastBot);
+    const useEndpoint = CONFIG.TTS_ENDPOINT && !CONFIG.TTS_ENDPOINT.includes('YOUR-PROJECT');
+    let ok = false;
 
-      speaking = false;
-      if(!ok) st("صدا پخش نشد — متن را بخوانید یا ▶️ را دوباره بزنید","err");
-      else if(!ended) st("آماده — تایپ یا میکروفون","live");
-      resolve();
-    });
+    if(useEndpoint){
+      const chunks = splitText(lastBot, CONFIG.TTS_CHUNK_MAX);
+      ok = true;
+      for(const c of chunks){
+        try{
+          const blob = await ttsFetch(c);
+          await playBlob(blob);
+        }catch(e){
+          console.warn('TTS endpoint failed:', e);
+          ok = false; break;
+        }
+      }
+    }
+
+    if(!ok){
+      // fallback به speechSynthesis
+      ok = await playViaSpeechSynth(lastBot);
+    }
+
+    speaking = false;
+    if(!ok){
+      st("صدا پخش نشد — متن را بخوانید یا ▶️ بزنید","err");
+    } else if(!ended){
+      st("آماده — صحبت کنید یا تایپ کنید","live");
+    }
+
+    // بعد از صحبت، میکروفون خودکار
+    if(CONFIG.AUTO_LISTEN && on && !ended && !mute){
+      setTimeout(() => {
+        if(!ended && !speaking && !listening && document.activeElement !== $("txt")){
+          startMic();
+        }
+      }, 400);
+    }
   }
 
   async function say(text){
@@ -205,30 +253,30 @@ h1{font-size:1.05rem}
     await speak(text);
   }
 
+  /* ---------- تبدیل و اعتبارسنجی ---------- */
   function toEn(s){
     return String(s||"").replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c))
       .replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c));
   }
   function normPhone(raw){
-    let d=toEn(raw).replace(/[^\d+]/g,"");
-    if(d.startsWith("0098")) d="+98"+d.slice(4);
-    else if(d.startsWith("98")&&d.length>=12) d="+"+d.slice(0,12);
-    else if(/^09\d{9}$/.test(d)) d="+98"+d.slice(1);
-    else if(/^9\d{9}$/.test(d)) d="+98"+d;
+    let d = toEn(raw).replace(/[^\d+]/g,"");
+    if(d.startsWith("0098")) d = "+98"+d.slice(4);
+    else if(d.startsWith("98") && d.length>=12) d = "+"+d.slice(0,12);
+    else if(/^09\d{9}$/.test(d)) d = "+98"+d.slice(1);
+    else if(/^9\d{9}$/.test(d)) d = "+98"+d;
     return d;
   }
   function validPhone(p){ return /^\+98\d{10}$/.test(normPhone(p)); }
 
-  /** پاسخ همدلانه کوتاه بر اساس موضوع (بدون نیاز به سرور) */
   function smartReply(problem, more){
-    const t=(problem+" "+(more||"")).toLowerCase();
-    let base="ممنون از توضیحات‌تان. موضوع را یادداشت کردم تا همکاران روابط عمومی پیگیری کنند.";
-    if(/قطع|برق|خاموش|فلک/.test(t)) base="متأسفم بابت مشکل برق. مورد را ثبت می‌کنم تا در اسرع وقت بررسی شود.";
-    else if(/قبض|هزینه|مبلغ|پرداخت|بدهی/.test(t)) base="در مورد مسائل مربوط به قبض و پرداخت، همکاران پیگیری می‌کنند.";
-    else if(/انشعاب|کنتور|تأسیسات|سیم/.test(t)) base="موضوع انشعاب/تأسیسات ثبت شد و برای واحد مربوطه ارسال می‌شود.";
-    else if(/شکایت|اعتراض|ناراضی/.test(t)) base="از نارضایتی‌تان متأسفیم. شکایت شما با جدیت پیگیری خواهد شد.";
-    else if(/تشکر|مرسی|ممنون/.test(t)) base="خواهش می‌کنم. در خدمتم.";
-    return base+" اگر توضیح بیشتری ندارید، در مرحله بعد شماره تماس و آدرس را می‌گیرم.";
+    const t = (problem+" "+(more||"")).toLowerCase();
+    let base = "ممنون از توضیحات‌تان. موضوع را یادداشت کردم تا همکاران روابط عمومی پیگیری کنند.";
+    if(/قطع|برق|خاموش|فلک/.test(t)) base = "متأسفم بابت مشکل برق. مورد را ثبت می‌کنم تا در اسرع وقت بررسی شود.";
+    else if(/قبض|هزینه|مبلغ|پرداخت|بدهی/.test(t)) base = "در مورد مسائل مربوط به قبض و پرداخت، همکاران پیگیری می‌کنند.";
+    else if(/انشعاب|کنتور|تأسیسات|سیم/.test(t)) base = "موضوع انشعاب/تأسیسات ثبت شد و برای واحد مربوطه ارسال می‌شود.";
+    else if(/شکایت|اعتراض|ناراضی/.test(t)) base = "از نارضایتی‌تان متأسفیم. شکایت شما با جدیت پیگیری خواهد شد.";
+    else if(/تشکر|مرسی|ممنون/.test(t)) base = "خواهش می‌کنم. در خدمتم.";
+    return base + " اگر توضیح بیشتری ندارید، در مرحله بعد شماره تماس و آدرس را می‌گیرم.";
   }
 
   function summary(){
@@ -240,12 +288,11 @@ h1{font-size:1.05rem}
     ].filter(Boolean).join(" | ");
   }
 
-  function saveToBot(){
-    if(saving) return;
-    saving=true;
-    const payload={
-      type:"pr_voice_ticket",
-      id:"prweb-"+Date.now(),
+  /* ---------- ذخیره‌سازی: Supabase + Bale + localStorage ---------- */
+  async function saveToBot(){
+    if(saving) return null;
+    saving = true;
+    const payload = {
       problem: data.problem,
       more: data.more,
       phone: data.phone,
@@ -254,124 +301,190 @@ h1{font-size:1.05rem}
       summary: summary(),
       conversation_summary: summary(),
       history: data.history.slice(-30),
-      first_name: "",
-      last_name: ""
+      source: 'bale_miniapp',
+      first_name: '',
+      last_name: ''
     };
-    try{
-      const k="pr_voice_tickets_v2";
-      const a=JSON.parse(localStorage.getItem(k)||"[]");
-      a.push({...payload, at:new Date().toISOString()});
-      localStorage.setItem(k, JSON.stringify(a.slice(-200)));
-    }catch(e){}
+
+    let supabaseOk = false, baleOk = false;
+
+    // 1) Supabase
+    if(sb){
+      try{
+        const { error } = await sb.from(CONFIG.SUPABASE_TABLE).insert([payload]);
+        if(error) throw error;
+        supabaseOk = true;
+      }catch(e){ console.warn('Supabase insert failed:', e); }
+    }
+
+    // 2) Bale
     try{
       if(window.Bale && Bale.WebApp && Bale.WebApp.sendData){
-        Bale.WebApp.sendData(JSON.stringify(payload));
-        return true;
+        Bale.WebApp.sendData(JSON.stringify({ type:'pr_voice_ticket', id:'prweb-'+Date.now(), ...payload }));
+        baleOk = true;
       }
-    }catch(e){ console.warn(e); }
-    return false;
+    }catch(e){ console.warn('Bale sendData failed:', e); }
+
+    // 3) localStorage
+    try{
+      const k = "pr_voice_tickets_v2";
+      const a = JSON.parse(localStorage.getItem(k)||"[]");
+      a.push({ ...payload, at: new Date().toISOString() });
+      localStorage.setItem(k, JSON.stringify(a.slice(-200)));
+    }catch(e){}
+
+    saving = false;
+    return { supabaseOk, baleOk };
   }
 
+  /* ---------- مکالمه ---------- */
   async function onUser(text){
-    text=(text||"").trim();
+    text = (text||"").trim();
     if(!text || !on || ended || speaking) return;
     stopMic();
     data.history.push({role:"user", text});
     bubble("user", text);
 
-    if(step==="problem"){
+    if(step === "problem"){
       data.problem = text;
-      step="more";
+      step = "more";
       await say("اگر توضیح بیشتری دارید بفرمایید؛ در غیر این صورت بنویسید «ندارم».");
       return;
     }
-    if(step==="more"){
-      if(!/^(ندارم|نه|خیر|تمام|همینه|خیر ممنون)$/i.test(text)) data.more=text;
+    if(step === "more"){
+      if(!/^(ندارم|نه|خیر|تمام|همینه|خیر ممنون|کافیست)$/i.test(text)) data.more = text;
       data.ai_reply = smartReply(data.problem, data.more);
-      step="phone";
+      step = "phone";
       await say(data.ai_reply);
-      await say("لطفاً شماره تماس خود را بفرستید (مثال: 0912…).");
+      await say("لطفاً شماره تماس خود را بفرستید. مثال: صفر نهصد و دوازده…");
       return;
     }
-    if(step==="phone"){
-      const p=normPhone(text);
+    if(step === "phone"){
+      const p = normPhone(text);
       if(!validPhone(p)){
         await say("شماره معتبر به نظر نمی‌رسد. لطفاً مثل 09121234567 بفرستید.");
         return;
       }
-      data.phone=p;
-      step="address";
+      data.phone = p;
+      step = "address";
       await say("ممنون. حالا آدرس یا محل مورد نظر را بنویسید.");
       return;
     }
-    if(step==="address"){
-      if(text.length<5){
+    if(step === "address"){
+      if(text.length < 5){
         await say("لطفاً آدرس را کمی کامل‌تر بنویسید.");
         return;
       }
-      data.address=text;
-      step="done";
-      ended=true;
+      data.address = text;
+      step = "done";
+      ended = true;
       await say("ثبت شد. از تماس شما سپاسگزاریم. همکاران روابط عمومی پیگیری می‌کنند.");
-      const sent = saveToBot();
-      st(sent ? "ثبت و ارسال به ربات شد" : "ثبت محلی شد — از داخل بله باز کنید تا به سرور برود","live");
-      $("hint").textContent = sent ? "می‌توانید تماس را ببندید" : "برای ذخیره در اکسل، مینی‌اپ را از داخل بله باز کنید";
-      return;
+
+      const r = await saveToBot();
+      if(r && (r.supabaseOk || r.baleOk)){
+        st("ثبت و ارسال شد ✅","live");
+        $("hint").textContent = "می‌توانید تماس را ببندید";
+      } else {
+        st("ثبت محلی شد — از داخل بله باز کنید","err");
+        $("hint").textContent = "برای ارسال کامل، از داخل بله باز کنید";
+      }
     }
   }
 
+  /* ---------- میکروفون ---------- */
   function initRec(){
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR) return null;
-    const r=new SR(); r.lang="fa-IR"; r.continuous=false; r.interimResults=false;
-    r.onstart=()=>{ listening=true; $("mic").classList.add("on"); st("گوش می‌دهم…","live"); };
-    r.onresult=ev=>{
-      let t=""; for(let i=ev.resultIndex;i<ev.results.length;i++) if(ev.results[i].isFinal) t+=ev.results[i][0].transcript;
-      listening=false; $("mic").classList.remove("on"); t=(t||"").trim();
-      if(t) onUser(t); else st("چیزی نشنیدم — تایپ کنید","err");
+    const r = new SR();
+    r.lang = "fa-IR"; r.continuous = false; r.interimResults = false;
+    r.onstart = () => { listening = true; $("mic").classList.add("on"); st("گوش می‌دهم…","live"); };
+    r.onresult = ev => {
+      let t = "";
+      for(let i=ev.resultIndex; i<ev.results.length; i++){
+        if(ev.results[i].isFinal) t += ev.results[i][0].transcript;
+      }
+      listening = false; $("mic").classList.remove("on");
+      t = (t||"").trim();
+      if(t) onUser(t);
+      else st("چیزی نشنیدم — تایپ کنید یا 🎤 را بزنید","err");
     };
-    r.onerror=()=>{ listening=false; $("mic").classList.remove("on"); st("میکروفون خطا — تایپ کنید","err"); };
-    r.onend=()=>{ listening=false; $("mic").classList.remove("on"); };
+    r.onerror = (e) => {
+      listening = false; $("mic").classList.remove("on");
+      if(e && e.error === 'not-allowed') st("دسترسی میکروفون رد شد","err");
+      else st("میکروفون خطا — تایپ کنید","err");
+    };
+    r.onend = () => { listening = false; $("mic").classList.remove("on"); };
     return r;
   }
-  function stopMic(){ listening=false; $("mic").classList.remove("on"); try{ if(rec) rec.abort(); }catch(e){} }
+  function stopMic(){
+    listening = false;
+    if($("mic")) $("mic").classList.remove("on");
+    try{ if(rec) rec.abort(); }catch(e){}
+  }
   async function startMic(){
-    if(!on||ended||speaking||listening) return;
+    if(!on || ended || speaking || listening) return;
     if(!(await micPerm())) return;
-    if(!rec) rec=initRec();
+    if(!rec) rec = initRec();
     if(!rec){ st("تشخیص گفتار نیست — تایپ کنید","err"); return; }
-    try{ rec.start(); }catch(e){ st("میکروفون شروع نشد — تایپ کنید","err"); }
+    try{ rec.start(); }
+    catch(e){ st("میکروفون شروع نشد — دوباره بزنید","err"); }
   }
 
-  $("go").onclick=async ()=>{
-    await unlock();
-    // آنلاک audio برای WebView (باید داخل gesture کاربر باشد)
-    try{
-      audioEl.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
-      await audioEl.play();
-      audioUnlocked = true;
-    }catch(e){}
-    await micPerm(); pickVoice();
-    $("gate").classList.add("hid"); on=true; measure();
-    step="problem";
+  /* ---------- رویدادها ---------- */
+  $("go").onclick = async () => {
+    await unlockAudio();
+    await micPerm();
+    pickVoice();
+    $("gate").classList.add("hid");
+    on = true; measure();
+    step = "problem";
     await say("سلام، وقت بخیر. من منشی روابط عمومی هستم. بفرمایید مشکل یا درخواست‌تان چیست؟");
-    st("آماده — تایپ یا میکروفون","live");
   };
-  $("mic").onclick=()=>{ if(listening) stopMic(); else startMic(); };
-  $("rep").onclick=()=>{ if(lastBot){ unlock(); speak(lastBot); } };
-  $("spk").onclick=()=>{ mute=!mute; $("spk").textContent=mute?"🔇":"🔊"; if(mute) try{ speechSynthesis.cancel(); }catch(e){} };
-  $("hang").onclick=()=>{
-    if(!ended && data.problem) saveToBot();
-    ended=true; stopMic(); try{ speechSynthesis.cancel(); }catch(e){}
+
+  $("mic").onclick = () => { if(listening) stopMic(); else startMic(); };
+
+  $("rep").onclick = async () => {
+    if(!lastBot) return;
+    if(!unlocked) await unlockAudio();
+    await speak(lastBot);
+  };
+
+  $("spk").onclick = () => {
+    mute = !mute;
+    $("spk").textContent = mute ? "🔇" : "🔊";
+    if(mute){
+      try{ speechSynthesis.cancel(); }catch(e){}
+      try{ audioEl.pause(); }catch(e){}
+    }
+  };
+
+  $("hang").onclick = async () => {
+    if(!ended && data.problem){
+      const r = await saveToBot();
+      if(r && (r.supabaseOk || r.baleOk)) st("ثبت و ارسال شد ✅","live");
+    }
+    ended = true;
+    stopMic();
+    try{ speechSynthesis.cancel(); }catch(e){}
+    try{ audioEl.pause(); }catch(e){}
     st("قطع شد");
-    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
+    try{ if(window.Bale && Bale.WebApp && Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
   };
-  $("send").onclick=()=>{ const v=$("txt").value; $("txt").value=""; onUser(v); };
-  $("txt").addEventListener("keydown", e=>{ if(e.key==="Enter"){ const v=$("txt").value; $("txt").value=""; onUser(v); }});
+
+  $("send").onclick = () => { const v = $("txt").value; $("txt").value=""; onUser(v); };
+  $("txt").addEventListener("keydown", e => {
+    if(e.key === "Enter"){ const v = $("txt").value; $("txt").value=""; onUser(v); }
+  });
+  $("txt").addEventListener("focus", () => { if(listening) stopMic(); });
 
   window.addEventListener("resize", measure);
-  try{ if(window.Bale&&Bale.WebApp){ Bale.WebApp.ready(); try{ Bale.WebApp.expand(); }catch(e){} } }catch(e){}
-  try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+  try{
+    if(window.Bale && Bale.WebApp){
+      Bale.WebApp.ready();
+      try{ Bale.WebApp.expand(); }catch(e){}
+    }
+  }catch(e){}
+  try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
   measure();
 })();
 </script>
