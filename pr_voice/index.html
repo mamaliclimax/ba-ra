@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <title>تماس زنده با منشی</title>
 <script src="https://tapi.bale.ai/miniapp.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#0b1220;--card:#151d2e;--text:#f2f5ff;--muted:#9aa6c2;--accent:#3ee0a3;--danger:#ff4d6d;--line:rgba(255,255,255,.1);--ctrl-h:150px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -67,74 +66,72 @@ h1{font-size:1.05rem}
 <script>
 (function(){
   /* ============================================================
-     ⚙️  تنظیمات — اینجا را ویرایش کن
+     ⚙️  تنظیمات — فقط همین دو مقدار را عوض کن
      ============================================================ */
   const CONFIG = {
-    // آدرس Edge Function یا سرور TTS خودت. اگر پیش‌فرض بماند، speechSynthesis استفاده می‌شود.
-    TTS_ENDPOINT: 'https://YOUR-PROJECT.supabase.co/functions/v1/tts',
-    TTS_VOICE: 'nova',        // nova | shimmer = زنانه، alloy | echo = خنثی
-    TTS_MODEL: 'tts-1',       // tts-1 سریع | tts-1-hd بهتر
+    GEMINI_API_KEY: 'کلید-Gemini-خودت-را-اینجا-بگذار',
 
-    SUPABASE_URL: 'https://YOUR-PROJECT.supabase.co',
-    SUPABASE_ANON_KEY: 'YOUR_ANON_KEY_HERE',
+    // مدل چت (پاسخ متنی)
+    CHAT_MODEL: 'gemini-2.5-flash',
+
+    // مدل تبدیل متن به گفتار
+    TTS_MODEL: 'gemini-2.5-flash-preview-tts',
+    TTS_VOICE: 'Kore',   // Kore = زنانه و گرم
+
+    // اگر می‌خواهی تیکت در Supabase ذخیره شود، این‌ها را پر کن
+    SUPABASE_URL: '',
+    SUPABASE_ANON_KEY: '',
     SUPABASE_TABLE: 'pr_voice_tickets',
 
-    AUTO_LISTEN: true,        // بعد از هر صحبت منشی، میکروفون خودکار روشن شود
-    TTS_CHUNK_MAX: 220,       // طول هر قطعه برای TTS
+    AUTO_LISTEN: true,   // بعد از هر صحبت منشی، میکروفون خودکار روشن شود
+    SYSTEM_PROMPT: `تو منشی روابط عمومی یک شرکت برق هستی. لحن تو گرم، محترمانه و کوتاه است.
+پاسخ‌ها را فارسی و محاوره‌ای بده. از جملات طولانی پرهیز کن.
+اگر کاربر مشکلش را گفت، همدلی کن و بگو که پیگیری می‌شود.
+اگر شماره یا آدرس خواستی، مؤدبانه درخواست کن.`
   };
   /* ============================================================ */
 
-  let on=false, ended=false, listening=false, speaking=false, mute=false, saving=false;
-  let lastBot="", rec=null, stream=null, voice=null, unlocked=false;
-  let step = "welcome";
-  const data = { problem:"", more:"", phone:"", address:"", ai_reply:"", history:[] };
+  let on = false, ended = false, listening = false, speaking = false;
+  let mute = false, saving = false, unlocked = false;
+  let lastBot = '', rec = null, stream = null, voice = null;
+  let step = 'welcome';
+  const data = { problem:'', more:'', phone:'', address:'', ai_reply:'', history:[] };
   const $ = id => document.getElementById(id);
-  const sb = (CONFIG.SUPABASE_URL && !CONFIG.SUPABASE_URL.includes('YOUR-PROJECT') && window.supabase)
+
+  const sb = (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && window.supabase)
     ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)
     : null;
 
+  /* ---------- ابزارهای UI ---------- */
   function measure(){
-    const h=($("ctrl")&&$("ctrl").offsetHeight)||150;
-    document.documentElement.style.setProperty("--ctrl-h", h+"px");
-    const c=$("chat"); if(c) c.scrollTop=c.scrollHeight;
+    const h = ($('ctrl') && $('ctrl').offsetHeight) || 150;
+    document.documentElement.style.setProperty('--ctrl-h', h + 'px');
+    const c = $('chat'); if(c) c.scrollTop = c.scrollHeight;
   }
-  function st(t,c){ const e=$("status"); if(!e)return; e.textContent=t; e.className=c||""; }
-  function bubble(role,text){
-    const d=document.createElement("div");
-    d.className="b "+(role==="bot"?"bot":"user");
-    d.innerHTML='<div class="meta">'+(role==="bot"?"منشی":"شما")+"</div>"+String(text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
-    $("chat").appendChild(d); measure();
+  function st(t, c){ const e = $('status'); if(e){ e.textContent = t; e.className = c || ''; } }
+  function bubble(role, text){
+    const d = document.createElement('div');
+    d.className = 'b ' + (role === 'bot' ? 'bot' : 'user');
+    d.innerHTML = '<div class="meta">' + (role === 'bot' ? 'منشی' : 'شما') + '</div>'
+      + String(text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    $('chat').appendChild(d);
+    measure();
   }
 
-  /* ---------- Unlock audio (باید داخل gesture کاربر باشد) ---------- */
+  /* ---------- آنلاک صدا (باید داخل کلیک باشد) ---------- */
   const audioEl = new Audio();
   audioEl.preload = 'auto';
 
   async function unlockAudio(){
     try{
       const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) { const ctx = new AC(); if (ctx.state === 'suspended') await ctx.resume(); }
+      if(AC){ const ctx = new AC(); if(ctx.state === 'suspended') await ctx.resume(); }
     }catch(e){}
     try{
       audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
       await audioEl.play();
       unlocked = true;
     }catch(e){}
-  }
-
-  /* ---------- انتخاب صدای فارسی برای fallback ---------- */
-  function pickVoice(){
-    try{
-      const vs = speechSynthesis.getVoices() || [];
-      const score = v => {
-        let s=0; const n=((v.name||"")+" "+(v.lang||"")).toLowerCase();
-        if(/fa/.test(v.lang||"")) s+=50;
-        if(/female|woman|girl|zira|susan|samantha|karen|moira|helena|dilara|sara|nova/.test(n)) s+=45;
-        if(/male|man|david|mark|farid|ravi|daniel/.test(n)) s-=40;
-        return s;
-      };
-      voice = vs.slice().sort((a,b)=>score(b)-score(a))[0] || null;
-    }catch(e){ voice=null; }
   }
 
   /* ---------- میکروفون ---------- */
@@ -144,36 +141,99 @@ h1{font-size:1.05rem}
       if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
       stream = await navigator.mediaDevices.getUserMedia({audio:true});
       return true;
-    }catch(e){ st("میکروفون مجاز نیست — تایپ کنید","err"); return false; }
+    }catch(e){ st('میکروفون مجاز نیست — تایپ کنید', 'err'); return false; }
   }
 
-  /* ---------- Chunking متن ---------- */
-  function splitText(text, max){
-    const parts = String(text||"").split(/(?<=[.!?؟\n])\s+/).filter(Boolean);
-    const out = [];
-    let buf = "";
-    for(const p of parts){
-      if((buf + " " + p).trim().length > max && buf){ out.push(buf.trim()); buf = p; }
-      else buf = (buf + " " + p).trim();
-    }
-    if(buf) out.push(buf.trim());
-    return out.length ? out : [String(text||"")];
+  /* ---------- تبدیل PCM خام به WAV ---------- */
+  function pcmToWav(pcmBytes, sampleRate = 24000, numChannels = 1, bitsPerSample = 16){
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+    const blockAlign = numChannels * (bitsPerSample / 8);
+    const dataSize = pcmBytes.length;
+    const fileSize = 44 - 8 + dataSize;
+
+    const header = new ArrayBuffer(44);
+    const view = new DataView(header);
+    const writeStr = (offset, str) => { for(let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); };
+
+    writeStr(0, 'RIFF');
+    view.setUint32(4, fileSize, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+    writeStr(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    const wav = new Uint8Array(44 + dataSize);
+    wav.set(new Uint8Array(header), 0);
+    wav.set(pcmBytes, 44);
+    return new Blob([wav], {type: 'audio/wav'});
   }
 
-  /* ---------- TTS از endpoint ---------- */
-  async function ttsFetch(text){
-    const res = await fetch(CONFIG.TTS_ENDPOINT, {
+  /* ---------- Gemini Chat ---------- */
+  async function geminiChat(userText){
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.CHAT_MODEL}:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
+    const body = {
+      contents: [
+        { role: 'user', parts: [{ text: CONFIG.SYSTEM_PROMPT + '\n\nپیام کاربر: ' + userText }] }
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 300
+      }
+    };
+    const res = await fetch(url, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ text, voice: CONFIG.TTS_VOICE, model: CONFIG.TTS_MODEL })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
     if(!res.ok){
-      const msg = await res.text().catch(()=>'');
-      throw new Error('TTS ' + res.status + ' ' + msg.slice(0,120));
+      const err = await res.text().catch(()=> '');
+      throw new Error('Gemini Chat ' + res.status + ' ' + err.slice(0, 200));
     }
-    return await res.blob();
+    const json = await res.json();
+    const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if(!text) throw new Error('پاسخ متنی از Gemini دریافت نشد');
+    return text.trim();
   }
 
+  /* ---------- Gemini TTS ---------- */
+  async function geminiTTS(text){
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.TTS_MODEL}:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
+    const body = {
+      contents: [{ parts: [{ text: text }] }],
+      generationConfig: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: CONFIG.TTS_VOICE }
+          }
+        }
+      }
+    };
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){
+      const err = await res.text().catch(()=> '');
+      throw new Error('Gemini TTS ' + res.status + ' ' + err.slice(0, 200));
+    }
+    const json = await res.json();
+    const inline = json?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData;
+    if(!inline?.data) throw new Error('داده صوتی از Gemini TTS دریافت نشد');
+
+    const pcmBytes = Uint8Array.from(atob(inline.data), c => c.charCodeAt(0));
+    return pcmToWav(pcmBytes, 24000, 1, 16);
+  }
+
+  /* ---------- پخش ---------- */
   function playBlob(blob){
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(blob);
@@ -184,211 +244,140 @@ h1{font-size:1.05rem}
     });
   }
 
+  /* ---------- تابع اصلی صحبت (Gemini TTS) ---------- */
+  async function speak(text){
+    lastBot = String(text || '');
+    if(mute || !lastBot) return;
+    stopMic();
+    speaking = true;
+    st('منشی صحبت می‌کند…', 'live');
+
+    try{
+      const blob = await geminiTTS(lastBot);
+      await playBlob(blob);
+      speaking = false;
+      if(!ended) st('آماده — صحبت کنید یا تایپ کنید', 'live');
+    }catch(e){
+      speaking = false;
+      console.warn('TTS error:', e);
+      st('صدا پخش نشد — متن را بخوانید یا ▶️ بزنید', 'err');
+      // fallback نهایی: صدای مرورگر
+      try{ await playViaSpeechSynth(lastBot); }catch(_){}
+    }
+
+    if(CONFIG.AUTO_LISTEN && on && !ended && !mute){
+      setTimeout(() => {
+        if(!ended && !speaking && !listening && document.activeElement !== $('txt')){
+          startMic();
+        }
+      }, 500);
+    }
+  }
+
   function playViaSpeechSynth(text){
     return new Promise((resolve) => {
       if(!window.speechSynthesis){ resolve(false); return; }
       try{ speechSynthesis.cancel(); }catch(e){}
-      pickVoice();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "fa-IR"; u.rate = 0.95; u.pitch = 1.25; u.volume = 1;
-      if(voice) u.voice = voice;
-      let done=false;
-      const end=()=>{ if(done)return; done=true; resolve(true); };
-      u.onend=end; u.onerror=()=>{ if(done)return; done=true; resolve(false); };
+      u.lang = 'fa-IR'; u.rate = 0.95; u.pitch = 1.2;
+      let done = false;
+      const end = () => { if(done) return; done = true; resolve(true); };
+      u.onend = end; u.onerror = () => { if(done) return; done = true; resolve(false); };
       try{ speechSynthesis.speak(u); }catch(e){ resolve(false); return; }
-      setTimeout(end, Math.min(20000, 1500 + text.length*80));
+      setTimeout(end, Math.min(20000, 1500 + text.length * 80));
     });
   }
 
-  /* ---------- تابع اصلی صحبت ---------- */
-  async function speak(text){
-    lastBot = String(text||"");
-    if(mute || !lastBot) return;
-    stopMic();
-    speaking = true;
-    st("منشی صحبت می‌کند…","live");
-
-    const useEndpoint = CONFIG.TTS_ENDPOINT && !CONFIG.TTS_ENDPOINT.includes('YOUR-PROJECT');
-    let ok = false;
-
-    if(useEndpoint){
-      const chunks = splitText(lastBot, CONFIG.TTS_CHUNK_MAX);
-      ok = true;
-      for(const c of chunks){
-        try{
-          const blob = await ttsFetch(c);
-          await playBlob(blob);
-        }catch(e){
-          console.warn('TTS endpoint failed:', e);
-          ok = false; break;
-        }
-      }
-    }
-
-    if(!ok){
-      // fallback به speechSynthesis
-      ok = await playViaSpeechSynth(lastBot);
-    }
-
-    speaking = false;
-    if(!ok){
-      st("صدا پخش نشد — متن را بخوانید یا ▶️ بزنید","err");
-    } else if(!ended){
-      st("آماده — صحبت کنید یا تایپ کنید","live");
-    }
-
-    // بعد از صحبت، میکروفون خودکار
-    if(CONFIG.AUTO_LISTEN && on && !ended && !mute){
-      setTimeout(() => {
-        if(!ended && !speaking && !listening && document.activeElement !== $("txt")){
-          startMic();
-        }
-      }, 400);
-    }
-  }
-
   async function say(text){
-    data.history.push({role:"bot", text});
-    bubble("bot", text);
+    data.history.push({role:'bot', text});
+    bubble('bot', text);
     await speak(text);
   }
 
-  /* ---------- تبدیل و اعتبارسنجی ---------- */
+  /* ---------- مکالمه با Gemini ---------- */
+  async function onUser(text){
+    text = (text || '').trim();
+    if(!text || !on || ended || speaking) return;
+    stopMic();
+    data.history.push({role:'user', text});
+    bubble('user', text);
+
+    st('منشی در حال فکر کردن…', 'live');
+    try{
+      const reply = await geminiChat(text);
+      data.ai_reply = reply;
+
+      // استخراج تلفن و آدرس به‌صورت ساده برای تیکت
+      if(step === 'welcome' || step === 'problem'){ data.problem = text; step = 'more'; }
+      else if(step === 'more'){ data.more = text; step = 'phone'; }
+      else if(step === 'phone'){
+        const p = normPhone(text);
+        if(validPhone(p)){ data.phone = p; step = 'address'; }
+      } else if(step === 'address'){
+        if(text.length >= 5){ data.address = text; step = 'done'; }
+      }
+
+      await say(reply);
+    }catch(e){
+      console.warn(e);
+      st('خطا در ارتباط با Gemini', 'err');
+      await say('متأسفم، ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.');
+    }
+  }
+
+  /* ---------- اعتبارسنجی شماره ---------- */
   function toEn(s){
-    return String(s||"").replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c))
-      .replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c));
+    return String(s||'').replace(/[۰-۹]/g, c => '۰۱۲۳۴۵۶۷۸۹'.indexOf(c))
+      .replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c));
   }
   function normPhone(raw){
-    let d = toEn(raw).replace(/[^\d+]/g,"");
-    if(d.startsWith("0098")) d = "+98"+d.slice(4);
-    else if(d.startsWith("98") && d.length>=12) d = "+"+d.slice(0,12);
-    else if(/^09\d{9}$/.test(d)) d = "+98"+d.slice(1);
-    else if(/^9\d{9}$/.test(d)) d = "+98"+d;
+    let d = toEn(raw).replace(/[^\d+]/g, '');
+    if(d.startsWith('0098')) d = '+98' + d.slice(4);
+    else if(d.startsWith('98') && d.length >= 12) d = '+' + d.slice(0,12);
+    else if(/^09\d{9}$/.test(d)) d = '+98' + d.slice(1);
+    else if(/^9\d{9}$/.test(d)) d = '+98' + d;
     return d;
   }
   function validPhone(p){ return /^\+98\d{10}$/.test(normPhone(p)); }
 
-  function smartReply(problem, more){
-    const t = (problem+" "+(more||"")).toLowerCase();
-    let base = "ممنون از توضیحات‌تان. موضوع را یادداشت کردم تا همکاران روابط عمومی پیگیری کنند.";
-    if(/قطع|برق|خاموش|فلک/.test(t)) base = "متأسفم بابت مشکل برق. مورد را ثبت می‌کنم تا در اسرع وقت بررسی شود.";
-    else if(/قبض|هزینه|مبلغ|پرداخت|بدهی/.test(t)) base = "در مورد مسائل مربوط به قبض و پرداخت، همکاران پیگیری می‌کنند.";
-    else if(/انشعاب|کنتور|تأسیسات|سیم/.test(t)) base = "موضوع انشعاب/تأسیسات ثبت شد و برای واحد مربوطه ارسال می‌شود.";
-    else if(/شکایت|اعتراض|ناراضی/.test(t)) base = "از نارضایتی‌تان متأسفیم. شکایت شما با جدیت پیگیری خواهد شد.";
-    else if(/تشکر|مرسی|ممنون/.test(t)) base = "خواهش می‌کنم. در خدمتم.";
-    return base + " اگر توضیح بیشتری ندارید، در مرحله بعد شماره تماس و آدرس را می‌گیرم.";
-  }
-
-  function summary(){
-    return [
-      data.problem ? ("موضوع: "+data.problem) : "",
-      data.more ? ("توضیح بیشتر: "+data.more) : "",
-      data.phone ? ("تلفن: "+data.phone) : "",
-      data.address ? ("آدرس: "+data.address) : ""
-    ].filter(Boolean).join(" | ");
-  }
-
-  /* ---------- ذخیره‌سازی: Supabase + Bale + localStorage ---------- */
-  async function saveToBot(){
-    if(saving) return null;
+  /* ---------- ذخیره تیکت ---------- */
+  async function saveTicket(){
+    if(saving) return { supabaseOk:false, baleOk:false };
     saving = true;
     const payload = {
-      problem: data.problem,
-      more: data.more,
-      phone: data.phone,
-      address: data.address,
+      problem: data.problem, more: data.more,
+      phone: data.phone, address: data.address,
       ai_reply: data.ai_reply,
       summary: summary(),
       conversation_summary: summary(),
       history: data.history.slice(-30),
-      source: 'bale_miniapp',
-      first_name: '',
-      last_name: ''
+      source: 'bale_miniapp_gemini'
     };
-
     let supabaseOk = false, baleOk = false;
 
-    // 1) Supabase
     if(sb){
       try{
         const { error } = await sb.from(CONFIG.SUPABASE_TABLE).insert([payload]);
-        if(error) throw error;
-        supabaseOk = true;
-      }catch(e){ console.warn('Supabase insert failed:', e); }
+        if(!error) supabaseOk = true;
+      }catch(e){ console.warn('Supabase:', e); }
     }
-
-    // 2) Bale
     try{
       if(window.Bale && Bale.WebApp && Bale.WebApp.sendData){
-        Bale.WebApp.sendData(JSON.stringify({ type:'pr_voice_ticket', id:'prweb-'+Date.now(), ...payload }));
+        Bale.WebApp.sendData(JSON.stringify({ type:'pr_voice_ticket', id:'pr-'+Date.now(), ...payload }));
         baleOk = true;
       }
-    }catch(e){ console.warn('Bale sendData failed:', e); }
-
-    // 3) localStorage
-    try{
-      const k = "pr_voice_tickets_v2";
-      const a = JSON.parse(localStorage.getItem(k)||"[]");
-      a.push({ ...payload, at: new Date().toISOString() });
-      localStorage.setItem(k, JSON.stringify(a.slice(-200)));
-    }catch(e){}
-
+    }catch(e){ console.warn('Bale:', e); }
     saving = false;
     return { supabaseOk, baleOk };
   }
 
-  /* ---------- مکالمه ---------- */
-  async function onUser(text){
-    text = (text||"").trim();
-    if(!text || !on || ended || speaking) return;
-    stopMic();
-    data.history.push({role:"user", text});
-    bubble("user", text);
-
-    if(step === "problem"){
-      data.problem = text;
-      step = "more";
-      await say("اگر توضیح بیشتری دارید بفرمایید؛ در غیر این صورت بنویسید «ندارم».");
-      return;
-    }
-    if(step === "more"){
-      if(!/^(ندارم|نه|خیر|تمام|همینه|خیر ممنون|کافیست)$/i.test(text)) data.more = text;
-      data.ai_reply = smartReply(data.problem, data.more);
-      step = "phone";
-      await say(data.ai_reply);
-      await say("لطفاً شماره تماس خود را بفرستید. مثال: صفر نهصد و دوازده…");
-      return;
-    }
-    if(step === "phone"){
-      const p = normPhone(text);
-      if(!validPhone(p)){
-        await say("شماره معتبر به نظر نمی‌رسد. لطفاً مثل 09121234567 بفرستید.");
-        return;
-      }
-      data.phone = p;
-      step = "address";
-      await say("ممنون. حالا آدرس یا محل مورد نظر را بنویسید.");
-      return;
-    }
-    if(step === "address"){
-      if(text.length < 5){
-        await say("لطفاً آدرس را کمی کامل‌تر بنویسید.");
-        return;
-      }
-      data.address = text;
-      step = "done";
-      ended = true;
-      await say("ثبت شد. از تماس شما سپاسگزاریم. همکاران روابط عمومی پیگیری می‌کنند.");
-
-      const r = await saveToBot();
-      if(r && (r.supabaseOk || r.baleOk)){
-        st("ثبت و ارسال شد ✅","live");
-        $("hint").textContent = "می‌توانید تماس را ببندید";
-      } else {
-        st("ثبت محلی شد — از داخل بله باز کنید","err");
-        $("hint").textContent = "برای ارسال کامل، از داخل بله باز کنید";
-      }
-    }
+  function summary(){
+    return [
+      data.problem ? 'موضوع: ' + data.problem : '',
+      data.more ? 'توضیح: ' + data.more : '',
+      data.phone ? 'تلفن: ' + data.phone : '',
+      data.address ? 'آدرس: ' + data.address : ''
+    ].filter(Boolean).join(' | ');
   }
 
   /* ---------- میکروفون ---------- */
@@ -396,95 +385,95 @@ h1{font-size:1.05rem}
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR) return null;
     const r = new SR();
-    r.lang = "fa-IR"; r.continuous = false; r.interimResults = false;
-    r.onstart = () => { listening = true; $("mic").classList.add("on"); st("گوش می‌دهم…","live"); };
+    r.lang = 'fa-IR'; r.continuous = false; r.interimResults = false;
+    r.onstart = () => { listening = true; $('mic').classList.add('on'); st('گوش می‌دهم…', 'live'); };
     r.onresult = ev => {
-      let t = "";
-      for(let i=ev.resultIndex; i<ev.results.length; i++){
+      let t = '';
+      for(let i = ev.resultIndex; i < ev.results.length; i++)
         if(ev.results[i].isFinal) t += ev.results[i][0].transcript;
-      }
-      listening = false; $("mic").classList.remove("on");
-      t = (t||"").trim();
+      listening = false; $('mic').classList.remove('on');
+      t = (t||'').trim();
       if(t) onUser(t);
-      else st("چیزی نشنیدم — تایپ کنید یا 🎤 را بزنید","err");
+      else st('چیزی نشنیدم — تایپ کنید', 'err');
     };
     r.onerror = (e) => {
-      listening = false; $("mic").classList.remove("on");
-      if(e && e.error === 'not-allowed') st("دسترسی میکروفون رد شد","err");
-      else st("میکروفون خطا — تایپ کنید","err");
+      listening = false; $('mic').classList.remove('on');
+      st(e?.error === 'not-allowed' ? 'دسترسی میکروفون رد شد' : 'میکروفون خطا — تایپ کنید', 'err');
     };
-    r.onend = () => { listening = false; $("mic").classList.remove("on"); };
+    r.onend = () => { listening = false; $('mic').classList.remove('on'); };
     return r;
   }
   function stopMic(){
     listening = false;
-    if($("mic")) $("mic").classList.remove("on");
+    if($('mic')) $('mic').classList.remove('on');
     try{ if(rec) rec.abort(); }catch(e){}
   }
   async function startMic(){
     if(!on || ended || speaking || listening) return;
     if(!(await micPerm())) return;
     if(!rec) rec = initRec();
-    if(!rec){ st("تشخیص گفتار نیست — تایپ کنید","err"); return; }
-    try{ rec.start(); }
-    catch(e){ st("میکروفون شروع نشد — دوباره بزنید","err"); }
+    if(!rec){ st('تشخیص گفتار نیست — تایپ کنید', 'err'); return; }
+    try{ rec.start(); }catch(e){ st('میکروفون شروع نشد — دوباره بزنید', 'err'); }
   }
 
   /* ---------- رویدادها ---------- */
-  $("go").onclick = async () => {
+  $('go').onclick = async () => {
     await unlockAudio();
     await micPerm();
-    pickVoice();
-    $("gate").classList.add("hid");
+    $('gate').classList.add('hid');
     on = true; measure();
-    step = "problem";
-    await say("سلام، وقت بخیر. من منشی روابط عمومی هستم. بفرمایید مشکل یا درخواست‌تان چیست؟");
+    step = 'problem';
+
+    // پیام خوش‌آمد را مستقیم با TTS می‌سازیم (بدون رفت‌وبرگشت چت)
+    const welcome = 'سلام، وقت بخیر. من منشی روابط عمومی هستم. بفرمایید مشکل یا درخواست‌تان چیست؟';
+    bubble('bot', welcome);
+    data.history.push({role:'bot', text: welcome});
+    await speak(welcome);
   };
 
-  $("mic").onclick = () => { if(listening) stopMic(); else startMic(); };
+  $('mic').onclick = () => { if(listening) stopMic(); else startMic(); };
 
-  $("rep").onclick = async () => {
+  $('rep').onclick = async () => {
     if(!lastBot) return;
     if(!unlocked) await unlockAudio();
     await speak(lastBot);
   };
 
-  $("spk").onclick = () => {
+  $('spk').onclick = () => {
     mute = !mute;
-    $("spk").textContent = mute ? "🔇" : "🔊";
+    $('spk').textContent = mute ? '🔇' : '🔊';
     if(mute){
       try{ speechSynthesis.cancel(); }catch(e){}
       try{ audioEl.pause(); }catch(e){}
     }
   };
 
-  $("hang").onclick = async () => {
+  $('hang').onclick = async () => {
     if(!ended && data.problem){
-      const r = await saveToBot();
-      if(r && (r.supabaseOk || r.baleOk)) st("ثبت و ارسال شد ✅","live");
+      const r = await saveTicket();
+      if(r.supabaseOk || r.baleOk) st('ثبت و ارسال شد ✅', 'live');
     }
     ended = true;
     stopMic();
     try{ speechSynthesis.cancel(); }catch(e){}
     try{ audioEl.pause(); }catch(e){}
-    st("قطع شد");
+    st('قطع شد');
     try{ if(window.Bale && Bale.WebApp && Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
   };
 
-  $("send").onclick = () => { const v = $("txt").value; $("txt").value=""; onUser(v); };
-  $("txt").addEventListener("keydown", e => {
-    if(e.key === "Enter"){ const v = $("txt").value; $("txt").value=""; onUser(v); }
+  $('send').onclick = () => { const v = $('txt').value; $('txt').value = ''; onUser(v); };
+  $('txt').addEventListener('keydown', e => {
+    if(e.key === 'Enter'){ const v = $('txt').value; $('txt').value = ''; onUser(v); }
   });
-  $("txt").addEventListener("focus", () => { if(listening) stopMic(); });
+  $('txt').addEventListener('focus', () => { if(listening) stopMic(); });
 
-  window.addEventListener("resize", measure);
+  window.addEventListener('resize', measure);
   try{
     if(window.Bale && Bale.WebApp){
       Bale.WebApp.ready();
       try{ Bale.WebApp.expand(); }catch(e){}
     }
   }catch(e){}
-  try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
   measure();
 })();
 </script>
