@@ -9,7 +9,7 @@
     :root {
       --bg:#0b1220; --card:#151d2e; --text:#f2f5ff; --muted:#9aa6c2;
       --accent:#3ee0a3; --danger:#ff4d6d; --line:rgba(255,255,255,.08);
-      --ctrl-h: 168px;
+      --ctrl-h: 180px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
@@ -34,20 +34,16 @@
     .wave.on span:nth-child(4){animation-delay:.3s}
     .wave.on span:nth-child(5){animation-delay:.4s}
     @keyframes bounce{0%,100%{height:12px}50%{height:28px}}
-
-    /* فضای چت — padding-bottom بزرگ تا زیر منو نرود */
     .chat{
       flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
       padding:10px 12px;
-      padding-bottom: calc(var(--ctrl-h) + 24px + env(safe-area-inset-bottom));
-      display:flex;flex-direction:column;gap:8px;
-      min-height:0;
+      padding-bottom: calc(var(--ctrl-h) + 28px + env(safe-area-inset-bottom));
+      display:flex;flex-direction:column;gap:8px;min-height:0;
     }
     .bubble{max-width:90%;padding:10px 12px;border-radius:16px;line-height:1.75;font-size:.93rem;white-space:pre-wrap;word-break:break-word}
     .bubble.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-right-radius:6px}
     .bubble.user{align-self:flex-end;background:linear-gradient(135deg,#2a6bff,#3b8dff);border-bottom-left-radius:6px}
     .bubble .meta{font-size:.7rem;opacity:.7;margin-bottom:3px}
-
     .controls{
       position:fixed;bottom:0;left:0;right:0;z-index:20;
       padding:10px 12px calc(12px + env(safe-area-inset-bottom));
@@ -82,271 +78,391 @@
       <button class="btn mic" id="btnMic" title="میکروفون">🎤</button>
     </div>
     <div class="text-fallback">
-      <input id="txt" placeholder="اینجا بنویسید یا با میکروفون صحبت کنید…" autocomplete="off" />
+      <input id="txt" placeholder="اگر صدا نیامد اینجا تایپ کنید…" autocomplete="off" />
       <button id="btnSend">ارسال</button>
     </div>
-    <div class="hint" id="hint">راحت حرف بزنید؛ لازم نیست فرم پر کنید. منشی از حرف‌هایتان جمع‌بندی می‌کند.</div>
+    <div class="hint" id="hint">یک‌بار 🎤 را بزنید، صحبت کنید، صبر کنید تا متن بیاید. لازم نیست مدام بزنید.</div>
   </div>
 
 <script>
 (function(){
-  /* مکالمه طبیعی: آزاد حرف بزنید، اطلاعات از متن استخراج می‌شود، در پایان خلاصه و ثبت */
+  /* Push-to-talk پایدار: میکروفون فقط با دکمه روشن می‌شود و بعد از یک جمله خاموش می‌ماند
+     تا حلقه روشن/خاموش ایجاد نشود. */
 
-  let listening=false, speaking=false, mutedSpeaker=false, ended=false;
-  let recognition=null;
-  let turns=0;
-  const history=[]; // {role,text}
-  const data={ first_name:"", last_name:"", phone:"", problem:"", notes:[] };
+  let listening = false;
+  let speaking = false;
+  let mutedSpeaker = false;
+  let ended = false;
+  let recognition = null;
+  let recogStarting = false;
+  let turns = 0;
+  const history = [];
+  const data = { first_name:"", last_name:"", phone:"", problem:"", notes:[] };
+  let faVoice = null;
 
   const $ = id => document.getElementById(id);
-  const statusEl=$("status"), chatEl=$("chat"), waveEl=$("wave"), hint=$("hint");
+  const statusEl = $("status"), chatEl = $("chat"), waveEl = $("wave"), hint = $("hint");
 
-  function setStatus(t,cls){ statusEl.textContent=t; statusEl.className="status"+(cls?" "+cls:""); }
-  function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function setStatus(t, cls){
+    statusEl.textContent = t;
+    statusEl.className = "status" + (cls ? " " + cls : "");
+  }
+  function escapeHtml(s){
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
   function scrollChat(){
     requestAnimationFrame(()=>{ chatEl.scrollTop = chatEl.scrollHeight; });
   }
-  function addBubble(role,text){
-    const d=document.createElement("div");
-    d.className="bubble "+role;
-    d.innerHTML='<div class="meta">'+(role==="bot"?"منشی":"شما")+"</div>"+escapeHtml(text);
+  function addBubble(role, text){
+    const d = document.createElement("div");
+    d.className = "bubble " + role;
+    d.innerHTML = '<div class="meta">' + (role==="bot"?"منشی":"شما") + "</div>" + escapeHtml(text);
     chatEl.appendChild(d);
     scrollChat();
   }
 
+  function pickVoice(){
+    try{
+      const vs = speechSynthesis.getVoices() || [];
+      faVoice =
+        vs.find(v => /fa-IR/i.test(v.lang)) ||
+        vs.find(v => /fa/i.test(v.lang)) ||
+        vs.find(v => /persian|iran|farsi/i.test(v.name)) ||
+        null;
+    }catch(e){ faVoice = null; }
+  }
+  if (window.speechSynthesis){
+    pickVoice();
+    speechSynthesis.onvoiceschanged = pickVoice;
+  }
+
   function speak(text){
-    return new Promise(resolve=>{
-      if(mutedSpeaker || !window.speechSynthesis){ resolve(); return; }
-      speaking=true; waveEl.classList.add("on"); setStatus("منشی صحبت می‌کند…","live");
-      try{ speechSynthesis.cancel(); }catch(e){}
-      const u=new SpeechSynthesisUtterance(text);
-      u.lang="fa-IR"; u.rate=0.95;
-      try{
-        const vs=speechSynthesis.getVoices()||[];
-        const fa=vs.find(v=>/fa|persian|iran/i.test((v.lang||"")+(v.name||"")));
-        if(fa) u.voice=fa;
-      }catch(e){}
-      u.onend=()=>{ speaking=false; waveEl.classList.remove("on"); if(!ended) setStatus(listening?"دارم گوش می‌دهم…":"آماده", listening?"live":""); resolve(); };
-      u.onerror=()=>{ speaking=false; waveEl.classList.remove("on"); resolve(); };
-      // بعضی مرورگرها نیاز به getVoices async دارند
-      const start=()=>speechSynthesis.speak(u);
-      if((speechSynthesis.getVoices()||[]).length) start();
-      else { speechSynthesis.onvoiceschanged=()=>{ start(); speechSynthesis.onvoiceschanged=null; }; setTimeout(start, 300); }
+    return new Promise((resolve) => {
+      if (mutedSpeaker || !window.speechSynthesis){
+        resolve();
+        return;
+      }
+      // قبل از حرف زدن منشی، میکروفون را کامل قطع کن
+      stopListening(true);
+      speaking = true;
+      waveEl.classList.add("on");
+      setStatus("منشی صحبت می‌کند…", "live");
+      try { speechSynthesis.cancel(); } catch(e){}
+
+      // بعضی مرورگرها نیاز به «unlock» بعد از gesture دارند
+      const u = new SpeechSynthesisUtterance(String(text || ""));
+      u.lang = "fa-IR";
+      u.rate = 0.92;
+      u.pitch = 1;
+      u.volume = 1;
+      pickVoice();
+      if (faVoice) u.voice = faVoice;
+
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        speaking = false;
+        waveEl.classList.remove("on");
+        if (!ended) setStatus("آماده — 🎤 را بزنید و صحبت کنید", "");
+        resolve();
+      };
+      u.onend = finish;
+      u.onerror = finish;
+      // Chrome bug: گاهی speak بلافاصله قطع می‌شود
+      setTimeout(() => {
+        try { speechSynthesis.speak(u); } catch(e){ finish(); }
+      }, 60);
+      // ایمنی: اگر onend نیامد
+      setTimeout(finish, Math.min(20000, 2000 + String(text).length * 80));
     });
   }
 
   function normalizePhone(raw){
-    raw=String(raw||"").replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c));
-    let d=raw.replace(/[^\d+]/g,"");
-    if(d.startsWith("0098")) d="+98"+d.slice(4);
-    else if(d.startsWith("98")&&d.length>=12) d="+"+d;
-    else if(/^09\d{9}$/.test(d)) d="+98"+d.slice(1);
-    else if(/^9\d{9}$/.test(d)) d="+98"+d;
+    raw = String(raw||"").replace(/[۰-۹]/g, c => "۰۱۲۳۴۵۶۷۸۹".indexOf(c));
+    let d = raw.replace(/[^\d+]/g, "");
+    if (d.startsWith("0098")) d = "+98" + d.slice(4);
+    else if (d.startsWith("98") && d.length >= 12) d = "+" + d;
+    else if (/^09\d{9}$/.test(d)) d = "+98" + d.slice(1);
+    else if (/^9\d{9}$/.test(d)) d = "+98" + d;
     return d;
   }
-  function validPhone(p){ p=normalizePhone(p); return /^\+98\d{10}$/.test(p); }
+  function validPhone(p){
+    p = normalizePhone(p);
+    return /^\+98\d{10}$/.test(p);
+  }
 
-  /** استخراج نرم از متن آزاد */
   function extractFromText(text){
-    const t=text.trim();
-    // موبایل
-    const m=t.match(/(?:\+98|0098|98|0)?9\d{9}/);
-    if(m){
-      const p=normalizePhone(m[0]);
-      if(validPhone(p)) data.phone=p;
+    const t = text.trim();
+    const tLat = t.replace(/[۰-۹]/g, c => "۰۱۲۳۴۵۶۷۸۹".indexOf(c));
+    const m = tLat.match(/(?:\+98|0098|98|0)?9\d{9}/);
+    if (m){
+      const p = normalizePhone(m[0]);
+      if (validPhone(p)) data.phone = p;
     }
-    // «اسمم علی است» / «من رضایی هستم»
-    let mm=t.match(/(?:اسمم|اسم من|نامم|نام من)\s+([آ-یء‌]{2,15})/);
-    if(mm) data.first_name=mm[1];
-    mm=t.match(/(?:فامیلم|نام خانوادگیم|نام‌خانوادگیم)\s+([آ-یء‌]{2,20})/);
-    if(mm) data.last_name=mm[1];
-    // جمله کوتاه فقط نام
-    if(!data.first_name && turns<=2 && /^[آ-یء‌]{2,15}$/.test(t)) data.first_name=t;
-    // مشکل: جملات طولانی‌تر
-    if(t.length>=12 && !/^(سلام|درود|خوبی|صبح|عصر)/.test(t)){
-      if(!data.problem || t.length > data.problem.length) data.problem=t.slice(0,2000);
+    let mm = t.match(/(?:اسمم|اسم من|نامم|نام من)\s+([آ-یء‌]{2,15})/);
+    if (mm) data.first_name = mm[1];
+    mm = t.match(/من\s+([آ-یء‌]{2,15})\s+هستم/);
+    if (mm) data.first_name = mm[1];
+    if (!data.first_name && turns <= 2 && /^[آ-یء‌]{2,15}$/.test(t)) data.first_name = t;
+    mm = t.match(/(?:فامیلم|نام خانوادگیم|نام‌خانوادگیم)\s+([آ-یء‌]{2,20})/);
+    if (mm) data.last_name = mm[1];
+    if (t.length >= 12 && !/^(سلام|درود|خوبی)/.test(t)){
+      if (!data.problem || t.length > data.problem.length) data.problem = t.slice(0, 2000);
     }
     data.notes.push(t);
   }
 
   function missing(){
-    const m=[];
-    if(!data.first_name) m.push("نام");
-    if(!data.phone) m.push("شماره تماس");
-    if(!data.problem || data.problem.length<8) m.push("شرح درخواست");
+    const m = [];
+    if (!data.first_name) m.push("نام");
+    if (!data.phone) m.push("شماره تماس");
+    if (!data.problem || data.problem.length < 8) m.push("شرح درخواست");
     return m;
   }
 
   function buildSummary(){
-    const parts=[];
-    if(data.first_name) parts.push("نام: "+data.first_name+(data.last_name?" "+data.last_name:""));
-    if(data.phone) parts.push("تلفن: "+data.phone);
-    if(data.problem) parts.push("موضوع: "+data.problem);
+    const parts = [];
+    if (data.first_name) parts.push("نام: " + data.first_name + (data.last_name ? " " + data.last_name : ""));
+    if (data.phone) parts.push("تلفن: " + data.phone);
+    if (data.problem) parts.push("موضوع: " + data.problem);
     return parts.join(" | ");
   }
 
   function persistLocal(){
     try{
-      const key="pr_voice_tickets_v2";
-      const arr=JSON.parse(localStorage.getItem(key)||"[]");
+      const key = "pr_voice_tickets_v2";
+      const arr = JSON.parse(localStorage.getItem(key) || "[]");
       arr.push({
-        first_name:data.first_name, last_name:data.last_name, phone:data.phone,
-        problem:data.problem, conversation_summary:buildSummary(),
-        history:history.slice(-20), created_at:new Date().toISOString(), channel:"voice_miniapp"
+        first_name: data.first_name, last_name: data.last_name, phone: data.phone,
+        problem: data.problem, conversation_summary: buildSummary(),
+        history: history.slice(-20), created_at: new Date().toISOString(), channel: "voice_miniapp"
       });
       localStorage.setItem(key, JSON.stringify(arr.slice(-200)));
     }catch(e){}
   }
 
-  /** پاسخ طبیعی — نه فرم خشک */
   function replyFor(userText){
     turns++;
     extractFromText(userText);
-    const miss=missing();
-    const low=userText.trim().toLowerCase();
+    const miss = missing();
 
-    // پایان از طرف کاربر
-    if(/^(تمام|پایان|خداحافظ|بسه|مرسی|ممنون|دیگه چیزی نیست)/.test(userText.trim()) || /ثبت کن|همینه/.test(userText)){
-      if(miss.length===0){
+    if (/^(تمام|پایان|خداحافظ|بسه|مرسی|ممنون|دیگه چیزی نیست)/.test(userText.trim()) || /ثبت کن|همینه/.test(userText)){
+      if (miss.length === 0){
         persistLocal();
-        return { reply:"خیلی ممنون از وقتی که گذاشتید. درخواست‌تان ثبت شد و همکاران روابط عمومی پیگیری می‌کنند. روز خوبی داشته باشید.", done:true };
+        return { reply: "خیلی ممنون از وقتی که گذاشتید. درخواست‌تان ثبت شد و همکاران روابط عمومی پیگیری می‌کنند. روز خوبی داشته باشید.", done: true };
       }
-      return { reply:"قبل از بستن، فقط "+miss.join(" و ")+" را هم بفرمایید تا بتوانم درست ثبت کنم.", done:false };
+      return { reply: "قبل از بستن، فقط " + miss.join(" و ") + " را هم بفرمایید تا بتوانم درست ثبت کنم.", done: false };
     }
 
-    if(turns===1){
-      // بعد از اولین پاسخ کاربر
-      if(data.first_name)
-        return { reply:data.first_name+" عزیز، خوشحالم از تماس‌تان. بفرمایید چه کمکی از روابط عمومی می‌توانم بکنم؟", done:false };
-      return { reply:"خوشحالم که تماس گرفتید. اگر مایلید نام‌تان را بگویید و بعد هرچه در ذهن‌تان است راحت بفرمایید.", done:false };
+    if (turns === 1){
+      if (data.first_name)
+        return { reply: data.first_name + " عزیز، خوشحالم از تماس‌تان. بفرمایید چه کمکی از روابط عمومی می‌توانم بکنم؟", done: false };
+      return { reply: "خوشحالم که تماس گرفتید. اگر مایلید نام‌تان را بگویید و بعد هرچه در ذهن‌تان است راحت بفرمایید.", done: false };
     }
 
-    if(miss.length===0 && turns>=3){
-      persistLocal();
+    if (miss.length === 0 && turns >= 3){
       return {
-        reply:"متوجه شدم. خلاصه: "+buildSummary()+". اگر مورد دیگری نیست بگویید «تمام»؛ در غیر این صورت هرچه هست بفرمایید.",
-        done:false,
-        almost:true
+        reply: "متوجه شدم. خلاصه: " + buildSummary() + ". اگر مورد دیگری نیست بگویید «تمام»؛ در غیر این صورت هرچه هست بفرمایید.",
+        done: false
       };
     }
 
-    // راهنمایی نرم فقط برای فیلد ناقص — نه بازجویی
-    if(miss.indexOf("شماره تماس")>=0 && turns>=2 && !data.phone)
-      return { reply:"باشه، متوجه منظورتان شدم. برای پیگیری همکاران، یک شماره تماس هم اگر بفرمایید عالی می‌شود.", done:false };
-    if(miss.indexOf("نام")>=0 && turns>=2 && !data.first_name)
-      return { reply:"چشم. اگر ممکن است نام خودتان را هم بفرمایید تا در پرونده ثبت کنم.", done:false };
-    if(miss.indexOf("شرح درخواست")>=0 && turns>=2)
-      return { reply:"در خدمتم. کمی بیشتر از موضوع بگویید تا دقیق‌تر منتقل کنم.", done:false };
+    if (miss.indexOf("شماره تماس") >= 0 && turns >= 2 && !data.phone)
+      return { reply: "باشه، متوجه منظورتان شدم. برای پیگیری همکاران، یک شماره تماس هم اگر بفرمایید عالی می‌شود.", done: false };
+    if (miss.indexOf("نام") >= 0 && turns >= 2 && !data.first_name)
+      return { reply: "چشم. اگر ممکن است نام خودتان را هم بفرمایید تا در پرونده ثبت کنم.", done: false };
+    if (miss.indexOf("شرح درخواست") >= 0 && turns >= 2)
+      return { reply: "در خدمتم. کمی بیشتر از موضوع بگویید تا دقیق‌تر منتقل کنم.", done: false };
 
-    // پاسخ همدلانه عمومی
-    const soft=[
-      "متوجه شدم. ادامه بدهید، دارم گوش می‌دهم.",
-      "بله، درست است. چیز دیگری هم هست که بگویید؟",
-      "ممنون از توضیح‌تان. اگر جزئیات بیشتری دارید بفرمایید.",
-      "چشم، یادداشت کردم. بفرمایید."
+    const soft = [
+      "متوجه شدم. ادامه بدهید.",
+      "بله. چیز دیگری هم هست؟",
+      "ممنون از توضیح‌تان.",
+      "چشم، یادداشت کردم."
     ];
-    return { reply: soft[turns % soft.length], done:false };
+    return { reply: soft[turns % soft.length], done: false };
   }
 
   async function handleUserText(userText){
-    userText=(userText||"").trim();
-    if(!userText||ended) return;
+    userText = (userText || "").trim();
+    if (!userText || ended) return;
+    stopListening(true);
     addBubble("user", userText);
-    history.push({role:"user", text:userText});
-    stopListening();
-    const r=replyFor(userText);
-    history.push({role:"bot", text:r.reply});
+    history.push({ role: "user", text: userText });
+    const r = replyFor(userText);
+    history.push({ role: "bot", text: r.reply });
     addBubble("bot", r.reply);
     await speak(r.reply);
-    if(r.done){
-      ended=true;
-      setStatus("تماس به پایان رسید","live");
-      hint.textContent="درخواست ثبت شد. می‌توانید قطع کنید.";
-      stopListening();
+    if (r.done){
+      ended = true;
+      setStatus("تماس به پایان رسید", "live");
+      hint.textContent = "درخواست ثبت شد. می‌توانید قطع کنید.";
     } else {
-      startListening();
+      hint.textContent = "برای ادامه، دوباره 🎤 را بزنید و صحبت کنید — یا تایپ کنید.";
+      setStatus("آماده — 🎤 را بزنید", "");
     }
   }
 
   function initRecognition(){
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!SR) return null;
-    const r=new SR();
-    r.lang="fa-IR"; r.continuous=false; r.interimResults=false;
-    r.onresult=(ev)=>{
-      let text="";
-      for(let i=ev.resultIndex;i<ev.results.length;i++){
-        if(ev.results[i].isFinal) text+=ev.results[i][0].transcript;
-      }
-      text=(text||"").trim();
-      if(text && !speaking) handleUserText(text);
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    const r = new SR();
+    r.lang = "fa-IR";
+    r.continuous = false;   // یک جمله — حلقه روشن/خاموش نمی‌سازد
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+
+    r.onstart = function(){
+      recogStarting = false;
+      listening = true;
+      $("btnMic").classList.add("on");
+      setStatus("گوش می‌دهم… صحبت کنید", "live");
     };
-    r.onerror=(ev)=>{
-      if(ev.error==="not-allowed"){
-        setStatus("دسترسی میکروفون نیست — از کادر متن استفاده کنید","err");
-        stopListening();
+
+    r.onresult = function(ev){
+      let text = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++){
+        if (ev.results[i].isFinal) text += ev.results[i][0].transcript;
+      }
+      text = (text || "").trim();
+      // بعد از نتیجه، خودمان listening را می‌بندیم — restart نمی‌کنیم
+      listening = false;
+      $("btnMic").classList.remove("on");
+      if (text && !speaking) handleUserText(text);
+      else if (!text) setStatus("چیزی نشنیدم — دوباره 🎤 را بزنید", "err");
+    };
+
+    r.onerror = function(ev){
+      recogStarting = false;
+      listening = false;
+      $("btnMic").classList.remove("on");
+      if (ev.error === "not-allowed"){
+        setStatus("دسترسی میکروفون نیست — از کادر متن استفاده کنید", "err");
+      } else if (ev.error === "no-speech"){
+        setStatus("صدایی نشنیدم — دوباره 🎤 را بزنید", "err");
+      } else if (ev.error !== "aborted"){
+        setStatus("خطای میکروفون — از تایپ استفاده کنید", "err");
       }
     };
-    r.onend=()=>{
-      // continuous=false: بعد از یک جمله می‌ایستد؛ اگر هنوز در حالت listening هستیم دوباره شروع کن
-      if(listening && !ended && !speaking){
-        setTimeout(()=>{ try{ r.start(); }catch(e){} }, 250);
+
+    r.onend = function(){
+      recogStarting = false;
+      // عمداً restart نمی‌کنیم تا چشمک نزند
+      if (listening){
+        listening = false;
+        $("btnMic").classList.remove("on");
       }
     };
     return r;
   }
+
   function startListening(){
-    if(ended) return;
-    if(!recognition) recognition=initRecognition();
-    if(!recognition){
-      setStatus("این محیط تشخیص گفتار ندارد — لطفاً تایپ کنید","err");
+    if (ended || speaking) return;
+    if (listening || recogStarting) return;
+    if (!recognition) recognition = initRecognition();
+    if (!recognition){
+      setStatus("این محیط تشخیص گفتار ندارد — لطفاً تایپ کنید", "err");
       return;
     }
-    listening=true; $("btnMic").classList.add("on");
-    setStatus("دارم گوش می‌دهم… صحبت کنید","live");
-    try{ recognition.start(); }catch(e){}
-  }
-  function stopListening(){
-    listening=false; $("btnMic").classList.remove("on");
-    try{ if(recognition) recognition.stop(); }catch(e){}
+    recogStarting = true;
+    try {
+      recognition.start();
+    } catch(e){
+      recogStarting = false;
+      // گاهی already started
+      try { recognition.stop(); } catch(e2){}
+      setTimeout(function(){
+        try {
+          recogStarting = true;
+          recognition.start();
+        } catch(e3){
+          recogStarting = false;
+          setStatus("میکروفون آماده نشد — تایپ کنید", "err");
+        }
+      }, 400);
+    }
   }
 
-  $("btnMic").onclick=()=>{ if(ended) return; if(listening) stopListening(); else startListening(); };
-  $("btnHang").onclick=()=>{
-    // اگر داده کافی بود هنگام قطع هم ذخیره کن
-    if(!ended && data.phone && (data.problem||data.first_name)) persistLocal();
-    ended=true; stopListening();
-    try{ speechSynthesis&&speechSynthesis.cancel(); }catch(e){}
+  function stopListening(silent){
+    listening = false;
+    recogStarting = false;
+    $("btnMic").classList.remove("on");
+    try { if (recognition) recognition.abort(); } catch(e){
+      try { recognition.stop(); } catch(e2){}
+    }
+    if (!silent && !ended && !speaking) setStatus("میکروفون خاموش", "");
+  }
+
+  $("btnMic").onclick = function(){
+    if (ended || speaking) return;
+    if (listening || recogStarting){
+      stopListening();
+      return;
+    }
+    startListening();
+  };
+
+  $("btnHang").onclick = function(){
+    if (!ended && data.phone && (data.problem || data.first_name)) persistLocal();
+    ended = true;
+    stopListening(true);
+    try { speechSynthesis && speechSynthesis.cancel(); } catch(e){}
     setStatus("تماس قطع شد");
-    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.close) Bale.WebApp.close(); }catch(e){}
+    try { if (window.Bale && Bale.WebApp && Bale.WebApp.close) Bale.WebApp.close(); } catch(e){}
   };
-  $("btnSpeaker").onclick=()=>{
-    mutedSpeaker=!mutedSpeaker;
-    $("btnSpeaker").textContent=mutedSpeaker?"🔇":"🔊";
-    if(mutedSpeaker) try{ speechSynthesis.cancel(); }catch(e){}
-  };
-  $("btnSend").onclick=()=>{ const v=$("txt").value; $("txt").value=""; handleUserText(v); };
-  $("txt").addEventListener("keydown",e=>{ if(e.key==="Enter"){ const v=$("txt").value; $("txt").value=""; handleUserText(v);} });
 
-  // اندازه نوار پایین برای padding چت
+  $("btnSpeaker").onclick = function(){
+    mutedSpeaker = !mutedSpeaker;
+    $("btnSpeaker").textContent = mutedSpeaker ? "🔇" : "🔊";
+    if (mutedSpeaker) try { speechSynthesis.cancel(); } catch(e){}
+  };
+
+  $("btnSend").onclick = function(){
+    const v = $("txt").value;
+    $("txt").value = "";
+    handleUserText(v);
+  };
+  $("txt").addEventListener("keydown", function(e){
+    if (e.key === "Enter"){
+      const v = $("txt").value;
+      $("txt").value = "";
+      handleUserText(v);
+    }
+  });
+
   function measureControls(){
-    const h=$("controls").offsetHeight||168;
-    document.documentElement.style.setProperty("--ctrl-h", h+"px");
+    const h = $("controls").offsetHeight || 180;
+    document.documentElement.style.setProperty("--ctrl-h", h + "px");
     scrollChat();
   }
   window.addEventListener("resize", measureControls);
 
   async function boot(){
-    try{ if(window.Bale&&Bale.WebApp&&Bale.WebApp.ready) Bale.WebApp.ready(); }catch(e){}
+    try { if (window.Bale && Bale.WebApp && Bale.WebApp.ready) Bale.WebApp.ready(); } catch(e){}
     measureControls();
-    const hello="سلام، وقت بخیر. من منشی روابط عمومی هستم. راحت بفرمایید چه کمکی از دستم برمی‌آید؛ هرطور راحت‌اید حرف بزنید.";
+    pickVoice();
+
+    const hello = "سلام، وقت بخیر. من منشی روابط عمومی هستم. راحت بفرمایید چه کمکی از دستم برمی‌آید.";
     addBubble("bot", hello);
-    history.push({role:"bot", text:hello});
+    history.push({ role: "bot", text: hello });
+
+    // برای فعال‌شدن صدا در موبایل، بعد از gesture کاربر بهتر کار می‌کند
+    // اول سعی می‌کنیم حرف بزنیم؛ اگر مرورگر بلاک کرد، راهنما می‌دهیم
     await speak(hello);
-    startListening();
+
+    if (!window.speechSynthesis){
+      setStatus("پخش صوت در این مرورگر نیست — متن را بخوانید", "err");
+    } else if (!faVoice){
+      hint.textContent = "صدای فارسی روی دستگاه پیدا نشد؛ متن را می‌بینید. با 🎤 یا تایپ ادامه دهید.";
+    } else {
+      hint.textContent = "یک‌بار 🎤 را بزنید و صحبت کنید. دوباره مدام نزنید.";
+    }
+    setStatus("آماده — 🎤 را بزنید یا تایپ کنید", "");
   }
-  // voices
-  try{ speechSynthesis.getVoices(); }catch(e){}
+
+  // صداها را زود لود کن
+  try { speechSynthesis.getVoices(); } catch(e){}
   boot();
 })();
 </script>
