@@ -4,875 +4,1339 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#102b27">
-<title>منشی صوتی هوشمند روابط عمومی</title>
+<meta name="theme-color" content="#0b1220">
+<title>منشی زنده روابط عمومی</title>
 <script src="https://tapi.bale.ai/miniapp.js"></script>
 
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:#0d1918;color:#f3f7f5;font-family:Tahoma,Arial,sans-serif}
-.app{max-width:600px;min-height:100vh;margin:auto;padding:15px;display:flex;flex-direction:column;gap:13px}
-.header{background:linear-gradient(135deg,#174c40,#102c29);border:1px solid #286653;border-radius:18px;padding:19px 14px;text-align:center}
-.header h1{font-size:19px;margin:0 0 9px}
-.header p{color:#c4ded4;font-size:12px;line-height:1.8;margin:0}
-.status{display:flex;justify-content:center;align-items:center;gap:8px;color:#b9d5ca;font-size:12px;padding:4px}
-.dot{width:9px;height:9px;border-radius:50%;background:#4bc58a;box-shadow:0 0 8px #4bc58a}
-.panel{background:#172522;border:1px solid #29423b;border-radius:16px;padding:15px}
-.panel h2{font-size:15px;margin:0 0 13px;color:#d8eee4}
-.conversation{min-height:180px;max-height:330px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px}
-.message{max-width:90%;padding:11px 13px;border-radius:13px;font-size:13px;line-height:2;white-space:pre-wrap;overflow-wrap:anywhere}
-.user{align-self:flex-start;background:#245849;border-bottom-left-radius:3px}
-.bot{align-self:flex-end;background:#263633;border:1px solid #38544a;border-bottom-right-radius:3px}
-.system{align-self:center;color:#a7bcb4;font-size:11px;background:transparent;padding:3px}
-.input-row{display:flex;gap:8px;margin-top:12px}
-input,textarea{width:100%;background:#0e1b18;border:1px solid #38544a;border-radius:11px;color:white;padding:12px;outline:none;font-family:inherit;font-size:13px;text-align:right}
-input:focus,textarea:focus{border-color:#55b88b}
-input::placeholder,textarea::placeholder{color:#839991}
-textarea{min-height:80px;resize:vertical;line-height:1.8}
-button{border:0;border-radius:11px;padding:12px 14px;color:white;font-family:inherit;font-size:13px;cursor:pointer;background:#267a5b}
-button:disabled{opacity:.45;cursor:not-allowed}
-.send-btn{min-width:75px}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
-.controls button{min-height:46px}
-.secondary{background:#31443e}
-.danger{background:#8a3d3d}
-.recording{background:#b33d3d!important;animation:pulse 1.2s infinite}
-@keyframes pulse{50%{opacity:.65}}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field.full{grid-column:1/-1}
-.field label{font-size:11px;color:#b5cbc1}
-.save-btn{width:100%;margin-top:12px;min-height:47px;background:#25865e;font-weight:bold}
-.small-note{color:#91a69d;font-size:10px;line-height:1.9;margin-top:10px}
-.footer{text-align:center;color:#80968c;font-size:10px;line-height:1.8;padding:8px 0 18px}
-@media(max-width:380px){.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+:root{
+  --bg:#0b1220;
+  --card:#151d2e;
+  --text:#f2f5ff;
+  --muted:#9aa6c2;
+  --accent:#3ee0a3;
+  --danger:#ff4d6d;
+  --line:rgba(255,255,255,.1);
+  --ctrl-h:145px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;
+  overflow:hidden;
+}
+body{
+  font-family:Tahoma,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+}
+button,input{font-family:inherit}
+.top{
+  padding:10px 12px 5px;
+  text-align:center;
+  flex-shrink:0;
+}
+.badge{
+  display:inline-block;
+  padding:4px 11px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:5px;
+}
+h1{font-size:1.05rem}
+#status{
+  color:var(--muted);
+  font-size:.8rem;
+  min-height:20px;
+  margin-top:4px;
+}
+#status.live{color:var(--accent)}
+#status.err{color:var(--danger)}
+#chat{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:10px 12px;
+  padding-bottom:calc(var(--ctrl-h) + 20px + env(safe-area-inset-bottom,0px));
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  min-height:0;
+}
+.b{
+  max-width:90%;
+  padding:9px 12px;
+  border-radius:14px;
+  line-height:1.8;
+  font-size:.9rem;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.bot{
+  align-self:flex-start;
+  background:var(--card);
+  border:1px solid var(--line);
+}
+.user{
+  align-self:flex-end;
+  background:#285fc4;
+}
+.meta{
+  font-size:.65rem;
+  opacity:.65;
+  margin-bottom:3px;
+}
+.ctrl{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:30;
+  padding:9px 10px calc(10px + env(safe-area-inset-bottom,0px));
+  background:rgba(11,18,32,.98);
+  border-top:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  align-items:center;
+}
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+}
+.btn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.07);
+  color:var(--text);
+  border-radius:999px;
+  height:38px;
+  min-width:38px;
+  padding:0 12px;
+  font-size:14px;
+  cursor:pointer;
+}
+.btn.main{
+  background:var(--accent);
+  color:#042214;
+  font-weight:800;
+  border:none;
+  height:46px;
+  padding:0 24px;
+  font-size:15px;
+}
+.btn.hang{
+  background:var(--danger);
+  border:none;
+  color:#fff;
+  width:43px;
+  height:43px;
+}
+.btn.mic{
+  width:48px;
+  height:48px;
+  font-size:20px;
+}
+.btn.mic.on{
+  background:var(--accent);
+  color:#042214;
+  outline:3px solid rgba(62,224,163,.2);
+}
+.btn:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+.row2{
+  display:flex;
+  width:100%;
+  max-width:440px;
+  gap:7px;
+}
+.row2 input{
+  flex:1;
+  min-width:0;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  padding:11px;
+  font-size:.9rem;
+  outline:none;
+}
+.row2 button{
+  border:none;
+  border-radius:12px;
+  background:var(--accent);
+  color:#042214;
+  font-weight:700;
+  padding:0 15px;
+  font-size:13px;
+}
+.hint{
+  font-size:11px;
+  color:var(--muted);
+  text-align:center;
+}
+#gate{
+  position:fixed;
+  inset:0;
+  background:rgba(5,10,20,.97);
+  z-index:50;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:24px;
+  text-align:center;
+}
+#gate.hid{display:none}
+#gate p{
+  color:var(--muted);
+  max-width:320px;
+  line-height:1.9;
+  font-size:.88rem;
+}
+#gate .btn{margin-top:8px}
 </style>
 </head>
 
 <body>
-<div class="app">
 
-<header class="header">
-<h1>منشی صوتی هوشمند روابط عمومی</h1>
-<p>شرکت توزیع نیروی برق استان سیستان و بلوچستان</p>
-</header>
-
-<div class="status">
-<span class="dot" id="statusDot"></span>
-<span id="statusText">آماده شروع مکالمه</span>
-</div>
-
-<section class="panel">
-<h2>گفت‌وگوی زنده صوتی</h2>
-
-<div class="conversation" id="conversation">
-<div class="message system">برای شروع مکالمه دکمه شروع تماس را بزنید.</div>
+<div id="gate">
+  <div class="badge">تماس هوشمند · Gemini</div>
+  <h2>منشی روابط عمومی</h2>
+  <p>
+    برای شروع مکالمه دکمه زیر را بزنید.
+    پس از شروع، منشی به صحبت‌های شما گوش می‌دهد و پاسخ می‌دهد.
+  </p>
+  <button class="btn main" id="go">📞 شروع تماس</button>
 </div>
 
-<div class="input-row">
-<input id="messageInput" placeholder="یا پیام خود را تایپ کنید..." autocomplete="off">
-<button class="send-btn" id="sendBtn">ارسال</button>
+<div class="top">
+  <div class="badge">● تماس زنده</div>
+  <h1>منشی روابط عمومی</h1>
+  <div id="status">منتظر شروع تماس…</div>
 </div>
 
-<div class="controls">
-<button id="startBtn">شروع تماس صوتی</button>
-<button class="secondary" id="micBtn">🎙 فعال‌سازی میکروفون</button>
-<button class="secondary" id="stopBtn">توقف میکروفون</button>
-<button class="danger" id="endBtn">پایان مکالمه</button>
-</div>
+<div id="chat"></div>
 
-<div class="small-note">
-پس از پایان صحبت شما، منشی پاسخ صوتی می‌دهد و سپس میکروفون به‌صورت خودکار برای ادامه مکالمه فعال می‌شود.
-</div>
-</section>
+<div class="ctrl" id="ctrl">
+  <div class="row">
+    <button class="btn" id="spk" title="قطع و وصل صدا">🔊</button>
+    <button class="btn hang" id="hang" title="پایان تماس">☎</button>
+    <button class="btn mic" id="mic" title="میکروفن">🎤</button>
+    <button class="btn" id="rep" title="تکرار پاسخ">▶️</button>
+  </div>
 
-<section class="panel">
-<h2>اطلاعات درخواست</h2>
+  <div class="row2">
+    <input id="txt" placeholder="پیام خود را بنویسید…" autocomplete="off">
+    <button id="send">ارسال</button>
+  </div>
 
-<div class="form-grid">
-<div class="field">
-<label>نام</label>
-<input id="firstName" placeholder="نام">
-</div>
-<div class="field">
-<label>نام خانوادگی</label>
-<input id="lastName" placeholder="نام خانوادگی">
-</div>
-<div class="field">
-<label>شماره تماس</label>
-<input id="phone" inputmode="tel" placeholder="09xxxxxxxxx">
-</div>
-<div class="field">
-<label>شهر</label>
-<input id="city" placeholder="مثلاً زاهدان">
-</div>
-<div class="field full">
-<label>آدرس</label>
-<textarea id="address" placeholder="آدرس دقیق محل"></textarea>
-</div>
-<div class="field full">
-<label>شرح درخواست یا مشکل</label>
-<textarea id="problem" placeholder="شرح درخواست یا مشکل"></textarea>
-</div>
-</div>
-
-<button class="save-btn" id="saveBtn">ثبت درخواست در سامانه</button>
-<div class="small-note" id="saveStatus">پس از ثبت موفق، نتیجه سامانه نمایش داده می‌شود.</div>
-</section>
-
-<footer class="footer">روابط عمومی شرکت توزیع نیروی برق استان سیستان و بلوچستان</footer>
+  <div class="hint" id="hint">
+    میکروفن آماده · مکالمه فارسی
+  </div>
 </div>
 
 <script>
+(function(){
+
 "use strict";
 
-// ========================================
-// تنظیمات اتصال
-// ========================================
+// ==========================================
+// CONFIG
+// ==========================================
 
-const API_URL =
+const DEFAULT_API =
 "https://bfzreeyyhmygpnfzczwn.supabase.co/functions/v1/pr-live";
+
+// اگر تابع Supabase شما JWT verification دارد،
+// کلید عمومی anon را اینجا قرار دهید.
+// این کلید نباید service_role باشد.
+const SUPABASE_ANON_KEY = "";
 
 const VOICE = "Kore";
 
 const CHAT_TIMEOUT = 25000;
-const TTS_TIMEOUT = 30000;
-const SAVE_TIMEOUT = 20000;
+const TTS_TIMEOUT = 35000;
+const AUTO_LISTEN = true;
+
+// ==========================================
+// STATE
+// ==========================================
+
+let on = false;
+let ended = false;
+let listening = false;
+let speaking = false;
+let busy = false;
+let mute = false;
+let intentionalStop = false;
+let recognitionBlocked = false;
+
+let rec = null;
+let lastBot = "";
+let lastAudioUrl = null;
+let restartTimer = null;
+let speechSession = 0;
+
+const history = [];
+const audioEl = new Audio();
+
+audioEl.preload = "auto";
 
 const $ = id => document.getElementById(id);
 
-// ========================================
-// وضعیت مکالمه
-// ========================================
+// ==========================================
+// API URL
+// ==========================================
 
-let history = [];
-let transcript = [];
-let recognition = null;
+function getApiUrl(){
 
-let micSession = false;
-let recognitionRunning = false;
-let processing = false;
-let saving = false;
-let ended = false;
+  try{
+    const params = new URL(location.href);
+    const custom = params.searchParams.get("api");
 
-let pendingSpeech = "";
-let lastReply = "";
-let currentAudio = null;
+    if(custom) return custom.replace(/\/$/,"");
 
-const ticketId = (
-  window.crypto && crypto.randomUUID
-) ? crypto.randomUUID() :
-("pr-" + Date.now() + "-" + Math.random().toString(36).slice(2));
+    const saved = localStorage.getItem("pr_live_api");
 
-const conversation = $("conversation");
+    if(saved) return saved.replace(/\/$/,"");
 
-// ========================================
-// رابط کاربری
-// ========================================
+  }catch(e){}
 
-function status(text, error=false) {
-  $("statusText").textContent = text;
-  $("statusDot").style.background = error ? "#e15b5b" : "#4bc58a";
-  $("statusDot").style.boxShadow =
-    error ? "0 0 8px #e15b5b" : "0 0 8px #4bc58a";
+  return DEFAULT_API.replace(/\/$/,"");
 }
 
-function addMessage(text, type="bot") {
-  const div = document.createElement("div");
-  div.className = "message " + type;
-  div.textContent = text;
-  conversation.appendChild(div);
-  conversation.scrollTop = conversation.scrollHeight;
+// ==========================================
+// UI
+// ==========================================
+
+function status(text, type){
+
+  $("status").textContent = text;
+  $("status").className = type || "";
+
 }
 
-function addTranscript(role,text) {
-  transcript.push({
+function measure(){
+
+  const h = $("ctrl").offsetHeight || 145;
+
+  document.documentElement.style.setProperty(
+    "--ctrl-h",
+    h + "px"
+  );
+
+}
+
+function scrollChat(){
+
+  const c = $("chat");
+
+  c.scrollTop = c.scrollHeight;
+
+}
+
+function bubble(role,text){
+
+  const d = document.createElement("div");
+
+  d.className = "b " + (role === "bot" ? "bot" : "user");
+
+  const meta = document.createElement("div");
+
+  meta.className = "meta";
+
+  meta.textContent =
+    role === "bot" ? "منشی روابط عمومی" : "شما";
+
+  const content = document.createElement("div");
+
+  // امن: متن کاربر هرگز به صورت HTML اجرا نمی‌شود.
+  content.textContent = String(text || "");
+
+  d.appendChild(meta);
+  d.appendChild(content);
+
+  $("chat").appendChild(d);
+
+  scrollChat();
+
+}
+
+// ==========================================
+// HISTORY
+// ==========================================
+
+function saveHistory(role,text){
+
+  history.push({
     role,
-    text:String(text || "").slice(0,2000)
+    text
   });
-  if(transcript.length > 100) transcript = transcript.slice(-100);
+
+  // فقط ۱۲ پیام آخر در حافظه نگهداری شود.
+  while(history.length > 12){
+    history.shift();
+  }
+
 }
 
-function field(id) {
-  return $(id).value.trim();
+// ==========================================
+// AUDIO UNLOCK
+// ==========================================
+
+async function unlockAudio(){
+
+  try{
+
+    audioEl.src =
+      "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+
+    await audioEl.play();
+
+    audioEl.pause();
+    audioEl.currentTime = 0;
+
+  }catch(e){
+
+    console.log("Audio unlock:",e);
+
+  }
+
 }
 
-function setProcessing(value) {
-  processing = value;
-  $("sendBtn").disabled = value;
-  $("startBtn").disabled = value;
-  $("messageInput").disabled = value;
-}
+// ==========================================
+// API REQUEST
+// ==========================================
 
-// ========================================
-// ارتباط با Edge Function
-// هیچ کلیدی در HTML نیست
-// ========================================
+async function callApi(payload,timeout){
 
-async function callApi(payload, timeout=CHAT_TIMEOUT) {
+  const api = getApiUrl();
+
+  if(!api){
+    throw new Error("آدرس سرور تنظیم نشده است.");
+  }
+
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(),timeout);
 
-  try {
-    const response = await fetch(API_URL,{
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeout || CHAT_TIMEOUT
+  );
+
+  try{
+
+    const headers = {
+      "Content-Type":"application/json"
+    };
+
+    if(SUPABASE_ANON_KEY){
+
+      headers.apikey = SUPABASE_ANON_KEY;
+
+      headers.Authorization =
+        "Bearer " + SUPABASE_ANON_KEY;
+
+    }
+
+    const response = await fetch(api,{
+
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      headers,
       body:JSON.stringify(payload),
       signal:controller.signal
+
     });
 
-    const raw = await response.text();
-    let data;
+    const data = await response.json().catch(()=>({}));
 
-    try {
-      data = raw ? JSON.parse(raw) : {};
-    } catch {
-      throw new Error("پاسخ سرور قابل خواندن نیست.");
-    }
+    if(!response.ok){
 
-    if(!response.ok) {
       throw new Error(
-        data.details || data.error || ("خطای سرور: "+response.status)
+        data.error || ("HTTP " + response.status)
       );
+
     }
 
-    if(data.error && !data.reply && !data.audio_base64 && !data.saved) {
+    if(data.error){
+
       throw new Error(data.error);
+
     }
 
     return data;
 
-  } catch(error) {
-    if(error.name === "AbortError") {
-      throw new Error("زمان پاسخگویی سرور تمام شد.");
+  }catch(e){
+
+    if(e.name === "AbortError"){
+
+      throw new Error("پاسخ سرور بیش از حد طول کشید.");
+
     }
-    throw error;
-  } finally {
+
+    throw e;
+
+  }finally{
+
     clearTimeout(timer);
-  }
-}
 
-// ========================================
-// پخش صدای Gemini
-// ========================================
-
-function base64Bytes(base64) {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-function isWav(bytes) {
-  return bytes.length > 12 &&
-    bytes[0]===82 && bytes[1]===73 &&
-    bytes[2]===70 && bytes[3]===70 &&
-    bytes[8]===87 && bytes[9]===65 &&
-    bytes[10]===86 && bytes[11]===69;
-}
-
-async function playGeminiAudio(base64,mime="audio/wav") {
-  if(!base64) return false;
-
-  stopCurrentAudio();
-
-  const bytes = base64Bytes(base64);
-
-  // ابتدا پخش با Audio استاندارد
-  let blob = new Blob([bytes],{type:mime || "audio/wav"});
-  let url = URL.createObjectURL(blob);
-  let audio = new Audio(url);
-
-  currentAudio = audio;
-
-  try {
-    await new Promise((resolve,reject) => {
-      audio.onended = resolve;
-      audio.onerror = () => reject(new Error("Audio playback failed"));
-
-      const p = audio.play();
-      if(p && typeof p.catch === "function") {
-        p.catch(reject);
-      }
-    });
-
-    URL.revokeObjectURL(url);
-    currentAudio = null;
-    return true;
-
-  } catch(error) {
-    URL.revokeObjectURL(url);
-    currentAudio = null;
-    console.warn("Audio element failed:",error);
   }
 
-  // تلاش دوم با Web Audio
-  let context;
+}
 
-  try {
-    context = new (window.AudioContext || window.webkitAudioContext)();
+// ==========================================
+// AUDIO PLAYBACK
+// ==========================================
 
-    if(context.state === "suspended") await context.resume();
+function playBase64(base64,mime){
 
-    let buffer = null;
+  return new Promise(resolve=>{
 
-    try {
-      const copy = bytes.buffer.slice(
-        bytes.byteOffset,
-        bytes.byteOffset + bytes.byteLength
-      );
-      buffer = await context.decodeAudioData(copy);
-    } catch(_) {}
+    if(!base64 || mute){
 
-    // اگر خروجی PCM خام بود
-    if(!buffer) {
-      let pcm = bytes;
+      resolve(false);
+      return;
 
-      if(isWav(bytes)) {
-        let pos=12;
-        while(pos+8<=bytes.length) {
-          const id=String.fromCharCode(
-            bytes[pos],bytes[pos+1],bytes[pos+2],bytes[pos+3]
-          );
+    }
 
-          const size=(
-            bytes[pos+4] |
-            bytes[pos+5]<<8 |
-            bytes[pos+6]<<16 |
-            bytes[pos+7]<<24
-          );
+    try{
 
-          if(id==="data") {
-            pcm=bytes.slice(pos+8);
-            break;
-          }
-          pos += 8+size;
-        }
+      const binary = atob(base64);
+
+      const bytes = new Uint8Array(binary.length);
+
+      for(let i=0;i<binary.length;i++){
+
+        bytes[i] = binary.charCodeAt(i);
+
       }
 
-      const usable=pcm.length-(pcm.length%2);
-      const samples=new Int16Array(
-        pcm.buffer,pcm.byteOffset,usable/2
+      const type =
+        mime && mime.includes("mpeg")
+        ? "audio/mpeg"
+        : (mime || "audio/wav");
+
+      const blob = new Blob(
+        [bytes],
+        {type}
       );
 
-      if(!samples.length) throw new Error("Empty PCM");
+      const newUrl = URL.createObjectURL(blob);
 
-      buffer=context.createBuffer(1,samples.length,24000);
-      const channel=buffer.getChannelData(0);
+      if(lastAudioUrl){
 
-      for(let i=0;i<samples.length;i++) {
-        channel[i]=samples[i]/32768;
+        URL.revokeObjectURL(lastAudioUrl);
+
       }
+
+      lastAudioUrl = newUrl;
+
+      let finished = false;
+
+      const done = value => {
+
+        if(finished) return;
+
+        finished = true;
+        resolve(value);
+
+      };
+
+      audioEl.onended = () => done(true);
+
+      audioEl.onerror = () => done(false);
+
+      audioEl.src = newUrl;
+
+      const result = audioEl.play();
+
+      if(result && result.catch){
+
+        result.catch(error=>{
+
+          console.error("Audio play error:",error);
+
+          done(false);
+
+        });
+
+      }
+
+    }catch(e){
+
+      console.error("Audio error:",e);
+
+      resolve(false);
+
     }
 
-    const source=context.createBufferSource();
-    source.buffer=buffer;
-    source.connect(context.destination);
+  });
 
-    await new Promise(resolve => {
-      source.onended=resolve;
-      source.start(0);
-    });
-
-    await context.close();
-    return true;
-
-  } catch(error) {
-    console.error("WebAudio playback failed:",error);
-    if(context) {
-      try { await context.close(); } catch(_) {}
-    }
-    return false;
-  }
 }
 
-function stopCurrentAudio() {
-  if(currentAudio) {
-    try {
-      currentAudio.pause();
-      currentAudio.currentTime=0;
-    } catch(_) {}
-    currentAudio=null;
-  }
+// ==========================================
+// STOP AUDIO
+// ==========================================
+
+function stopAudio(){
+
+  try{
+
+    audioEl.pause();
+    audioEl.currentTime = 0;
+
+  }catch(e){}
+
 }
 
-// ========================================
-// دریافت صدای Gemini
-// اگر CHAT صوت نداد، SPEAK جداگانه
-// ========================================
+// ==========================================
+// MICROPHONE / SPEECH RECOGNITION
+// ==========================================
 
-async function speakReply(text,result=null) {
-  let audio = result?.audio_base64 || null;
-  let mime = result?.mime || "audio/wav";
+function initRecognition(){
 
-  if(!audio) {
-    status("در حال ساخت صدای پاسخ...");
-
-    try {
-      const tts = await callApi({
-        action:"speak",
-        text:text,
-        voice:VOICE
-      },TTS_TIMEOUT);
-
-      audio=tts.audio_base64 || null;
-      mime=tts.mime || "audio/wav";
-
-    } catch(error) {
-      console.error("Separate TTS failed:",error);
-      addMessage("پاسخ متنی دریافت شد، اما ساخت صدای آن ناموفق بود.","system");
-      return false;
-    }
-  }
-
-  if(!audio) {
-    addMessage("سرویس صوتی فایل صدا برنگرداند.","system");
-    return false;
-  }
-
-  status("منشی در حال صحبت است...");
-
-  const played=await playGeminiAudio(audio,mime);
-
-  if(!played) {
-    addMessage("پاسخ دریافت شد، اما پخش فایل صوتی ناموفق بود.","system");
-    return false;
-  }
-
-  return true;
-}
-
-// ========================================
-// شروع شنود فارسی
-// ========================================
-
-function createRecognition() {
-  const SpeechRecognition =
+  const SR =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-  if(!SpeechRecognition) {
-    addMessage(
-      "مرورگر شما تشخیص گفتار را پشتیبانی نمی‌کند. از ورودی متنی استفاده کنید.",
-      "system"
+  if(!SR){
+
+    recognitionBlocked = true;
+
+    $("hint").textContent =
+      "تشخیص گفتار در این مرورگر پشتیبانی نمی‌شود.";
+
+    return null;
+
+  }
+
+  const r = new SR();
+
+  r.lang = "fa-IR";
+
+  r.continuous = false;
+
+  r.interimResults = true;
+
+  r.maxAlternatives = 1;
+
+  r.onstart = function(){
+
+    listening = true;
+
+    intentionalStop = false;
+
+    $("mic").classList.add("on");
+
+    status("🎤 گوش می‌دهم…","live");
+
+    $("hint").textContent =
+      "صحبت کنید؛ پس از پایان صحبت، پاسخ داده می‌شود.";
+
+  };
+
+  r.onresult = function(event){
+
+    let finalText = "";
+
+    for(
+      let i=event.resultIndex;
+      i<event.results.length;
+      i++
+    ){
+
+      const result = event.results[i];
+
+      if(result.isFinal){
+
+        finalText += result[0].transcript;
+
+      }
+
+    }
+
+    finalText = finalText.trim();
+
+    if(finalText){
+
+      // جلوگیری از شروع مجدد تا پردازش پیام
+      intentionalStop = true;
+
+      stopMic();
+
+      onUser(finalText);
+
+    }
+
+  };
+
+  r.onerror = function(event){
+
+    listening = false;
+
+    $("mic").classList.remove("on");
+
+    console.error(
+      "Speech recognition error:",
+      event.error
     );
-    return false;
-  }
 
-  recognition = new SpeechRecognition();
+    if(
+      event.error === "not-allowed" ||
+      event.error === "service-not-allowed"
+    ){
 
-  recognition.lang = "fa-IR";
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
+      recognitionBlocked = true;
 
-  recognition.onstart = () => {
-    recognitionRunning=true;
-    $("micBtn").classList.add("recording");
-    $("micBtn").textContent="🔴 در حال شنیدن شما";
-    status("منتظر صحبت شما هستم...");
-  };
+      status("دسترسی میکروفن مسدود است.","err");
 
-  recognition.onresult = event => {
-    let finalText="";
+      $("hint").textContent =
+        "مجوز میکروفن مرورگر را فعال کنید.";
 
-    for(let i=event.resultIndex;i<event.results.length;i++) {
-      const item=event.results[i];
-
-      if(item.isFinal) {
-        finalText += item[0].transcript + " ";
-      }
-    }
-
-    finalText=finalText.trim();
-
-    if(finalText) {
-      pendingSpeech=finalText;
-    }
-  };
-
-  recognition.onerror = event => {
-    console.warn("Speech recognition:",event.error);
-
-    if(event.error==="not-allowed" ||
-       event.error==="service-not-allowed") {
-      micSession=false;
-      addMessage(
-        "دسترسی میکروفون مجاز نیست. مجوز میکروفون را فعال کنید.",
-        "system"
-      );
-      status("دسترسی میکروفون مسدود است",true);
-    }
-  };
-
-  recognition.onend = () => {
-    recognitionRunning=false;
-    $("micBtn").classList.remove("recording");
-    $("micBtn").textContent="🎙 فعال‌سازی میکروفون";
-
-    const spoken=pendingSpeech;
-    pendingSpeech="";
-
-    if(spoken && micSession && !ended) {
-      handleUserMessage(spoken);
       return;
+
     }
 
-    if(micSession && !processing && !ended) {
-      setTimeout(startRecognitionInternal,500);
+    if(event.error === "no-speech"){
+
+      status("صدایی دریافت نشد؛ دوباره صحبت کنید.","err");
+
+    }else if(event.error === "aborted"){
+
+      // لغو عمدی خطای واقعی نیست.
+
+      return;
+
+    }else{
+
+      status("خطای تشخیص گفتار: " + event.error,"err");
+
     }
+
   };
 
-  return true;
-}
+  r.onend = function(){
 
-function startRecognitionInternal() {
-  if(!micSession || ended || processing || recognitionRunning) return;
+    listening = false;
 
-  if(!recognition && !createRecognition()) return;
+    $("mic").classList.remove("on");
 
-  try {
-    recognition.start();
-  } catch(error) {
-    console.warn("Recognition start:",error);
-    setTimeout(() => {
-      if(micSession && !processing && !ended && !recognitionRunning) {
-        try { recognition.start(); } catch(_) {}
-      }
-    },1000);
-  }
-}
+    // اگر تماس فعال است، پس از پایان پاسخ
+    // دوباره شنیدن به صورت خودکار آغاز می‌شود.
 
-function startListening() {
-  if(!recognition && !createRecognition()) return;
+    if(
+      AUTO_LISTEN &&
+      on &&
+      !ended &&
+      !busy &&
+      !speaking &&
+      !intentionalStop &&
+      !recognitionBlocked
+    ){
 
-  micSession=true;
-  ended=false;
-  startRecognitionInternal();
-}
+      scheduleListen(700);
 
-function pauseRecognition() {
-  if(recognition && recognitionRunning) {
-    try { recognition.stop(); } catch(_) {}
-  }
-}
-
-function stopListening() {
-  micSession=false;
-  pauseRecognition();
-  $("micBtn").classList.remove("recording");
-  $("micBtn").textContent="🎙 فعال‌سازی میکروفون";
-  status("میکروفون متوقف شد");
-}
-
-// ========================================
-// شروع تماس و خوشامدگویی
-// ========================================
-
-async function startCall() {
-  if(processing) return;
-
-  ended=false;
-  history=[];
-  transcript=[];
-  pendingSpeech="";
-
-  micSession=true;
-
-  setProcessing(true);
-  addMessage("در حال برقراری تماس...","system");
-
-  try {
-    const result=await callApi({
-      action:"greet",
-      voice:VOICE,
-      include_audio:true
-    },TTS_TIMEOUT);
-
-    const reply=result.reply || "سلام، وقت بخیر. بفرمایید.";
-
-    addMessage(reply,"bot");
-    addTranscript("bot",reply);
-    lastReply=reply;
-
-    await speakReply(reply,result);
-
-  } catch(error) {
-    console.error(error);
-    addMessage("ارتباط با منشی برقرار نشد. لطفاً دوباره تلاش کنید.","system");
-    status(error.message,true);
-  } finally {
-    setProcessing(false);
-
-    // پس از پایان خوشامدگویی، شنود آغاز می‌شود.
-    if(micSession && !ended) {
-      startRecognitionInternal();
     }
-  }
+
+  };
+
+  return r;
+
 }
 
-// ========================================
-// مکالمه با Gemini
-// ========================================
+// ==========================================
+// AUTO RESTART MICROPHONE
+// ==========================================
 
-async function handleUserMessage(text) {
-  text=String(text || "").trim();
+function scheduleListen(delay){
 
-  if(!text || processing || ended) return;
+  clearTimeout(restartTimer);
 
-  // هنگام پردازش، شنود باید متوقف بماند.
-  pauseRecognition();
-  setProcessing(true);
+  restartTimer = setTimeout(()=>{
 
-  addMessage(text,"user");
-  addTranscript("user",text);
+    if(
+      on &&
+      !ended &&
+      !busy &&
+      !speaking &&
+      !listening &&
+      !intentionalStop &&
+      !recognitionBlocked
+    ){
 
-  if(!field("problem")) {
-    $("problem").value=text;
-  } else if(!$("problem").value.includes(text)) {
-    $("problem").value=(
-      $("problem").value+"\n"+text
-    ).slice(0,8000);
+      startMic();
+
+    }
+
+  },delay);
+
+}
+
+// ==========================================
+// START MICROPHONE
+// ==========================================
+
+function startMic(){
+
+  if(
+    !on ||
+    ended ||
+    busy ||
+    speaking ||
+    listening
+  ){
+
+    return;
+
   }
 
-  try {
-    status("در حال دریافت پاسخ از Gemini...");
+  clearTimeout(restartTimer);
 
-    const result=await callApi({
+  if(!rec){
+
+    rec = initRecognition();
+
+  }
+
+  if(!rec){
+
+    status(
+      "تشخیص گفتار در این محیط فعال نیست.",
+      "err"
+    );
+
+    return;
+
+  }
+
+  intentionalStop = false;
+
+  try{
+
+    rec.start();
+
+  }catch(e){
+
+    console.warn("Recognition start:",e);
+
+    scheduleListen(1000);
+
+  }
+
+}
+
+// ==========================================
+// STOP MICROPHONE
+// ==========================================
+
+function stopMic(){
+
+  clearTimeout(restartTimer);
+
+  listening = false;
+
+  $("mic").classList.remove("on");
+
+  try{
+
+    if(rec){
+
+      rec.abort();
+
+    }
+
+  }catch(e){}
+
+}
+
+// ==========================================
+// BOT SPEAK
+// ==========================================
+
+async function botSpeak(reply,audioData){
+
+  if(!reply) return;
+
+  lastBot = reply;
+
+  bubble("bot",reply);
+
+  saveHistory("bot",reply);
+
+  speaking = true;
+
+  const session = ++speechSession;
+
+  status("منشی پاسخ می‌دهد…","live");
+
+  let audio = audioData;
+
+  try{
+
+    // اگر صوت قبلاً در پاسخ سرور نبود،
+    // از اکشن مستقل speak درخواست می‌شود.
+
+    if(!audio || !audio.audio_base64){
+
+      const sound = await callApi({
+
+        action:"speak",
+        text:reply,
+        voice:VOICE
+
+      },TTS_TIMEOUT);
+
+      audio = sound;
+
+    }
+
+    if(
+      session !== speechSession ||
+      ended
+    ){
+
+      return;
+
+    }
+
+    let played = false;
+
+    if(audio && audio.audio_base64){
+
+      played = await playBase64(
+        audio.audio_base64,
+        audio.mime
+      );
+
+    }
+
+    if(session !== speechSession) return;
+
+    speaking = false;
+
+    if(!played){
+
+      status(
+        "پاسخ متنی آماده است؛ صوت در دسترس نبود.",
+        "err"
+      );
+
+    }else{
+
+      status("آماده شنیدن صحبت شما","live");
+
+    }
+
+  }catch(e){
+
+    speaking = false;
+
+    console.error("TTS error:",e);
+
+    status("پاسخ متنی آماده است؛ تولید صدا ناموفق بود.","err");
+
+  }
+
+  if(
+    AUTO_LISTEN &&
+    on &&
+    !ended &&
+    !busy &&
+    !recognitionBlocked
+  ){
+
+    intentionalStop = false;
+
+    scheduleListen(800);
+
+  }
+
+}
+
+// ==========================================
+// USER MESSAGE
+// ==========================================
+
+async function onUser(text){
+
+  text = String(text || "").trim();
+
+  if(
+    !text ||
+    !on ||
+    ended ||
+    busy
+  ){
+
+    return;
+
+  }
+
+  stopMic();
+
+  stopAudio();
+
+  speaking = false;
+
+  busy = true;
+
+  bubble("user",text);
+
+  saveHistory("user",text);
+
+  status("در حال پردازش درخواست…","live");
+
+  try{
+
+    // اول فقط متن را دریافت کن
+    // تا کاربر منتظر تولید صوت نماند.
+
+    const data = await callApi({
+
       action:"chat",
+
       message:text,
-      history:history.slice(-8),
+
+      history:history.slice(0,-1).slice(-8),
+
       voice:VOICE,
-      include_audio:true
+
+      audio:false
+
     },CHAT_TIMEOUT);
 
-    const reply=String(result.reply || "").trim();
+    if(!data.reply){
 
-    if(!reply) throw new Error("پاسخ متنی Gemini خالی است.");
+      throw new Error("پاسخ متنی از سرور دریافت نشد.");
 
-    addMessage(reply,"bot");
-    addTranscript("bot",reply);
-    lastReply=reply;
-
-    history.push({role:"user",text});
-    history.push({role:"bot",text:reply});
-
-    if(history.length>16) history=history.slice(-16);
-
-    // پخش صدای واقعی Gemini
-    await speakReply(reply,result);
-
-    // ذخیره خودکار در صورت وجود اطلاعات پایه
-    if(field("phone") && field("problem")) {
-      saveTicket(false).catch(console.error);
     }
 
-  } catch(error) {
-    console.error("Chat error:",error);
-    addMessage(
-      "در ارتباط با سامانه مشکلی پیش آمد. لطفاً دوباره صحبت کنید.",
-      "system"
+    busy = false;
+
+    await botSpeak(data.reply,null);
+
+  }catch(e){
+
+    console.error("Chat error:",e);
+
+    busy = false;
+
+    bubble(
+      "bot",
+      "متأسفانه ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید."
     );
-    status(error.message,true);
 
-  } finally {
-    setProcessing(false);
+    status("خطا در ارتباط با سرور","err");
 
-    // مهم‌ترین بخش: شروع مجدد شنود بعد از پاسخ صوتی
-    if(micSession && !ended) {
-      setTimeout(startRecognitionInternal,350);
-    } else {
-      status("آماده پاسخگویی");
-    }
-  }
-}
+    if(AUTO_LISTEN && on && !ended){
 
-// ========================================
-// ارسال پیام متنی
-// ========================================
+      scheduleListen(1200);
 
-async function sendTypedMessage() {
-  const text=field("messageInput");
-  if(!text || processing) return;
-
-  $("messageInput").value="";
-  await handleUserMessage(text);
-}
-
-$("sendBtn").addEventListener("click",sendTypedMessage);
-
-$("messageInput").addEventListener("keydown",event => {
-  if(event.key==="Enter") {
-    event.preventDefault();
-    sendTypedMessage();
-  }
-});
-
-// ========================================
-// اطلاعات کاربر بله
-// ========================================
-
-function baleUser() {
-  try {
-    const app=window.Bale?.WebApp || window.Bale?.webApp || window.Bale || {};
-    const user=app.initDataUnsafe?.user || app.user || {};
-
-    return {
-      user_id:user.id ? String(user.id) : null,
-      username:user.username || null,
-      first_name:user.first_name || null,
-      last_name:user.last_name || null
-    };
-  } catch(_) {
-    return {
-      user_id:null,
-      username:null,
-      first_name:null,
-      last_name:null
-    };
-  }
-}
-
-// ========================================
-// ساخت اطلاعات درخواست
-// فیلدها مطابق index.ts
-// ========================================
-
-function buildTicket() {
-  const user=baleUser();
-
-  return {
-    action:"save_ticket",
-    id:ticketId,
-    user_id:user.user_id,
-    chat_id:user.user_id || ticketId,
-    first_name:field("firstName") || user.first_name,
-    last_name:field("lastName") || user.last_name,
-    phone:field("phone"),
-    city:field("city"),
-    address:field("address"),
-    problem:field("problem"),
-    conversation_summary:transcript.map(item =>
-      (item.role==="user" ? "مراجع: " : "منشی: ")+item.text
-    ).join("\n").slice(0,16000),
-    ai_reply:lastReply,
-    status:"open",
-    channel:"bale_live_assistant",
-    username:user.username
-  };
-}
-
-// ========================================
-// ثبت درخواست
-// ========================================
-
-async function saveTicket(showMessage=true) {
-  if(saving) return false;
-
-  const payload=buildTicket();
-
-  if(!payload.phone) {
-    $("saveStatus").textContent="شماره تماس را وارد کنید.";
-    return false;
-  }
-
-  if(!payload.problem) {
-    $("saveStatus").textContent="شرح درخواست را وارد کنید.";
-    return false;
-  }
-
-  saving=true;
-  $("saveBtn").disabled=true;
-  $("saveBtn").textContent="در حال ثبت...";
-
-  try {
-    const result=await callApi(payload,SAVE_TIMEOUT);
-
-    if(result.saved===true || result.ok===true) {
-      $("saveStatus").textContent=
-        "درخواست با موفقیت ثبت شد. شناسه: "+(result.id || ticketId);
-
-      if(showMessage) {
-        addMessage("درخواست شما با موفقیت در سامانه ثبت شد.","system");
-      }
-
-      return true;
     }
 
-    throw new Error(result.error || "تأیید ثبت درخواست دریافت نشد.");
-
-  } catch(error) {
-    console.error("Save ticket:",error);
-    $("saveStatus").textContent="خطا در ثبت درخواست: "+error.message;
-    if(showMessage) addMessage("ثبت درخواست ناموفق بود.","system");
-    return false;
-
-  } finally {
-    saving=false;
-    $("saveBtn").disabled=false;
-    $("saveBtn").textContent="ثبت درخواست در سامانه";
-  }
-}
-
-// ========================================
-// پایان تماس
-// ========================================
-
-async function endCall() {
-  ended=true;
-  micSession=false;
-  pauseRecognition();
-  stopCurrentAudio();
-
-  if(field("phone") && field("problem")) {
-    await saveTicket(false);
   }
 
-  addMessage("از تماس شما سپاسگزاریم. روز خوبی داشته باشید.","bot");
-  addTranscript("bot","از تماس شما سپاسگزاریم. روز خوبی داشته باشید.");
-
-  status("تماس پایان یافت");
 }
 
-// ========================================
-// دکمه‌ها
-// ========================================
+// ==========================================
+// START CALL
+// ==========================================
 
-$("startBtn").addEventListener("click",startCall);
+$("go").onclick = async function(){
 
-$("micBtn").addEventListener("click",() => {
-  if(micSession) {
-    stopListening();
-  } else {
-    startListening();
+  if(on) return;
+
+  await unlockAudio();
+
+  if(!getApiUrl()){
+
+    status("آدرس API تنظیم نشده است.","err");
+
+    return;
+
   }
-});
 
-$("stopBtn").addEventListener("click",stopListening);
+  $("gate").classList.add("hid");
 
-$("endBtn").addEventListener("click",endCall);
+  on = true;
 
-$("saveBtn").addEventListener("click",() => saveTicket(true));
+  ended = false;
 
-// ========================================
-// راه‌اندازی بله
-// ========================================
+  busy = true;
 
-try {
-  const app=window.Bale?.WebApp || window.Bale?.webApp || window.Bale || {};
-  if(typeof app.ready==="function") app.ready();
-  if(typeof app.expand==="function") app.expand();
-} catch(error) {
-  console.warn("Bale initialization:",error);
+  status("در حال برقراری تماس…","live");
+
+  // تشخیص گفتار را قبل از درخواست سرور آماده کن.
+
+  rec = initRecognition();
+
+  try{
+
+    const data = await callApi({
+
+      action:"greet",
+      voice:VOICE
+
+    },TTS_TIMEOUT);
+
+    busy = false;
+
+    await botSpeak(
+      data.reply,
+      data.audio_base64
+        ? data
+        : null
+    );
+
+  }catch(e){
+
+    console.error("Greeting error:",e);
+
+    busy = false;
+
+    const fallback =
+      "سلام، وقت بخیر. من منشی روابط عمومی هستم. بفرمایید، چطور می‌توانم کمکتان کنم؟";
+
+    await botSpeak(fallback,null);
+
+  }
+
+};
+
+// ==========================================
+// MICROPHONE BUTTON
+// ==========================================
+
+$("mic").onclick = function(){
+
+  if(!on || ended) return;
+
+  if(listening){
+
+    intentionalStop = true;
+
+    stopMic();
+
+    status("میکروفن متوقف شد.","");
+
+  }else{
+
+    if(speaking){
+
+      speechSession++;
+
+      stopAudio();
+
+      speaking = false;
+
+    }
+
+    startMic();
+
+  }
+
+};
+
+// ==========================================
+// REPEAT AUDIO
+// ==========================================
+
+$("rep").onclick = async function(){
+
+  if(!lastAudioUrl || mute || ended) return;
+
+  stopMic();
+
+  stopAudio();
+
+  speaking = true;
+
+  status("در حال پخش مجدد…","live");
+
+  try{
+
+    audioEl.src = lastAudioUrl;
+
+    await audioEl.play();
+
+  }catch(e){
+
+    speaking = false;
+
+    status("پخش مجدد ممکن نیست.","err");
+
+  }
+
+};
+
+// ==========================================
+// MUTE
+// ==========================================
+
+$("spk").onclick = function(){
+
+  mute = !mute;
+
+  $("spk").textContent =
+    mute ? "🔇" : "🔊";
+
+  if(mute){
+
+    speechSession++;
+
+    stopAudio();
+
+    speaking = false;
+
+    if(AUTO_LISTEN && on && !ended && !busy){
+
+      scheduleListen(500);
+
+    }
+
+  }
+
+};
+
+// ==========================================
+// SEND TEXT
+// ==========================================
+
+function sendText(){
+
+  const input = $("txt");
+
+  const value = input.value.trim();
+
+  if(!value || busy) return;
+
+  input.value = "";
+
+  onUser(value);
+
 }
 
-if(!(window.SpeechRecognition || window.webkitSpeechRecognition)) {
-  status("تشخیص گفتار در این مرورگر در دسترس نیست",true);
-} else {
-  status("آماده شروع مکالمه صوتی");
-}
+$("send").onclick = sendText;
+
+$("txt").addEventListener(
+  "keydown",
+  function(e){
+
+    if(e.key === "Enter"){
+
+      e.preventDefault();
+
+      sendText();
+
+    }
+
+  }
+);
+
+// ==========================================
+// HANG UP
+// ==========================================
+
+$("hang").onclick = function(){
+
+  ended = true;
+
+  on = false;
+
+  busy = false;
+
+  speaking = false;
+
+  speechSession++;
+
+  intentionalStop = true;
+
+  stopMic();
+
+  stopAudio();
+
+  clearTimeout(restartTimer);
+
+  status("تماس پایان یافت.","");
+
+  $("hint").textContent = "تماس قطع شده است.";
+
+  try{
+
+    if(
+      window.Bale &&
+      Bale.WebApp &&
+      Bale.WebApp.close
+    ){
+
+      Bale.WebApp.close();
+
+    }
+
+  }catch(e){}
+
+};
+
+// ==========================================
+// INIT
+// ==========================================
+
+window.addEventListener("resize",measure);
+
+window.addEventListener("orientationchange",measure);
+
+document.addEventListener(
+  "visibilitychange",
+  function(){
+
+    if(document.hidden){
+
+      stopMic();
+
+    }else if(
+      on &&
+      !ended &&
+      AUTO_LISTEN &&
+      !busy &&
+      !speaking &&
+      !recognitionBlocked
+    ){
+
+      scheduleListen(1000);
+
+    }
+
+  }
+);
+
+try{
+
+  if(window.Bale && Bale.WebApp){
+
+    Bale.WebApp.ready();
+
+    if(Bale.WebApp.expand){
+
+      Bale.WebApp.expand();
+
+    }
+
+  }
+
+}catch(e){}
+
+measure();
+
+})();
 </script>
+
 </body>
 </html>
