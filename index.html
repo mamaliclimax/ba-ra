@@ -157,9 +157,9 @@
           </div>
           <div class="status" id="status"></div>
           <button type="button" class="btn-bg" id="btnBgPlay">📲 پخش پایدار در مرورگر گوشی
-            <small>برای بک‌گراند و نوتیفیکیشن — مینی‌اپ بله صدا را قطع می‌کند</small>
+            <small>اگر داخل بله قطع شد، اینجا در مرورگر پایدار پخش می‌شود</small>
           </button>
-          <div class="status" id="playerVer" style="opacity:.55;font-size:.7rem;margin-top:4px">پلیر رادیو v5</div>
+          <div class="status" id="playerVer" style="opacity:.55;font-size:.7rem;margin-top:4px">پلیر رادیو v6 · مینی‌اپ</div>
         </div>
       </div>
       <div class="list"><h2>لیست این ایستگاه</h2><div id="tracks"></div></div>
@@ -185,7 +185,7 @@
 
   <audio id="audio" preload="auto" playsinline webkit-playsinline></audio>
   <script>
-    const STATIONS = [{"id": "old", "title": "قدیمی", "emoji": "🕰️", "tracks": [{"id": "7212c2c117", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3"]}, {"id": "3cdc260099", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3"]}, {"id": "86f94c9561", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3"]}, {"id": "71e0971a7e", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3"]}, {"id": "14ce58d92a", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3"]}, {"id": "c2bc63ee26", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3"]}, {"id": "32dc9c6660", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3"]}]}, {"id": "happy", "title": "شاد", "emoji": "🎉", "tracks": [{"id": "521382eca4", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Happy%20Songs%2008.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Happy%20Songs%2008.mp3"]}, {"id": "68d9448f3d", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/2mtunes%20-%20Nostalgia%20%28Afro%20house%20mix%29.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/2mtunes%20-%20Nostalgia%20%28Afro%20house%20mix%29.mp3"]}, {"id": "6f318654d0", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/V/New/Soloto%20Club%201.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/V/New/Soloto%20Club%201.mp3"]}, {"id": "050de6a08a", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Martik%20Best%20Hits%20-%20Dj%20Arman%20Panik.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Martik%20Best%20Hits%20-%20Dj%20Arman%20Panik.mp3"]}, {"id": "3f7d880fcf", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Hordance%20Mix%20Dj%20Hornet.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Hordance%20Mix%20Dj%20Hornet.mp3"]}, {"id": "278a32c545", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/DJ%20Behraaad%20&%20Hosein%20Bl%20-%20BH%20Mix%204.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/DJ%20Behraaad%20&%20Hosein%20Bl%20-%20BH%20Mix%204.mp3"]}, {"id": "1bac019ac0", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Deejay%20Moein%20X%20Mishamusix%20-%20Echo%2008.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Deejay%20Moein%20X%20Mishamusix%20-%20Echo%2008.mp3"]}, {"id": "df34611a50", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/ebi%20%C3%97%20kamran%20va%20hooman%20%C3%97%20moein%20%C3%97%20arash%20%C3%97%20fereydoun%20asraei%20-%20laleh%20ashegh.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/ebi%20%C3%97%20kamran%20va%20hooman%20%C3%97%20moein%20%C3%97%20arash%20%C3%97%20fereydoun%20asraei%20-%20laleh%20ashegh.mp3"]}, {"id": "47c690aa6a", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/DJ%20TNT%20-%20Taap%20o%20Toop%205.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/DJ%20TNT%20-%20Taap%20o%20Toop%205.mp3"]}, {"id": "06330dddc0", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/T/New/MojiDance%20-%20MojiClub%2019.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/T/New/MojiDance%20-%20MojiClub%2019.mp3"]}, {"id": "67d38d0cb9", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/RadioJavan/Del/Dj%20Daarman%20-%20Del%203.mp3", "urls": ["https://mehrdl.musitraf.com/RadioJavan/Del/Dj%20Daarman%20-%20Del%203.mp3"]}, {"id": "c0a9b88b0a", "title": "بدون عنوان", "url": "https://cdnmrtehran.ir/media/mp3s/14/e6/14e65020-6ff0-4847-8b3e-a20b2aaedab1.mp3", "urls": ["https://cdnmrtehran.ir/media/mp3s/14/e6/14e65020-6ff0-4847-8b3e-a20b2aaedab1.mp3"]}]}, {"id": "calm", "title": "ملایم", "emoji": "🌙", "tracks": []}, {"id": "pop", "title": "پاپ", "emoji": "🎤", "tracks": []}, {"id": "ai", "title": "ساخته هوش مصنوعی", "emoji": "🤖", "tracks": []}, {"id": "traditional", "title": "سنتی", "emoji": "🎼", "tracks": []}, {"id": "birthday", "title": "تولد", "emoji": "🎂", "tracks": []}, {"id": "foreign", "title": "خارجی", "emoji": "🌍", "tracks": []}, {"id": "dj", "title": "دیجی میکس", "emoji": "🎧", "tracks": [{"id": "570c72c5d2", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1404/07/03/Dj%20Wersy%20-%20Nostalgic%20Mix%20Episode%208.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1404/07/03/Dj%20Wersy%20-%20Nostalgic%20Mix%20Episode%208.mp3"]}, {"id": "4e1042c4bc", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%207.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%207.mp3"]}, {"id": "3e983ad890", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%206.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%206.mp3"]}, {"id": "fd3d28e8cf", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1403/12/13/DJ%20Wersy%20%20-%20Nostalgic%20Mix%205.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1403/12/13/DJ%20Wersy%20%20-%20Nostalgic%20Mix%205.mp3"]}, {"id": "f64060d13f", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1403/01/13/Dj%20Wersy%20-%20DJ%20Wersy%20-%20Nostalgic%20Mix%204.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1403/01/13/Dj%20Wersy%20-%20DJ%20Wersy%20-%20Nostalgic%20Mix%204.mp3"]}, {"id": "e08b18b6e3", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1402/10/21/Dj%20Wersy%20-%20Nostalgic%20Mix%203.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1402/10/21/Dj%20Wersy%20-%20Nostalgic%20Mix%203.mp3"]}, {"id": "eeb04ad4e2", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1402/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%202.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1402/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%202.mp3"]}, {"id": "0950926cfd", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1402/05/12/Nostalgic%20Mix%20DJ%20Wersy%20-%20128.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1402/05/12/Nostalgic%20Mix%20DJ%20Wersy%20-%20128.mp3"]}]}, {"id": "national", "title": "رادیو ملی", "emoji": "🇮🇷", "tracks": [{"id": "e9ae60229e", "title": "رادیو آوا", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8"]}, {"id": "fe3ba36d9f", "title": "رادیو جوان", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8"]}, {"id": "218ac7806b", "title": "رادیو پیام", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8"]}, {"id": "836182d29c", "title": "رادیو تهران", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8"]}, {"id": "459e39128a", "title": "رادیو ورزش", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8"]}, {"id": "05bbd8321b", "title": "رادیو اقتصاد", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8"]}, {"id": "4ba4e70753", "title": "رادیو گفتگو", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8"]}]}];
+    const STATIONS = [{"id": "old", "title": "قدیمی", "emoji": "🕰️", "tracks": [{"id": "7212c2c117", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2025/09/16/DJWERSY%20Nostalgic%20Mix%20EP08.mp3"]}, {"id": "3cdc260099", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2025/04/09/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP07.mp3"]}, {"id": "86f94c9561", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/11/18/DJ%20WERSY%20-%20Nostalgic%20Mix%20EP06.mp3"]}, {"id": "71e0971a7e", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2025/05/25/Nostalgic%20Mix%20EP05.mp3"]}, {"id": "14ce58d92a", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgi%20Mix%203.mp3"]}, {"id": "c2bc63ee26", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202.mp3"]}, {"id": "32dc9c6660", "title": "بدون عنوان", "url": "https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3", "urls": ["https://nicmusic.musitraf.com/upload/2024/02/23/Nostalgic%20Mix%202023.mp3"]}]}, {"id": "happy", "title": "شاد", "emoji": "🎉", "tracks": [{"id": "521382eca4", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Happy%20Songs%2008.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Happy%20Songs%2008.mp3"]}, {"id": "68d9448f3d", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/2mtunes%20-%20Nostalgia%20%28Afro%20house%20mix%29.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/2mtunes%20-%20Nostalgia%20%28Afro%20house%20mix%29.mp3"]}, {"id": "6f318654d0", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/V/New/Soloto%20Club%201.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/V/New/Soloto%20Club%201.mp3"]}, {"id": "050de6a08a", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Martik%20Best%20Hits%20-%20Dj%20Arman%20Panik.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Martik%20Best%20Hits%20-%20Dj%20Arman%20Panik.mp3"]}, {"id": "3f7d880fcf", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Hordance%20Mix%20Dj%20Hornet.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Hordance%20Mix%20Dj%20Hornet.mp3"]}, {"id": "278a32c545", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/DJ%20Behraaad%20&%20Hosein%20Bl%20-%20BH%20Mix%204.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/DJ%20Behraaad%20&%20Hosein%20Bl%20-%20BH%20Mix%204.mp3"]}, {"id": "1bac019ac0", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/Deejay%20Moein%20X%20Mishamusix%20-%20Echo%2008.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/Deejay%20Moein%20X%20Mishamusix%20-%20Echo%2008.mp3"]}, {"id": "df34611a50", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/ebi%20%C3%97%20kamran%20va%20hooman%20%C3%97%20moein%20%C3%97%20arash%20%C3%97%20fereydoun%20asraei%20-%20laleh%20ashegh.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/ebi%20%C3%97%20kamran%20va%20hooman%20%C3%97%20moein%20%C3%97%20arash%20%C3%97%20fereydoun%20asraei%20-%20laleh%20ashegh.mp3"]}, {"id": "47c690aa6a", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/U/New/DJ%20TNT%20-%20Taap%20o%20Toop%205.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/U/New/DJ%20TNT%20-%20Taap%20o%20Toop%205.mp3"]}, {"id": "06330dddc0", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/Music/A/T/New/MojiDance%20-%20MojiClub%2019.mp3", "urls": ["https://mehrdl.musitraf.com/Music/A/T/New/MojiDance%20-%20MojiClub%2019.mp3"]}, {"id": "67d38d0cb9", "title": "بدون عنوان", "url": "https://mehrdl.musitraf.com/RadioJavan/Del/Dj%20Daarman%20-%20Del%203.mp3", "urls": ["https://mehrdl.musitraf.com/RadioJavan/Del/Dj%20Daarman%20-%20Del%203.mp3"]}, {"id": "c0a9b88b0a", "title": "بدون عنوان", "url": "https://cdnmrtehran.ir/media/mp3s/14/e6/14e65020-6ff0-4847-8b3e-a20b2aaedab1.mp3", "urls": ["https://cdnmrtehran.ir/media/mp3s/14/e6/14e65020-6ff0-4847-8b3e-a20b2aaedab1.mp3"]}]}, {"id": "calm", "title": "ملایم", "emoji": "🌙", "tracks": []}, {"id": "pop", "title": "پاپ", "emoji": "🎤", "tracks": []}, {"id": "ai", "title": "ساخته هوش مصنوعی", "emoji": "🤖", "tracks": []}, {"id": "traditional", "title": "سنتی", "emoji": "🎼", "tracks": []}, {"id": "birthday", "title": "تولد", "emoji": "🎂", "tracks": []}, {"id": "foreign", "title": "خارجی", "emoji": "🌍", "tracks": []}, {"id": "dj", "title": "دیجی میکس", "emoji": "🎧", "tracks": [{"id": "570c72c5d2", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1404/07/03/Dj%20Wersy%20-%20Nostalgic%20Mix%20Episode%208.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1404/07/03/Dj%20Wersy%20-%20Nostalgic%20Mix%20Episode%208.mp3"]}, {"id": "4e1042c4bc", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%207.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%207.mp3"]}, {"id": "3e983ad890", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%206.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1404/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%206.mp3"]}, {"id": "fd3d28e8cf", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1403/12/13/DJ%20Wersy%20%20-%20Nostalgic%20Mix%205.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1403/12/13/DJ%20Wersy%20%20-%20Nostalgic%20Mix%205.mp3"]}, {"id": "f64060d13f", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1403/01/13/Dj%20Wersy%20-%20DJ%20Wersy%20-%20Nostalgic%20Mix%204.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1403/01/13/Dj%20Wersy%20-%20DJ%20Wersy%20-%20Nostalgic%20Mix%204.mp3"]}, {"id": "e08b18b6e3", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1402/10/21/Dj%20Wersy%20-%20Nostalgic%20Mix%203.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1402/10/21/Dj%20Wersy%20-%20Nostalgic%20Mix%203.mp3"]}, {"id": "eeb04ad4e2", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1402/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%202.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1402/07/03/DJ%20Wersy%20-%20Nostalgic%20Mix%202.mp3"]}, {"id": "0950926cfd", "title": "بدون عنوان", "url": "https://dl.mokhtalefmusic.com/music/1402/05/12/Nostalgic%20Mix%20DJ%20Wersy%20-%20128.mp3", "urls": ["https://dl.mokhtalefmusic.com/music/1402/05/12/Nostalgic%20Mix%20DJ%20Wersy%20-%20128.mp3"]}]}, {"id": "national", "title": "رادیو ملی", "emoji": "🇮🇷", "tracks": [{"id": "e9ae60229e", "title": "رادیو آوا", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-avaa/playlist.m3u8"]}, {"id": "fe3ba36d9f", "title": "رادیو جوان", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-javan/playlist.m3u8"]}, {"id": "218ac7806b", "title": "رادیو پیام", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-payam/playlist.m3u8"]}, {"id": "836182d29c", "title": "رادیو تهران", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-tehran/playlist.m3u8"]}, {"id": "459e39128a", "title": "رادیو ورزش", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-varzesh/playlist.m3u8"]}, {"id": "05bbd8321b", "title": "رادیو اقتصاد", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-eghtesad/playlist.m3u8"]}, {"id": "4ba4e70753", "title": "رادیو گفت‌وگو", "url": "https://s1.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8", "urls": ["https://s1.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8", "https://s0.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8", "https://s2.cdn3.iranseda.ir/liveedge/radio-goftego/playlist.m3u8"]}]}];
     const TV_CHANNELS = [{"id": "64e156a5fe", "title": "شبکه یک", "url": "https://live-aburayhan1105.telewebion.net/ek/tv1/live/1080p/index.m3u8"}, {"id": "334508e676", "title": "شبکه دو", "url": "https://live-aburayhan1113.telewebion.net/ek/tv2/live/1080p/index.m3u8"}, {"id": "27c2cba0dd", "title": "شبکه سه", "url": "https://live-aburayhan1102.telewebion.net/ek/tv3/live/108050p/index.m3u8"}, {"id": "c226cf781c", "title": "شبکه چهار", "url": "https://live-aburayhan1112.telewebion.net/ek/tv4/live/576p/index.m3u8"}, {"id": "e82ec59376", "title": "شبکه پنج (تهران)", "url": "https://live-aburayhan1109.telewebion.net/ek/tehran/live/1080p/index.m3u8"}, {"id": "2757f5eefd", "title": "شبکه گلخانه", "url": "https://live-aburayhan1106.telewebion.net/na/golkhane/live/720p/index.m3u8"}, {"id": "9f1bfdaeea", "title": "آی‌فیلم", "url": "https://live.presstv.co.uk/hls/ifilmfa_4_482/index.m3u8"}, {"id": "5bed8d4d4e", "title": "شبکه آموزش", "url": "https://live-aburayhan1104.telewebion.net/ek/amouzesh/live/576p/index.m3u8"}, {"id": "cb85d60f76", "title": "شبکه مستند", "url": "https://live-aburayhan1103.telewebion.net/ek/mostanad/live/1080p/index.m3u8"}, {"id": "21852a432d", "title": "شبکه نمایش", "url": "https://live-aburayhan1111.telewebion.net/ek/namayesh/live/1080p/index.m3u8"}, {"id": "73c72e7047", "title": "شبکه نسیم", "url": "https://live-aburayhan1108.telewebion.net/ek/nasim/live/1080p/index.m3u8"}, {"id": "b715b2f48b", "title": "شبکه افق", "url": "https://live-aburayhan1105.telewebion.net/ek/ofogh/live/1080p/index.m3u8"}, {"id": "dee7834977", "title": "شبکه امید", "url": "https://live-aburayhan1110.telewebion.net/ek/omid/live/1080p/index.m3u8"}, {"id": "cba7dc3907", "title": "شبکه پویا و نهال", "url": "https://live-aburayhan1105.telewebion.net/ek/pooya/live/1080p/index.m3u8"}, {"id": "19bf668210", "title": "شبکه قرآن و معارف سیما", "url": "https://live-aburayhan1104.telewebion.net/ek/quran/live/1080p/index.m3u8"}, {"id": "c371c742e5", "title": "شبکه سلامت", "url": "https://live-aburayhan1104.telewebion.net/ek/salamat/live/576p/index.m3u8"}, {"id": "fd832fd0cf", "title": "شبکه تماشا", "url": "https://live-aburayhan1103.telewebion.net/ek/hdtest/live/1080p/index.m3u8"}, {"id": "85d01a1fee", "title": "شبکه یک پلاس", "url": "https://live-aburayhan1103.telewebion.net/na/tv1plus/live/1080p/index.m3u8"}, {"id": "4e7137798d", "title": "شبکه فراگیر (UHD)", "url": "https://live-aburayhan1101.telewebion.net/ek/faratar/live/2160p/index.m3u8"}, {"id": "ce539b1208", "title": "شبکه ورزش", "url": "https://live-aburayhan1102.telewebion.net/ek/varzesh/live/108050p/index.m3u8"}, {"id": "da5264814d", "title": "شبکه خبر", "url": "http://185.9.2.18/chid_926/index.m3u8"}, {"id": "4d84f6a7dc", "title": "شبکه خبر ۲", "url": "https://live-aburayhan1108.telewebion.net/ek/irinn2/live/1080p/index.m3u8"}, {"id": "7f2e82a1a1", "title": "شبکه رویا", "url": "https://live-aburayhan1106.telewebion.net/na/iribu/live/720p/index.m3u8"}, {"id": "4849a98d41", "title": "شبکه آبادان", "url": "https://live-aburayhan1109.telewebion.net/ek/abadan/live/576p/index.m3u8"}, {"id": "16f4b4f5e9", "title": "شبکه افلاک", "url": "https://live-aburayhan1111.telewebion.net/ek/aflak/live/576p/index.m3u8"}, {"id": "0b173a01ac", "title": "شبکه آفتاب", "url": "https://live-aburayhan1106.telewebion.net/ek/aftab/live/576p/index.m3u8"}, {"id": "3da1235a6d", "title": "شبکه البرز", "url": "https://live-aburayhan1103.telewebion.net/ek/alborz/live/1080p/index.m3u8"}, {"id": "fd70753cf5", "title": "شبکه اترک", "url": "https://live-aburayhan1108.telewebion.net/ek/atrak/live/576p/index.m3u8"}, {"id": "a24178d1b8", "title": "شبکه باران", "url": "https://live-aburayhan1108.telewebion.net/ek/baran/live/1080p/index.m3u8"}, {"id": "377e7d2a3d", "title": "شبکه بوشهر", "url": "https://live-aburayhan1103.telewebion.net/ek/bushehr/live/576p/index.m3u8"}, {"id": "232855b0dc", "title": "شبکه دنا", "url": "https://live-aburayhan1106.telewebion.net/ek/dena/live/1080p/index.m3u8"}, {"id": "51588b5256", "title": "شبکه اشراق", "url": "https://live-aburayhan1101.telewebion.net/ek/eshragh/live/1080p/index.m3u8"}, {"id": "bd190300cb", "title": "شبکه فارس", "url": "https://live-aburayhan1108.telewebion.net/ek/fars/live/576p/index.m3u8"}, {"id": "d114ea6134", "title": "شبکه همدان", "url": "https://live-aburayhan1111.telewebion.net/ek/sina/live/576p/index.m3u8"}, {"id": "427e108a04", "title": "شبکه هامون", "url": "https://live-aburayhan1109.telewebion.net/ek/hamoon/live/1080p/index.m3u8"}, {"id": "768cc83eff", "title": "شبکه ایلام", "url": "https://live-aburayhan1111.telewebion.net/ek/ilam/live/576p/index.m3u8"}, {"id": "2f7cb7fb17", "title": "شبکه اصفهان", "url": "https://live-aburayhan1108.telewebion.net/ek/esfahan/live/1080p/index.m3u8"}, {"id": "7ac3ad1c4e", "title": "شبکه جهان‌بین", "url": "https://live-aburayhan1101.telewebion.net/ek/jahanbin/live/576p/index.m3u8"}, {"id": "af4fbef201", "title": "شبکه کرمان", "url": "https://live-aburayhan1112.telewebion.net/ek/kerman/live/1080p/index.m3u8"}, {"id": "a26fee141b", "title": "شبکه خلیج فارس", "url": "https://live-aburayhan1112.telewebion.net/ek/khalijefars/live/576p/index.m3u8"}, {"id": "7a9baf9a96", "title": "شبکه خاوران", "url": "https://live-aburayhan1112.telewebion.net/ek/khavaran/live/1080p/index.m3u8"}, {"id": "b970bb7137", "title": "شبکه خراسان رضوی", "url": "https://live-aburayhan1111.telewebion.net/ek/khorasanrazavi/live/1080p/index.m3u8"}, {"id": "b12e3c4b22", "title": "شبکه خوزستان", "url": "https://live-aburayhan1102.telewebion.net/ek/khoozestan/live/576p/index.m3u8"}, {"id": "6b66392a38", "title": "شبکه کیش", "url": "https://live-aburayhan1104.telewebion.net/ek/kish/live/576p/index.m3u8"}, {"id": "b71a9e556f", "title": "شبکه کردستان", "url": "https://live-aburayhan1110.telewebion.net/ek/kordestan/live/1080p/index.m3u8"}, {"id": "0563a4321d", "title": "شبکه مهاباد", "url": "https://live-aburayhan1106.telewebion.net/ek/mahabad/live/1080p/index.m3u8"}, {"id": "6b2a5699b7", "title": "شبکه مکران", "url": "https://live-aburayhan1107.telewebion.net/na/makran/live/1080p/index.m3u8"}, {"id": "deaac98744", "title": "شبکه نور", "url": "https://live-aburayhan1113.telewebion.net/ek/noor/live/576p/index.m3u8"}, {"id": "6c2b7d5592", "title": "شبکه قزوین", "url": "https://live-aburayhan1104.telewebion.net/ek/qazvin/live/576p/index.m3u8"}, {"id": "aeba41a454", "title": "شبکه سبلان", "url": "https://live-aburayhan1104.telewebion.net/ek/sabalan/live/576p/index.m3u8"}, {"id": "dd4892b7c2", "title": "شبکه سبز", "url": "https://live-aburayhan1113.telewebion.net/ek/sabz/live/576p/index.m3u8"}, {"id": "9c84c4f957", "title": "شبکه سهند", "url": "https://live-aburayhan1102.telewebion.net/ek/sahand/live/576p/index.m3u8"}, {"id": "af985d9968", "title": "شبکه سمنان", "url": "https://live-aburayhan1101.telewebion.net/ek/semnan/live/576p/index.m3u8"}, {"id": "a24f40c56f", "title": "شبکه تبرستان", "url": "https://live-aburayhan1106.telewebion.net/ek/tabarestan/live/576p/index.m3u8"}, {"id": "bdbe86e77b", "title": "شبکه آذربایجان غربی", "url": "https://live-aburayhan1105.telewebion.net/ek/azarbayjangharbi/live/576p/index.m3u8"}, {"id": "0a47c1c1a3", "title": "شبکه تابان یزد", "url": "https://live-aburayhan1104.telewebion.net/ek/taban/live/576p/index.m3u8"}, {"id": "c59a8bd866", "title": "شبکه زاگرس", "url": "https://live-aburayhan1113.telewebion.net/ek/zagros/live/576p/index.m3u8"}, {"id": "6784ec521d", "title": "العالم", "url": "https://live2.alalam.ir/live/Alalam/index.m3u8"}, {"id": "de00c3c795", "title": "شبکه الکوثر", "url": "https://live-aburayhan1102.telewebion.net/ek/kawthar/live/576p/index.m3u8"}, {"id": "d28e0abe95", "title": "هیسپان تی‌وی", "url": "https://live.presstv.co.uk/hls/hispantv.m3u8"}, {"id": "29ce09ec8d", "title": "آی‌فیلم ۲", "url": "https://live.presstv.co.uk/hls/ifilm2_4_482/index.m3u8"}, {"id": "85d0772b30", "title": "آی‌فیلم عربی", "url": "https://live.presstv.co.uk/hls/ifilmar_4_482/index.m3u8"}, {"id": "20da9eccd4", "title": "آی‌فیلم انگلیسی", "url": "https://live.presstv.co.uk/hls/ifilmen_4_482/index.m3u8"}, {"id": "fecaffc07a", "title": "ایران پرس", "url": "https://ip2stream.iranpress.com/hls/ip2.m3u8"}, {"id": "076696c131", "title": "شبکه فلسطین", "url": "https://live-aburayhan1101.telewebion.net/na/palestine/live/720p/index.m3u8"}, {"id": "5d5c371893", "title": "پرس تی‌وی", "url": "https://live.presstv.co.uk/hls/presstv.m3u8"}, {"id": "f94765e0d3", "title": "پرس تی‌وی فرانسه", "url": "https://live4.presstv.ir/live/mp4:presstvfr/playlist.m3u8"}, {"id": "3eec539fdf", "title": "سحر آذری", "url": "https://s1-cloud.irib.ir/securelive3/saharazarsd/saharazarsd.m3u8"}, {"id": "d516203868", "title": "سحر بالکان", "url": "https://s1-cloud.irib.ir/securelive3/saharbalksd/saharbalksd.m3u8"}, {"id": "9ab9498ab2", "title": "سحر کردی", "url": "https://s1-cloud.irib.ir/securelive3/saharkurdsd/saharkurdsd.m3u8"}, {"id": "0d8d6c5a3d", "title": "سحر اردو", "url": "https://s1-cloud.irib.ir/securelive3/saharurdsd/saharurdsd.m3u8"}];
     const THEMES = {
       old:{cls:"c-old",glow:"#c49a6c"}, happy:{cls:"c-happy",glow:"#feca57"},
@@ -268,7 +268,7 @@
     const MAX_RECONNECT=6;
     const PLAYER_VER="v5";
 
-    function destroyRadioHls(){if(radioHls){try{radioHls.destroy()}catch(e){} radioHls=null}}
+    function destroyRadioHls(){if(radioHls){try{radioHls.destroy()}catch(e){} radioHls=null} try{revokeHlsBlobs()}catch(e){}}
     function clearRadioTimers(){
       if(watchdogTimer){clearInterval(watchdogTimer);watchdogTimer=null}
       if(bgTimer){clearInterval(bgTimer);bgTimer=null}
@@ -422,23 +422,98 @@
         try{ if(radioHls) radioHls.startLoad(); }catch(e){}
       }, 10000);
     }
+    
+    // ===== پخش HLS داخل مینی‌اپ بله (دور زدن CORS ایران‌صدا) =====
+    const CORS_PROXY_BUILDERS = [
+      function(u){ return "https://corsproxy.io/?" + encodeURIComponent(u); },
+      function(u){ return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); },
+      function(u){ return "https://cors-proxy.fringe.zone/" + u; },
+    ];
+    function absolutizeUrl(base, rel){
+      try { return new URL(rel, base).href; } catch(e){ return rel; }
+    }
+    function rewriteM3u8ForProxy(text, manifestUrl, proxyFn){
+      var base = manifestUrl.replace(/[^\/]+$/, "");
+      return text.split(/\r?\n/).map(function(line){
+        var raw = line;
+        line = line.trim();
+        if(!line) return raw;
+        if(line.charAt(0)==="#"){
+          // URI="..." داخل تگ‌ها
+          return raw.replace(/URI="([^"]+)"/g, function(_, uri){
+            var abs = /^https?:\/\//i.test(uri) ? uri : absolutizeUrl(base, uri);
+            return 'URI="' + proxyFn(abs) + '"';
+          });
+        }
+        var abs = /^https?:\/\//i.test(line) ? line : absolutizeUrl(base, line);
+        return proxyFn(abs);
+      }).join("\n");
+    }
+    async function fetchTextWithProxies(url, timeoutMs){
+      timeoutMs = timeoutMs || 12000;
+      // اول مستقیم
+      try {
+        var ctrl = new AbortController();
+        var to = setTimeout(function(){ try{ctrl.abort()}catch(e){} }, timeoutMs);
+        var r = await fetch(url, {mode:"cors", credentials:"omit", signal:ctrl.signal, cache:"no-store"});
+        clearTimeout(to);
+        if(r.ok){
+          var t = await r.text();
+          if(t && t.indexOf("#EXT")>=0) return {text:t, via:"direct", proxyFn:null};
+        }
+      } catch(e){}
+      // بعد پروکسی‌ها
+      for(var i=0;i<CORS_PROXY_BUILDERS.length;i++){
+        var build = CORS_PROXY_BUILDERS[i];
+        try {
+          var ctrl2 = new AbortController();
+          var to2 = setTimeout(function(){ try{ctrl2.abort()}catch(e){} }, timeoutMs);
+          var r2 = await fetch(build(url), {mode:"cors", credentials:"omit", signal:ctrl2.signal, cache:"no-store"});
+          clearTimeout(to2);
+          if(!r2.ok) continue;
+          var t2 = await r2.text();
+          if(t2 && t2.indexOf("#EXT")>=0) return {text:t2, via:"proxy"+i, proxyFn:build};
+        } catch(e){}
+      }
+      return null;
+    }
+    async function prepareHlsSource(url){
+      var got = await fetchTextWithProxies(url, 14000);
+      if(!got) return {src:url, blob:null, via:"none"};
+      if(!got.proxyFn){
+        // مستقیم OK — همان URL
+        return {src:url, blob:null, via:"direct"};
+      }
+      var rewritten = rewriteM3u8ForProxy(got.text, url, got.proxyFn);
+      var blob = new Blob([rewritten], {type:"application/vnd.apple.mpegurl"});
+      var blobUrl = URL.createObjectURL(blob);
+      return {src:blobUrl, blob:blobUrl, via:got.via};
+    }
+    var _hlsBlobUrls = [];
+    function revokeHlsBlobs(){
+      _hlsBlobUrls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} });
+      _hlsBlobUrls = [];
+    }
+
+
     function playUrl(my, url, isLast){
       destroyRadioHls();
+      revokeHlsBlobs();
       currentPlayUrl=url;
       audio.removeAttribute("src");
       try{ audio.removeAttribute("crossorigin"); }catch(e){}
       try{audio.load()}catch(e){}
       if(location.protocol==="https:" && url.indexOf("http://")===0){
         setStatus("لینک HTTP روی HTTPS مسدود است", true);
-        if(!isLast) setTimeout(()=>{if(my===gen) tryNextUrl(my)}, 300);
+        if(!isLast) setTimeout(function(){if(my===gen) tryNextUrl(my)}, 300);
         else { busy=false; running=false; btnPlay.textContent="▶"; disc.classList.remove("spin"); }
         return;
       }
-      const isHls=/\.m3u8(\?|$)/i.test(url) || /m3u8/i.test(url);
+      var isHls=/\.m3u8(\?|$)/i.test(url) || /m3u8/i.test(url);
       isLiveTrack=isHls;
       setStatus("اتصال"+(currentUrlList.length>1?(" "+fa(urlAttempt+1)+"/"+fa(currentUrlList.length)): "")+"…");
 
-      const onOk=()=>{
+      var onOk=function(){
         if(my!==gen)return;
         btnPlay.textContent="⏸"; disc.classList.add("spin");
         setStatus(isHls?"● پخش زنده":"");
@@ -447,77 +522,52 @@
         markProgress(); reconnectTries=0;
         startWatchdog(); startBgTimer(); updateMediaSession();
       };
-      const onFail=(reason)=>{
+      var onFail=function(reason){
         if(my!==gen)return;
         destroyRadioHls();
         if(!isLast){
           setStatus("لینک بعدی…", true);
-          setTimeout(()=>{if(my===gen) tryNextUrl(my)}, 350);
+          setTimeout(function(){if(my===gen) tryNextUrl(my)}, 350);
           return;
         }
-        // توضیح واضح برای کاربر: مرورگر مستقیم ≠ مینی‌اپ
-        var corsHint = isHls
-          ? "استریم ملی در مینی‌اپ به‌خاطر محدودیت سرور (CORS) قطع می‌شود. دکمه «پخش پایدار در مرورگر» را بزنید."
-          : "قطع شد. ▶ را بزنید.";
         if(running && !userPaused && reconnectTries<MAX_RECONNECT){
           busy=false;
-          setTimeout(()=>{ if(my===gen && running && !userPaused) softReconnect("fatal"); }, 2500);
+          setTimeout(function(){ if(my===gen && running && !userPaused) softReconnect("fatal"); }, 2500);
           return;
         }
-        setStatus(corsHint, true);
+        setStatus("قطع شد. ▶ یا «پخش در مرورگر» را بزنید.", true);
         disc.classList.remove("spin"); btnPlay.textContent="▶";
         running=false; busy=false; clearRadioTimers(); updateMediaSession();
       };
-      const tryPlayNative=()=>{
+      var tryPlayNative=function(){
         if(my!==gen||!running||userPaused){busy=false;return}
-        const p=audio.play();
-        if(p&&p.then) p.then(onOk).catch(()=>onFail("play"));
+        var p=audio.play();
+        if(p&&p.then) p.then(onOk).catch(function(){onFail("play")});
         else onOk();
       };
 
-      function setupNativeFirst(thenHls){
-        // پخش با <audio src> بدون crossOrigin — روی iOS و بعضی WebViewها بدون CORS کار می‌کند
-        try{ audio.removeAttribute("crossorigin"); }catch(e){}
-        audio.src=url;
-        try{ audio.load(); }catch(e){}
-        var settled=false;
-        var to=setTimeout(function(){
-          if(settled||my!==gen) return;
-          // اگر بعد از چند ثانیه داده‌ای نیامد، برو سراغ hls.js
-          if(audio.readyState>=2){ settled=true; tryPlayNative(); return; }
-          settled=true;
-          if(thenHls) thenHls();
-          else onFail("timeout");
-        }, 6000);
-        audio.addEventListener("canplay", function(){
-          if(settled||my!==gen) return;
-          settled=true; clearTimeout(to); tryPlayNative();
-        }, {once:true});
-        audio.addEventListener("error", function(){
-          if(settled||my!==gen) return;
-          settled=true; clearTimeout(to);
-          if(thenHls) thenHls();
-          else onFail("native-err");
-        }, {once:true});
-      }
-
-      function setupHls(){
+      function attachHlsTo(srcUrl){
         if(!(window.Hls && Hls.isSupported())){
-          setupNativeFirst(null);
+          try{ audio.removeAttribute("crossorigin"); }catch(e){}
+          audio.src=srcUrl;
+          try{audio.load()}catch(e){}
+          audio.addEventListener("canplay", tryPlayNative, {once:true});
+          audio.addEventListener("error", function(){onFail("native")}, {once:true});
+          setTimeout(function(){ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 16000);
           return;
         }
         try{ audio.removeAttribute("crossorigin"); }catch(e){}
         radioHls=new Hls({
           enableWorker:false,
           lowLatencyMode:false,
-          maxBufferLength:30,
-          maxMaxBufferLength:60,
-          manifestLoadingTimeOut:12000,
-          levelLoadingTimeOut:12000,
+          maxBufferLength:24,
+          maxMaxBufferLength:48,
+          manifestLoadingTimeOut:15000,
+          levelLoadingTimeOut:15000,
           fragLoadingTimeOut:20000,
           xhrSetup:function(xhr){ try{ xhr.withCredentials=false; }catch(e){} }
         });
-        radioHls.loadSource(url);
+        radioHls.loadSource(srcUrl);
         radioHls.attachMedia(audio);
         radioHls.on(Hls.Events.MANIFEST_PARSED, function(){
           if(my!==gen) return;
@@ -526,42 +576,77 @@
         radioHls.on(Hls.Events.ERROR, function(_, data){
           if(my!==gen||!data) return;
           if(!data.fatal){
-            try{ if(data.type===Hls.ErrorTypes.NETWORK_ERROR) radioHls.startLoad(); }catch(e){}
+            try{
+              if(data.type===Hls.ErrorTypes.NETWORK_ERROR) radioHls.startLoad();
+              else if(data.type===Hls.ErrorTypes.MEDIA_ERROR) radioHls.recoverMediaError();
+            }catch(e){}
             return;
           }
-          // خطای کشنده: معمولاً CORS یا قطع شبکه
           try{ destroyRadioHls(); }catch(e){}
-          var detail = (data.details||"") + "";
-          if(/cors|network|manifest|keyLoad/i.test(detail) || data.type===Hls.ErrorTypes.NETWORK_ERROR){
-            // یک‌بار native را هم امتحان کن
-            setupNativeFirst(function(){ onFail("cors"); });
-          } else {
-            onFail(detail||"hls");
-          }
+          onFail(data.details||"hls");
         });
       }
 
-      if(isHls){
-        // اول native (بدون CORS)، بعد hls.js
-        var canNative = false;
-        try{
-          canNative = !!(audio.canPlayType && (
-            audio.canPlayType("application/vnd.apple.mpegurl") ||
-            audio.canPlayType("application/x-mpegURL")
-          ));
-        }catch(e){}
-        if(canNative){
-          setupNativeFirst(function(){ setupHls(); });
-        } else {
-          setupHls();
-        }
-      } else {
+      if(!isHls){
         try{ audio.removeAttribute("crossorigin"); }catch(e){}
         audio.src=url;
-        try{ audio.load(); }catch(e){}
+        try{audio.load()}catch(e){}
         audio.addEventListener("canplay", tryPlayNative, {once:true});
-        audio.addEventListener("error", ()=>onFail("err"), {once:true});
-        setTimeout(()=>{ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 15000);
+        audio.addEventListener("error", function(){onFail("err")}, {once:true});
+        setTimeout(function(){ if(my===gen && running && audio.readyState<2) onFail("timeout"); }, 15000);
+        return;
+      }
+
+      // HLS زنده: اول native (iOS)، بعد hls مستقیم، بعد پروکسی CORS برای مینی‌اپ بله
+      var canNative=false;
+      try{
+        canNative=!!(audio.canPlayType && (
+          audio.canPlayType("application/vnd.apple.mpegurl") ||
+          audio.canPlayType("application/x-mpegURL")
+        ));
+      }catch(e){}
+
+      function tryProxied(){
+        if(my!==gen||!running||userPaused){busy=false;return}
+        setStatus("اتصال امن برای مینی‌اپ…");
+        prepareHlsSource(url).then(function(prep){
+          if(my!==gen||!running||userPaused){busy=false;return}
+          if(prep.blob){ _hlsBlobUrls.push(prep.blob); }
+          if(prep.via==="none"){
+            // آخرین شانس: hls مستقیم روی URL اصلی
+            attachHlsTo(url);
+            return;
+          }
+          setStatus(prep.via==="direct"?"● اتصال مستقیم…":"● پخش از طریق مینی‌اپ…");
+          attachHlsTo(prep.src);
+        }).catch(function(){
+          if(my!==gen) return;
+          attachHlsTo(url);
+        });
+      }
+
+      if(canNative){
+        // iOS / Safari WebView
+        try{ audio.removeAttribute("crossorigin"); }catch(e){}
+        audio.src=url;
+        try{audio.load()}catch(e){}
+        var settled=false;
+        var to=setTimeout(function(){
+          if(settled||my!==gen) return;
+          if(audio.readyState>=2){ settled=true; tryPlayNative(); return; }
+          settled=true;
+          tryProxied();
+        }, 5000);
+        audio.addEventListener("canplay", function(){
+          if(settled||my!==gen) return;
+          settled=true; clearTimeout(to); tryPlayNative();
+        }, {once:true});
+        audio.addEventListener("error", function(){
+          if(settled||my!==gen) return;
+          settled=true; clearTimeout(to); tryProxied();
+        }, {once:true});
+      } else {
+        tryProxied();
       }
     }
     function tryNextUrl(my){
